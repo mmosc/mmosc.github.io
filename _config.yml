@@ -176,7 +176,6 @@ plugins:
   - jekyll-paginate-v2
   - jekyll/scholar
   - jekyll-sitemap
-  - jekyll-target-blank
   - jekyll-twitter-plugin
   - jemoji
 
