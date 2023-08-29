@@ -4,7 +4,7 @@
 layout: page
 title: projects
 permalink: /projects/
-nav: true
+nav: false
 nav_order: 2
 display_categories: [work]
 horizontal: false
