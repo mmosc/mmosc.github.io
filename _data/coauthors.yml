@@ -1,34 +1,52 @@
-"Adams":
-  - firstname: ["Edwin", "E.", "E. P.", "Edwin Plimpton"]
-    url: https://en.wikipedia.org/wiki/Edwin_Plimpton_Adams
+"Schedl":
+  - firstname: ["Markus"]
+    url: http://www.mschedl.eu/
 
-"Podolsky":
-  - firstname: ["Boris", "B.", "B. Y.", "Boris Yakovlevich"]
-    url: https://en.wikipedia.org/wiki/Boris_Podolsky
+"Zangerle":
+  - firstname: ["Eva"]
+    url: https://evazangerle.at/
 
-"Rosen":
-  - firstname: ["Nathan", "N."]
-    url: https://en.wikipedia.org/wiki/Nathan_Rosen
+"Peintner":
+  - firstname: ["Andreas"]
+    url: https://pintonos.github.io/
 
-"Bach": 
-  - firstname: ["Johann Sebastian", "J. S."]
-    url: https://en.wikipedia.org/wiki/Johann_Sebastian_Bach
+"Rekabsaz":
+  - firstname: ["Navid"]
+    url: https://navid-rekabsaz.github.io/
 
-  - firstname: ["Carl Philipp Emanuel", "C. P. E."]
-    url: https://en.wikipedia.org/wiki/Carl_Philipp_Emanuel_Bach
+"Parada-Cabaleiro":
+  - firstname: ["Emilia"]
+    url: https://www.researchgate.net/profile/Emilia-Parada-Cabaleiro
 
-"Przibram":
-  - firstname: ["Karl"]
-    url: https://link.springer.com/article/10.1007/s00016-019-00242-z
+"Lesota":
+  - firstname: ["Oleg"]
+    url: https://hcai.at/persons/lesota/
 
-"Schrödinger":
-  - firstname: ["Erwin"]
-    url: https://en.wikipedia.org/wiki/Erwin_Schr%C3%B6dinger
+"Brandl":
+  - firstname: ["Stefan"]
+    url: https://hcai.at/persons/brandl/
 
-"Lorentz":
-  - firstname: ["Hendrik Antoon"]
-    url: https://en.wikipedia.org/wiki/Hendrik_Lorentz
+"Ganhör":
+  - firstname: ["Christian"]
+    url: https://hcai.at/persons/ganhoer/
 
-"Planck":
-  - firstname: ["Max"]
-    url: https://en.wikipedia.org/wiki/Max_Planck
+"Lex":
+  - firstname: ["Elisabeth"]
+    url: https://elisabethlex.info/
+
+"Kowald":
+  - firstname: ["Dominik"]
+    url: http://dominikkowald.info/
+
+"Penz":
+  - firstname: ["David"]
+    url: https://hcai.at/persons/penz/
+
+
+"Deldjoo":
+  - firstname: ["Yashar"]
+    url: https://yasdel.github.io/
+
+"Carparelli":
+  - firstname: ["Giulio", "Giulio Davide", "Davide"]
+    url: https://github.com/giuliowaitforitdavide
