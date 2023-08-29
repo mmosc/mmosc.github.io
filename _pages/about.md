@@ -18,7 +18,7 @@ selected_papers: true # includes a list of papers marked as "selected={true}"
 social: true  # includes social icons at the bottom of the page
 ---
 
-I am a physicist turned computer scientist pursuing a PhD student at the
+I am a physicist turned computer scientist, currently a PhD student at the
 [Multimedia Mining and Search Group](https://www.hcai.at) of
 the [Johannes Kepler University Linz](https://www.jku.at/en), Austria.
 
