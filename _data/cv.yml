@@ -3,8 +3,8 @@
   contents:
     - name: Full Name
       value: Marta Moscati
-    - name: Email
-      value: ma.moscati (at) jku.at
+    # - name: Email
+    #   value: ma.moscati (at) gmail.com
     - name: Languages
       value: Italian (native), English (C2), German (C1), French (B2), Chinese Mandarin (A1)
 
