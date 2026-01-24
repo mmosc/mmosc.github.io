@@ -1,0 +1,129 @@
+- title: General Information
+  type: map
+  contents:
+    - name: Full Name
+      value: Marta Moscati
+    - name: Email
+      value: ma.moscati (at) jku.at
+    - name: Languages
+      value: Italian (native), English (C2), German (C1), French (B2), Chinese Mandarin (A1)
+
+- title: Education
+  type: time_table
+  contents:
+    - title: PhD in Computer Science
+      institution: Johannes Kepler University Linz, Austria
+      year: 2021 - present
+      description:
+        - Research on multimodal learning and recommender systems
+        - Supervising students
+        - Contributing to the scientific community as chair (publicity, proceedings), program committee, and reviewer
+    - title: PhD in Theoretical Particle Physics
+      institution: Karlsruhe Institute of Technology (KIT), Germany
+      year: 2019
+      description:
+        - Thesis "Lepton Flavour Non-Universality - From Effective Field Theory to Extended Gauge Models"
+        - Research on new physics models and lepton flavor universality violation
+
+- title: Experience
+  type: time_table
+  contents:
+    - title: Applied Scientist (L5)
+      institution: Albatross AI
+      year: 2025 - present
+      description:
+        - Developing effective recommender systems for Albatross AI's customers
+    - title: Research Intern
+      institution: Deezer Research Team, Paris, France
+      year: June 2024 - December 2024
+      description:
+        - User modelling from large-scale music streaming data
+        - Analysis of user behavior patterns in music consumption
+    - title: PhD Researcher
+      institution: Johannes Kepler University Linz, Austria
+      year: 2021 - present
+      description:
+        - Multimodal representation learning for recommender systems
+        - Cold-start recommendation scenarios
+        - Music information retrieval and emotion-based music recommendation
+    - title: Postdoctoral Researcher
+      institution: Karlsruhe Institute of Technology (KIT), Germany
+      year: 2019 - 2021
+      description:
+        - Research in theoretical particle physics
+        - Focus on lepton flavor universality and beyond Standard Model physics
+
+- title: Selected Publications
+  type: time_table
+  contents:
+    - title: Face-Voice Association with Inductive Bias for Maximum Class Separation
+      year: 2026
+      description: M. Moscati, O. Kats, M. Noman, M.Z. Zaheer, Y. Hou, M. Schedl, S. Nawaz. IEEE ICASSP 2026.
+    - title: <a href="https://doi.org/10.1145/3705328.3759302">Parameter-Efficient Single Collaborative Branch for Recommendation</a>
+      year: 2025
+      description: M. Moscati, S. Nawaz, M. Schedl. ACM RecSys 2025.
+    # - title: <a href="https://ceur-ws.org/Vol-4045/">Audio, Lyrics, Videoclips, Interactions? An Analysis of Uni- and Multi-Modal Music Retrieval Systems</a>
+    #   year: 2025
+    #   description: M. Moscati et al. Workshop on Music Recommender Systems (MuRS) @ RecSys 2025.
+    - title: <a href="https://doi.org/10.1145/3640457.3688138">A Multimodal Single-Branch Embedding Network for Recommendation in Cold-Start and Missing Modality Scenarios</a>
+      year: 2024
+      description: C. Ganhör*, M. Moscati*, A. Hausberger, S. Nawaz, M. Schedl. ACM RecSys 2024. (*Equal contributions)
+    # - title: <a href="https://doi.org/10.1145/3627043.3659540">Emotion-Based Music Recommendation from Quality Annotations and Large-Scale User-Generated Tags</a>
+    #   year: 2024
+    #   description: M. Moscati et al. ACM UMAP 2024.
+    - title: Integrating the ACT-R Framework with Collaborative Filtering for Explainable Sequential Music Recommendation
+      year: 2023
+      description: M. Moscati, C. Wallmann, M. Reiter-Haas, D. Kowald, E. Lex, M. Schedl. ACM RecSys 2023.
+    - title: Music4All-Onion -- A Large-Scale Multi-Faceted Content-Centric Music Recommendation Dataset
+      year: 2022
+      description: M. Moscati, E. Parada-Cabaleiro, Y. Deldjoo, E. Zangerle, M. Schedl. ACM CIKM 2022.
+
+- title: Research Interests
+  type: nested_list
+  contents:
+    - title: Multimodal Learning
+      items:
+        - Cross-modal representation learning
+        - Audio-visual learning (face-voice association)
+        - Handling missing modalities in multimodal systems
+    - title: Recommender Systems
+      items:
+        - Cold-start recommendation 
+        - Music recommendation
+        - Sequential recommendation
+    - title: Music Information Retrieval
+      items:
+        - Music emotion recognition
+        - Multi-modal music retrieval (audio, lyrics, video)
+        - Music discovery patterns and user behavior
+
+- title: Skills
+  type: list_groups
+  contents:
+    - category: Programming Languages
+      icon: fa-solid fa-code
+      items:
+        - Python
+        - PyTorch
+        - TensorFlow
+    - category: Machine Learning
+      icon: fa-solid fa-brain
+      items:
+        - Deep Learning
+        - Multimodal Learning
+        - Recommender Systems
+        - Graph Neural Networks
+        - Computer Vision
+    - category: Research
+      icon: fa-solid fa-microscope
+      items:
+        - Scientific Writing
+        - Data Analysis
+        - Peer Review
+        - Project Leading
+
+- title: Other Interests
+  type: list
+  contents:
+    - <u>Passions:</u> Music, Books, Mathematics, Science
+    - <u>Activities:</u> Sports, Language learning
