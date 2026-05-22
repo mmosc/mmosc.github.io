@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Viaggio nelle Marche — 4 Giorni</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F7F3ED;
+    --dark: #1C1A17;
+    --terracotta: #B85C38;
+    --sage: #5C7A5A;
+    --gold: #C4973B;
+    --sand: #E8DDD0;
+    --muted: #7A7068;
+    --card-bg: #FFFFFF;
+    --border: rgba(28,26,23,0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--cream);
+    color: var(--dark);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .site-header {
+    background: var(--dark);
+    color: var(--cream);
+    padding: 48px 20px 36px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .site-header::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: var(--terracotta);
+    opacity: 0.15;
+  }
+
+  .site-header::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: 30px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: var(--gold);
+    opacity: 0.10;
+  }
+
+  .header-eyebrow {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 500;
+    margin-bottom: 12px;
+  }
+
+  .header-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 42px;
+    font-weight: 500;
+    line-height: 1.1;
+    color: var(--cream);
+    margin-bottom: 16px;
+  }
+
+  .header-title em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .header-subtitle {
+    font-size: 14px;
+    color: rgba(247,243,237,0.65);
+    font-weight: 300;
+    line-height: 1.6;
+    max-width: 340px;
+  }
+
+  .header-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 24px;
+  }
+
+  .tag {
+    background: rgba(247,243,237,0.10);
+    border: 1px solid rgba(247,243,237,0.18);
+    color: rgba(247,243,237,0.75);
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: 400;
+  }
+
+  /* BASE INFO */
+  .base-banner {
+    background: var(--sage);
+    color: white;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .base-icon {
+    font-size: 28px;
+    flex-shrink: 0;
+  }
+
+  .base-text strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+
+  .base-text span {
+    font-size: 12px;
+    opacity: 0.85;
+    font-weight: 300;
+  }
+
+  /* MAIN CONTENT */
+  .main {
+    padding: 0 0 60px;
+  }
+
+  /* DAY SECTION */
+  .day-section {
+    margin: 28px 16px 0;
+  }
+
+  .day-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .day-num {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 600;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .day-1 .day-num { background: var(--sage); color: white; }
+  .day-2 .day-num { background: #3B5E8C; color: white; }
+  .day-3 .day-num { background: var(--gold); color: white; }
+  .day-4 .day-num { background: var(--terracotta); color: white; }
+
+  .day-title-block {}
+  .day-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--dark);
+  }
+  .day-subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 3px;
+    font-weight: 300;
+  }
+
+  /* STOP CARDS */
+  .stops-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .stop-card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .stop-card.highlight {
+    border-color: var(--gold);
+    background: #FFFBF5;
+  }
+
+  .stop-icon-wrap {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .icon-drive { background: #F0EFED; }
+  .icon-visit { background: #E8F0FB; }
+  .icon-food  { background: #FDF3E3; }
+  .icon-relax { background: #EBF3EB; }
+  .icon-home  { background: #E3EEE3; }
+
+  .stop-body { flex: 1; min-width: 0; }
+
+  .stop-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--dark);
+    line-height: 1.3;
+    margin-bottom: 4px;
+  }
+
+  .highlight-badge {
+    display: inline-block;
+    background: var(--gold);
+    color: white;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 10px;
+    letter-spacing: 0.06em;
+    margin-left: 6px;
+    vertical-align: middle;
+    text-transform: uppercase;
+  }
+
+  .stop-note {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.55;
+    font-weight: 300;
+  }
+
+  .stop-detail {
+    margin-top: 8px;
+    padding: 10px 12px;
+    background: var(--cream);
+    border-radius: 10px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .stop-detail strong {
+    color: var(--dark);
+    font-weight: 500;
+  }
+
+  /* TIP BOX */
+  .tip-box {
+    margin: 12px 16px 0;
+    background: var(--dark);
+    color: rgba(247,243,237,0.90);
+    border-radius: 14px;
+    padding: 16px 18px;
+    font-size: 13px;
+    line-height: 1.6;
+    font-weight: 300;
+  }
+
+  .tip-box strong {
+    color: var(--gold);
+    font-weight: 500;
+  }
+
+  /* DIVIDER */
+  .day-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 28px 16px 0;
+  }
+
+  /* FOOD NOTES SECTION */
+  .food-section {
+    margin: 28px 16px 0;
+    background: var(--card-bg);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .food-header {
+    background: var(--terracotta);
+    color: white;
+    padding: 14px 18px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  .food-item {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .food-item:last-child { border-bottom: none; }
+
+  .food-emoji {
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .food-name {
+    font-weight: 500;
+    font-size: 14px;
+    margin-bottom: 2px;
+  }
+
+  .food-desc {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  /* PRACTICAL TIPS */
+  .tips-section {
+    margin: 28px 16px 0;
+    background: var(--card-bg);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .tips-header {
+    background: #2E3D2E;
+    color: white;
+    padding: 14px 18px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  .tip-item {
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--dark);
+    font-weight: 300;
+  }
+
+  .tip-item:last-child { border-bottom: none; }
+
+  .tip-item strong { font-weight: 500; }
+
+  /* SCHEDULE OVERVIEW */
+  .schedule-section {
+    margin: 28px 16px 0;
+    background: var(--card-bg);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .schedule-header {
+    background: var(--dark);
+    color: var(--cream);
+    padding: 14px 18px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  .schedule-row {
+    display: flex;
+    align-items: center;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+  }
+
+  .schedule-row:last-child { border-bottom: none; }
+
+  .sched-day {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--terracotta);
+    min-width: 36px;
+  }
+
+  .sched-info {
+    flex: 1;
+  }
+
+  .sched-title {
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .sched-sub {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  /* FOOTER */
+  .site-footer {
+    background: var(--dark);
+    color: rgba(247,243,237,0.45);
+    text-align: center;
+    padding: 30px 20px;
+    font-size: 12px;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+  }
+
+  .site-footer strong {
+    color: var(--gold);
+    font-weight: 500;
+  }
+
+  /* Collapsible day toggle */
+  .day-toggle {
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    width: 100%;
+  
+  
+    padding: 0;
+  
+  }
+
+  .day-toggle .chevron {
+    font-size: 18px;
+    color: var(--muted);
+    transition: transform 0.25s ease;
+    margin-top: 4px;
+    flex-shrink: 0;
+  }
+
+  .day-toggle.open .chevron {
+    transform: rotate(180deg);
+  }
+
+  .day-body {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.35s ease;
+  }
+
+  .day-body.open {
+    max-height: 2000px;
+  }
+
+  .day-body-inner {
+    padding-top: 4px;
+  }
+
+  /* map link button */
+  .map-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #3B5E8C;
+    text-decoration: none;
+    background: #E8F0FB;
+    padding: 5px 10px;
+    border-radius: 8px;
+  }
+
+  /* booking link button */
+  .booking-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 8px;
+    margin-left: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #003580;
+    text-decoration: none;
+    background: #D6E4F7;
+    padding: 5px 10px;
+    border-radius: 8px;
+  }
+
+  /* legend */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 16px 16px 0;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .legend-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="header-eyebrow">Itinerario di viaggio</div>
+  <h1 class="header-title">Le <em>Marche</em><br>in 4 Giorni</h1>
+  <p class="header-subtitle">Per A&amp;P, in viaggio da Napoli in auto. Borghi nascosti, costa del Conero e sapori autentici della campagna marchigiana.</p>
+  <div class="header-tags">
+    <span class="tag">🚗 In auto da Napoli</span>
+    <span class="tag">🏡 Agriturismo Bibiano38</span>
+    <span class="tag">👤 A&amp;P</span>
+    <span class="tag">📅 23–26 giugno 2026</span>
+    <span class="tag">🌿 Quiete e relax</span>
+  </div>
+</header>
+
+<!-- BASE BANNER -->
+<div class="base-banner">
+  <div class="base-icon">🏡</div>
+  <div class="base-text">
+    <strong>Base: Agriturismo Bibiano38, Treia (MC)</strong>
+    <span>Contrada Bibiano 38 · 23–26 giugno 2026 · 3 notti · A&amp;P · Piscina, colazione inclusa, vista sulle colline</span>
+  </div>
+</div>
+
+<!-- LEGEND -->
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#4A7A48"></div> Luogo da visitare</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#3B5E8C"></div> Relax</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#C4973B"></div> Tappa gastronomica</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#7A7068"></div> Trasferimento</div>
+</div>
+
+<!-- SCHEDULE OVERVIEW -->
+<div class="schedule-section">
+  <div class="schedule-header">📋 Schema del viaggio</div>
+  <div class="schedule-row">
+    <div class="sched-day">G1</div>
+    <div class="sched-info">
+      <div class="sched-title">Napoli → Senigallia → Treia</div>
+      <div class="sched-sub">Martedì 23 giugno · Pandefrà per pranzo · Arrivo a Bibiano38</div>
+    </div>
+  </div>
+  <div class="schedule-row">
+    <div class="sched-day">G2</div>
+    <div class="sched-info">
+      <div class="sched-title">Giornata al mare · Numana</div>
+      <div class="sched-sub">Mercoledì 24 giugno · Spiaggia · Gita in barca</div>
+    </div>
+  </div>
+  <div class="schedule-row">
+    <div class="sched-day">G3</div>
+    <div class="sched-info">
+      <div class="sched-title">Pioraco · Treia · Vignarole</div>
+      <div class="sched-sub">Giovedì 25 giugno · Borgo dell'acqua · Cena in fattoria a Fermo</div>
+    </div>
+  </div>
+  <div class="schedule-row">
+    <div class="sched-day">G4</div>
+    <div class="sched-info">
+      <div class="sched-title">Loreto · Recanati · Rientro</div>
+      <div class="sched-sub">Venerdì 26 giugno · Partenza per Napoli nel pomeriggio</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- ===== GIORNO 1 ===== -->
+  <div class="day-section day-1">
+    <div class="day-toggle open" role="button" aria-expanded="true">
+      <div class="day-header" style="margin-bottom:0; flex:1">
+        <div class="day-num">1</div>
+        <div class="day-title-block">
+          <div class="day-title">Napoli → Senigallia → Treia</div>
+          <div class="day-subtitle">Martedì 23 giugno · ~4.5 ore totali · Sosta pranzo a Senigallia</div>
+        </div>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="day-body open">
+      <div class="day-body-inner">
+        <div class="stops-list" style="margin-top:12px">
+
+          <div class="stop-card">
+            <div class="stop-icon-wrap icon-drive">🚗</div>
+            <div class="stop-body">
+              <div class="stop-name">Partenza da Napoli — entro le 7:00</div>
+              <div class="stop-note">Autostrada A14 direzione nord. Sosta caffè al casello di Pescara Ovest (~2 ore). Arrivo a Senigallia intorno a mezzogiorno.</div>
+            </div>
+          </div>
+
+          <div class="stop-card highlight">
+            <div class="stop-icon-wrap icon-food">🍞</div>
+            <div class="stop-body">
+              <div class="stop-name">Pandefrà Centro — Senigallia <span class="highlight-badge">La vostra tappa</span></div>
+              <div class="stop-note">Via Gherardi 65. Panificio artigianale di prim'ordine: pane a lievitazione naturale, specialty coffee, panini e piatti da brunch. Una delle migliori bakery italiane, fornitrice di Mauro Uliassi.</div>
+              <div class="stop-detail">
+                <strong>Orari:</strong> Mar–Sab 8–15 / 17–20, Dom 8–14 · Chiuso lunedì<br>
+                <strong>Consiglio:</strong> Ordinate un panino farcito e sedetevi al tavolino all'aperto. Fate una passeggiata nel centro storico dopodichè.
+              </div>
+              <a class="map-link" href="https://maps.google.com/?q=Pandefr%C3%A0+Centro+Senigallia" target="_blank">📍 Apri su Maps</a>
+            </div>
+          </div>
+
+          <div class="stop-card">
+            <div class="stop-icon-wrap icon-drive">🚗</div>
+            <div class="stop-body">
+              <div class="stop-name">Trasferimento a Treia (~1 ora)</div>
+              <div class="stop-note">Attraverso le dolci colline marchigiane via SS76. Panorama bellissimo. Arrivo a Bibiano38 nel primo pomeriggio.</div>
+            </div>
+          </div>
+
+          <div class="stop-card">
+            <div class="stop-icon-wrap icon-home">🏡</div>
+            <div class="stop-body">
+              <div class="stop-name">Check-in — Agriturismo Bibiano38</div>
+              <div class="stop-note">Check-in dalle 15:00. Ambientarsi, godere della piscina e del terrazzo con vista sulle colline. Aperitivo all'aperto. Cena all'agriturismo o a Treia (3 km).</div>
+              <div class="stop-detail">
+                <strong>Ospiti:</strong> A&amp;P · Ampia Camera Matrimoniale<br>
+                <strong>Check-in:</strong> martedì 23 giugno 2026, ore 15:00–18:00<br>
+                <strong>Check-out:</strong> venerdì 26 giugno 2026, entro le 11:00<br>
+                <strong>Host:</strong> Federica — ospitalità eccezionale secondo tutte le recensioni<br>
+                <strong>Tel:</strong> +39 339 108 8818
+              </div>
+              <a class="map-link" href="https://maps.google.com/?q=Agriturismo+Bibiano38+Treia" target="_blank">📍 Apri su Maps</a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day-divider"></div>
+
+  <!-- ===== GIORNO 2 ===== -->
+  <div class="day-section day-2">
+    <div class="day-toggle" role="button" aria-expanded="false">
+      <div class="day-header" style="margin-bottom:0; flex:1">
+        <div class="day-num">2</div>
+        <div class="day-title-block">
+          <div class="day-title">Giornata al mare · Numana</div>
+          <div class="day-subtitle">Mercoledì 24 giugno · ~40 min da Bibiano38 · Riviera del Conero</div>
+        </div>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="day-body">
+      <div class="day-body-inner">
+        <div class="stops-list" style="margin-top:12px">
+
+          <div class="stop-card">
+            <div class="stop-icon-wrap icon-relax">☀️</div>
+            <div class="stop-body">
+              <div class="stop-name">Colazione a Bibiano38 · Partenza per Numana</div>
+              <div class="stop-note">Colazione a buffet in agriturismo. Partenza intorno alle 9:30, arrivo a Numana circa alle 10:15.</div>
+            </div>
+          </div>
+
+          <div class="stop-card">
+            <div class="stop-icon-wrap icon-relax">🏖️</div>
+            <div class="stop-body">
+              <div class="stop-name">Spiaggia di Numana Alta</div>
+              <div class="stop-note">Acqua cristallina, mare calmo e tranquillo. Prenotate un lettino con ombrellone in un lido organizzato — servizi comodi e accessibili. Bagno rilassante nella mattinata.</div>
+              <a class="map-link" href="https://maps.google.com/?q=Spiaggia+di+Numana+Alta" target="_blank">📍 Apri su Maps</a>
+            </div>
+          </div>
+
+          <div class="stop-card">
+            <div class="stop-icon-wrap icon-relax">⛵</div>
+            <div class="stop-body">
+              <div class="stop-name">Pomeriggio — Gita in barca lungo il Conero (opzionale)</div>
+              <div class="stop-note">I Traghettatori della Riviera del Conero (Numana) organizzano tour in barca verso la spiaggia delle Due Sorelle e lungo le bianche falesie calcaree. ~€35 a persona, seduti, nessuna camminata. Da prenotare in anticipo in estate.</div>
+            </div>
+          </div>
+
+          <div class="stop-card">
+            <div class="stop-icon-wrap icon-home">🏡</div>
+            <div class="stop-body">
+              <div class="stop-name">Rientro a Bibiano38 per cena (~40 min)</div>
+              <div class="stop-note">Aperitivo serale in agriturismo al tramonto sulle colline marchigiane.</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day-divider"></div>
+
+  <!-- ===== GIORNO 3 ===== -->
+  <div class="day-section day-3">
+    <div class="day-toggle" role="button" aria-expanded="false">
+      <div class="day-header" style="margin-bottom:0; flex:1">
+        <div class="day-num">3</div>
+        <div class="day-title-block">
+          <div class="day-title">Pioraco · Treia · Vignarole</div>
+          <div class="day-subtitle">Giovedì 25 giugno · Natura, borghi e cena in fattoria</div>
+        </div>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="day-body">
+      <div class="day-body-inner">
+        <div class="stops-list" style="margin-top:12px">
+
+          <div class="stop-card highlight">
+            <div class="stop-icon-wrap icon-visit">💧</div>
+            <div class="stop-body">
+              <div class="stop-name">Pioraco — il borgo dell'acqua e della carta <span class="highlight-badge">La vostra tappa</span></div>
+              <div class="stop-note">~50 min da Bibiano38. Un gioiello nascosto dell'entroterra marchigiano incastonato tra tre monti, dove due fiumi confluiscono creando cascate e gole. Pochissimi turisti. Atmosfera magica.</div>
+              <div class="stop-detail">
+                <strong>Cosa fare:</strong><br>
+                🪵 <strong>Sentiero Li Vurgacci</strong> — 500 m su passerelle in legno lungo il fiume Potenza. Piatto e accessibile, con cascatelle, sculture nella roccia ("mostri") e vegetazione lussureggiante.<br><br>
+                🌉 <strong>Ponte del Bacio</strong> — passerella romantica sul fiume con cartello "Kiss Me Please"<br><br>
+                ⛪ <strong>Madonna della Grotta</strong> — cappella rupestre incastonata nella roccia, ex rifugio di eremiti<br><br>
+                🌉 <strong>Ponte Marmone</strong> — antico ponte romano del I sec. a.C.<br><br>
+                <strong>Consiglio:</strong> Scarpe comode. Il percorso Li Vurgacci è aperto da aprile ad ottobre. Durata: 2–2.5 ore con calma.
+              </div>
+              <a class="map-link" href="https://maps.google.com/?q=Pioraco+Macerata+Marche" target="_blank">📍 Apri su Maps</a>
+            </div>
+          </div>
+
+          <div class="stop-card">
+            <div class="stop-icon-wrap icon-visit">🏰</div>
+            <div class="stop-body">
+              <div class="stop-name">Treia — passeggiata nel borgo medievale</div>
+              <div class="stop-note">A soli 3 km da Bibiano38. Sosta caffè o pranzo leggero nel centro storico. Borgo perfettamente conservato, vista panoramica dalle mura, atmosfera molto locale e autentica.</div>
+              <a class="map-link" href="https://maps.google.com/?q=Treia+Macerata+borgo" target="_blank">📍 Apri su Maps</a>
+            </div>
+          </div>
+
+          <div class="stop-card">
+            <div class="stop-icon-wrap icon-food">🐟</div>
+            <div class="stop-body">
+              <div class="stop-name">Ricci Pescato &amp; Fritto — Numana <span class="highlight-badge" style="background:var(--muted)">Opzionale</span></div>
+              <div class="stop-note">Giovedì è uno dei pochi giorni in cui Ricci Pescato è aperto — solo pranzo 12:00–14:30. Se volete includerlo, anticipate la mattina a Pioraco e scendete sulla costa per pranzo prima di rientrare verso Fermo per cena.</div>
+              <div class="stop-detail">
+                <strong>⚠️ Logistica:</strong> Numana è ~40 min da Bibiano38 (direzione nord/costa), Vignarole è ~50 min (direzione sud/Fermo) — la giornata diventa più guidata ma fattibile.<br>
+                <strong>Tel:</strong> +39 071 933 0145 · Non si prenota — arrivate prima di mezzogiorno.
+              </div>
+              <a class="map-link" href="https://maps.google.com/?q=Ricci+Pescato+Fritto+Numana+Via+Flaminia" target="_blank">📍 Apri su Maps</a>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:0; align-items:stretch;">
+            <div class="stop-card" style="flex:1; min-width:0; border-radius:16px 0 0 16px; border-right:none;">
+              <div class="stop-icon-wrap icon-relax">⛪</div>
+              <div class="stop-body">
+                <div class="stop-name" style="font-size:13px;">Abbazia di Fiastra <span class="highlight-badge" style="background:var(--muted)">A</span></div>
+                <div class="stop-note">Abbazia cistercense immersa in una riserva naturale. Chiostro medievale, boschi, silenzio. ~20 min da Treia, sulla strada per Fermo.</div>
+                <div class="stop-detail">
+                  <strong>Ingresso:</strong> gratuito alla riserva<br>
+                  <strong>Orari:</strong> 9:00–19:00
+                </div>
+                <a class="map-link" href="https://maps.google.com/?q=Abbazia+di+Fiastra+Urbisaglia" target="_blank">📍 Maps</a>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:center; flex-shrink:0; width:28px; background:var(--cream); border-top:1px solid var(--border); border-bottom:1px solid var(--border); font-size:10px; color:var(--muted); letter-spacing:0.08em; writing-mode:vertical-rl;">oppure</div>
+            <div class="stop-card" style="flex:1; min-width:0; border-radius:0 16px 16px 0; border-left:none;">
+              <div class="stop-icon-wrap icon-visit">🏛️</div>
+              <div class="stop-body">
+                <div class="stop-name" style="font-size:13px;">Macerata <span class="highlight-badge" style="background:var(--muted)">B</span></div>
+                <div class="stop-note">Il capoluogo marchigiano su un colle, ~20 min da Treia. Corso storico, caffè, e il famoso Sferisterio — arena neoclassica per l'opera estiva.</div>
+                <div class="stop-detail">
+                  <strong>Parcheggio:</strong> fuori dalle mura, gratuito<br>
+                  <strong>Sferisterio:</strong> visitabile in stagione
+                </div>
+                <a class="map-link" href="https://maps.google.com/?q=Macerata+centro+storico" target="_blank">📍 Maps</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="stop-card highlight">
+            <div class="stop-icon-wrap icon-food">🥩</div>
+            <div class="stop-body">
+              <div class="stop-name">Cena — Cucina di Campagna Vignarole, Fermo <span class="highlight-badge">La vostra tappa</span></div>
+              <div class="stop-note">Contrada Abbadetta 34/b. Un ristorante di campagna dell'Azienda Agricola Bagalini: carne Marchigiana allevata in proprio, salumi artigianali, tavoli all'aperto sotto gli ulivi secolari con vista sull'Adriatico. Arrivate al tramonto — il panorama è spettacolare.</div>
+              <div class="stop-detail">
+                <strong>Orari:</strong> Gio–Sab cena dalle 20:00 · Dom pranzo 13–14:30 e cena<br>
+                <strong>Chiuso:</strong> lunedì, martedì e mercoledì<br>
+                <strong>⚠️ Prenotare in anticipo:</strong> +39 0734 672098<br>
+                <strong>Specialità:</strong> Bistecca di Marchigiana IGP, taglieri di salumi della fattoria, vincisgrassi<br>
+                <strong>Prezzo:</strong> ~€50–60 a persona
+              </div>
+              <a class="map-link" href="https://maps.google.com/?q=Cucina+Campagna+Vignarole+Azienda+Agricola+Bagalini+Fermo" target="_blank">📍 Apri su Maps</a>
+            </div>
+          </div>
+
+          <div class="stop-card">
+            <div class="stop-icon-wrap icon-home">🏡</div>
+            <div class="stop-body">
+              <div class="stop-name">Rientro a Bibiano38 (~50 min)</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="day-divider"></div>
+
+  <!-- ===== GIORNO 4 ===== -->
+  <div class="day-section day-4">
+    <div class="day-toggle" role="button" aria-expanded="false">
+      <div class="day-header" style="margin-bottom:0; flex:1">
+        <div class="day-num">4</div>
+        <div class="day-title-block">
+          <div class="day-title">Loreto · Recanati · Rientro</div>
+          <div class="day-subtitle">Venerdì 26 giugno · Check-out · Due tappe culturali · Napoli nel tardo pomeriggio</div>
+        </div>
+      </div>
+      <div class="chevron">⌄</div>
+    </div>
+    <div class="day-body">
+      <div class="day-body-inner">
+        <div class="stops-list" style="margin-top:12px">
+
+          <div class="stop-card">
+            <div class="stop-icon-wrap icon-home">🏡</div>
+            <div class="stop-body">
+              <div class="stop-name">Mattino lento — colazione e check-out (entro le 11:00)</div>
+              <div class="stop-note">Prima di partire, chiedete a Federica dove acquistare Verdicchio locale, pecorino o confetture artigianali — saprà consigliarvi benissimo.</div>
+            </div>
+          </div>
+
+          <div class="stop-card">
+            <div class="stop-icon-wrap icon-visit">⛪</div>
+            <div class="stop-body">
+              <div class="stop-name">Loreto — Santuario della Santa Casa</div>
+              <div class="stop-note">~30 min da Bibiano38. Uno dei più importanti santuari mariani d'Italia, con una magnifica basilica rinascimentale. Ingresso gratuito, atmosfera serena e spirituale. 1–1.5 ore.</div>
+              <div class="stop-detail">
+                <strong>Orari:</strong> Aperto tutti i giorni 6:30–19:30
+              </div>
+              <a class="map-link" href="https://maps.google.com/?q=Santuario+Santa+Casa+Loreto" target="_blank">📍 Apri su Maps</a>
+            </div>
+          </div>
+
+          <div class="stop-card">
+            <div class="stop-icon-wrap icon-visit">📚</div>
+            <div class="stop-body">
+              <div class="stop-name">Recanati — Casa Leopardi e Torre Civica</div>
+              <div class="stop-note">~20 min da Loreto. Città natale di Giacomo Leopardi. Visitate la casa natale del poeta con la sua straordinaria biblioteca (aperta tutti i giorni 9–17:30), poi salite sulla Torre Civica per una vista dalla costa ai Sibillini. Pranzo in trattoria — provate i vincisgrassi.</div>
+              <div class="stop-detail">
+                <strong>Casa Leopardi:</strong> Via Leopardi 14 · Tel +39 071 757 3380<br>
+                <strong>Torre Civica:</strong> Piazza Leopardi · Ingresso ~€5
+              </div>
+              <a class="map-link" href="https://maps.google.com/?q=Casa+Leopardi+Recanati" target="_blank">📍 Apri su Maps</a>
+            </div>
+          </div>
+
+          <div class="stop-card">
+            <div class="stop-icon-wrap icon-drive">🚗</div>
+            <div class="stop-body">
+              <div class="stop-name">Partenza per Napoli — intorno alle 14:00</div>
+              <div class="stop-note">A14 direzione sud. Sosta caffè a Vasto o Lanciano se necessario. Arrivo a Napoli intorno alle 18:00.</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIP -->
+  <div class="tip-box" style="margin-top:28px">
+    <strong>⚠️ Attenzione alle chiusure settimanali</strong><br>
+    Con partenza martedì: <strong>Pandefrà</strong> è aperto ✅ · <strong>Ricci Pescato</strong> è chiuso il mercoledì — l'unica possibilità è includerlo come tappa opzionale di pranzo al Giorno 3 (giovedì, aperto 12–14:30) · <strong>Vignarole</strong> è aperto giovedì sera ✅
+  </div>
+
+  <!-- FOOD SECTION -->
+  <div class="food-section">
+    <div class="food-header">🍽️ Cosa mangiare nelle Marche</div>
+    <div class="food-item">
+      <div class="food-emoji">🐟</div>
+      <div>
+        <div class="food-name">Brodetto Marchigiano</div>
+        <div class="food-desc">Zuppa di pesce adriatico, ogni ristorante ha la sua versione. Da non perdere sulla costa.</div>
+      </div>
+    </div>
+    <div class="food-item">
+      <div class="food-emoji">🍝</div>
+      <div>
+        <div class="food-name">Vincisgrassi</div>
+        <div class="food-desc">La lasagna tipica marchigiana, con ragù di carne e rigaglie, cotta al forno. Piatto simbolo di Recanati e Macerata.</div>
+      </div>
+    </div>
+    <div class="food-item">
+      <div class="food-emoji">🥩</div>
+      <div>
+        <div class="food-name">Carne Marchigiana IGP</div>
+        <div class="food-desc">Razza bovina autoctona, carni eccellenti. Da assaggiare alle Vignarole direttamente dalla fattoria.</div>
+      </div>
+    </div>
+    <div class="food-item">
+      <div class="food-emoji">🫒</div>
+      <div>
+        <div class="food-name">Olive Ascolane</div>
+        <div class="food-desc">Olive ripiene di carne e fritte. Antipasto immancabile, si trovano ovunque e sono buonissime.</div>
+      </div>
+    </div>
+    <div class="food-item">
+      <div class="food-emoji">🍷</div>
+      <div>
+        <div class="food-name">Verdicchio dei Castelli di Jesi</div>
+        <div class="food-desc">Vino bianco fresco e floreale delle colline marchigiane. Perfetto con il pesce. Da acquistare anche come regalo.</div>
+      </div>
+    </div>
+    <div class="food-item">
+      <div class="food-emoji">🍷</div>
+      <div>
+        <div class="food-name">Rosso Conero</div>
+        <div class="food-desc">Vino rosso corposo del Monte Conero, da Montepulciano d'Abruzzo. Ottimo con la carne.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRACTICAL TIPS -->
+  <div class="tips-section">
+    <div class="tips-header">💡 Consigli pratici</div>
+    <div class="tip-item">
+      <strong>Autostrada:</strong> A14 Adriatica Napoli–Ancona, ~3.5–4 ore. Uscita Civitanova Marche per Treia e la costa. Uscita Ancona Nord per la Riviera del Conero. Pedaggi: stimare ~€20–25 a/r.
+    </div>
+    <div class="tip-item">
+      <strong>Bibiano38:</strong> Check-in 15:00–18:00, check-out entro le 11:00. Parcheggio gratuito. WiFi. Colazione a buffet inclusa. Piscina stagionale. Tel: +39 339 108 8818.
+    </div>
+    <div class="tip-item">
+      <strong>Pandefrà:</strong> Chiuso il lunedì. Non è un ristorante completo — ideale per una sosta lunch con panino o piatto del giorno. Specialty coffee eccellente.
+    </div>
+    <div class="tip-item">
+      <strong>Ricci Pescato &amp; Fritto:</strong> Chiuso lunedì e martedì. Aperto gio solo pranzo, ven–sab pranzo+cena, dom solo pranzo. Non si prenota — arrivate prima delle 12:00 per evitare la fila.
+    </div>
+    <div class="tip-item">
+      <strong>Vignarole:</strong> Aperto solo gio–sab sera e dom. Prenotazione obbligatoria: +39 0734 672098. Il menu è a base di carne — non adatto a vegetariani. Vista sull'Adriatico al tramonto.
+    </div>
+    <div class="tip-item">
+      <strong>Pioraco:</strong> Sentiero Li Vurgacci aperto aprile–ottobre. Scarpe comode, non è necessario attrezzarsi da trekking. Parcheggio gratuito all'ingresso del paese. Nessuna prenotazione.
+    </div>
+    <div class="tip-item">
+      <strong>Acquisti da portare a casa:</strong> Verdicchio, Rosso Conero, pecorino stagionato delle Marche, vincigrassi secco, confetture artigianali. Chiedete a Federica dove andare.
+    </div>
+  </div>
+
+</main>
+
+<footer class="site-footer">
+  <strong>Viaggio nelle Marche</strong> · Itinerario personalizzato<br>
+  Bibiano38 · Pandefrà · Ricci Pescato &amp; Fritto · Pioraco · Vignarole
+</footer>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var toggles = document.querySelectorAll('.day-toggle');
+
+    function doToggle(t) {
+      var section = t.parentElement;
+      var body = section ? section.querySelector('.day-body') : null;
+      if (!body) return;
+      var isOpen = t.classList.contains('open');
+      t.classList.toggle('open', !isOpen);
+      body.classList.toggle('open', !isOpen);
+    }
+
+    toggles.forEach(function(t) {
+      // touchend with preventDefault stops iOS from also firing a click
+      t.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        doToggle(t);
+      }, {passive: false});
+      // click handles desktop and Android Chrome
+      t.addEventListener('click', function() {
+        doToggle(t);
+      });
+    });
+
+    // open the first day on load
+    if (toggles[0]) doToggle(toggles[0]);
+  });
+</script>
+</body>
+</html>
