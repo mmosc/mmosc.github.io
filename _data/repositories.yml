@@ -1,6 +1,8 @@
 github_users:
   - mmosc
 
+repo_description_lines_max: 2
+
 github_repos:
   - giuliowaitforitdavide/recsyslearn
   - mbuccoli/tsoai-lullaby
