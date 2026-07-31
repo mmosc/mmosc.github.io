@@ -155,10 +155,10 @@ lsi: false # produce an index for related posts
 
 # Pagination
 pagination:
-  enabled: true
+  enabled: false
 
 related_blog_posts:
-  enabled: true
+  enabled: false
   max_related: 5
 
 # Giscus comments (RECOMMENDED)
@@ -206,14 +206,11 @@ collections:
   news:
     defaults:
       layout: post
-    output: true
+    output: false
   projects:
     output: false # demo content kept as a template, not published
   teachings:
     output: false # demo content kept as a template, not published
-
-news_scrollable: true # adds a vertical scroll bar if there are more than 3 news items
-news_limit: 5 # leave blank to include all the news in the `_news` folder
 
 # -----------------------------------------------------------------------------
 # Jekyll settings
@@ -250,6 +247,12 @@ exclude:
   - package.json
   - package-lock.json
   - _pages/about_einstein.md
+  - _pages/books.md
+  - _pages/plugins.md
+  - _pages/profiles.md
+  - _books/
+  - _projects/
+  - _teachings/
   - purgecss.config.js
   - README.md
   - readme_preview/
@@ -345,7 +348,7 @@ jekyll-archives:
       tags: "/blog/:type/:name/"
       categories: "/blog/:type/:name/"
   books:
-    enabled: [year, tags, categories] # enables year, tag and category archives (remove if you need to disable one of them).
+    enabled: [] # books collection is kept as an inert template (see collections.books.output above); no archives published
 
 display_tags: ["formatting", "images", "links", "math", "code", "blockquotes"] # these tags will be displayed on the front page of your blog
 display_categories: ["external-services"] # these categories will be displayed on the front page of your blog

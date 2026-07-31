@@ -16,7 +16,6 @@ nav_order: 4
     {% include repository/repo_user.liquid username=user %}
   {% endfor %}
 </div>
-{% endif %}
 
 ---
 
