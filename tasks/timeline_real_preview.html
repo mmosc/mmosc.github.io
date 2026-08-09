@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Timeline preview (REAL data) — ad hoc, not a plan.md deliverable</title>
+    <style>
+      :root {
+        color-scheme: light;
+      }
+      body {
+        font-family:
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          sans-serif;
+        margin: 0;
+        padding: 2rem 1rem 6rem;
+        background: #fafafa;
+        color: #1a1a1a;
+      }
+      h1 {
+        font-size: 1.25rem;
+        margin: 0 0 0.25rem;
+      }
+      p.note {
+        color: #666;
+        font-size: 0.9rem;
+        margin: 0 0 0.5rem;
+        max-width: 700px;
+      }
+      p.note.warn {
+        color: #b45309;
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        border-radius: 6px;
+        padding: 0.6rem 0.8rem;
+        margin-bottom: 1.5rem;
+      }
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        align-items: flex-start;
+        margin-bottom: 2rem;
+        padding: 1rem;
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+      }
+      .controls fieldset {
+        border: none;
+        padding: 0;
+        margin: 0;
+      }
+      .controls legend {
+        font-weight: 600;
+        font-size: 0.85rem;
+        margin-bottom: 0.4rem;
+        padding: 0;
+      }
+      .controls label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.85rem;
+        margin-right: 0.75rem;
+      }
+      .range-inputs {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+      }
+
+      .timeline-wrapper {
+        position: relative;
+        max-width: 900px;
+        margin: 0 auto;
+      }
+      .timeline-container {
+        position: relative;
+      }
+      .timeline-track {
+        position: absolute;
+        left: 50%;
+        top: 0;
+        width: 14px;
+        transform: translateX(-50%);
+        border-radius: 7px;
+        overflow: hidden;
+      }
+      .track-segment {
+        position: absolute;
+        left: 0;
+        width: 100%;
+      }
+      .leader-lines {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+      .leader-lines line {
+        stroke: #999;
+        stroke-width: 1.5;
+        stroke-dasharray: 4 4;
+      }
+
+      .card {
+        position: absolute;
+        width: 320px;
+        box-sizing: border-box;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-left: 6px solid var(--card-color, #888);
+        border-radius: 6px;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+        transition:
+          opacity 0.15s ease,
+          top 0.15s ease;
+      }
+      .card.left {
+        right: calc(50% + 30px);
+        text-align: right;
+      }
+      .card.right {
+        left: calc(50% + 30px);
+        text-align: left;
+      }
+      .card .card-date {
+        font-size: 0.7rem;
+        color: #777;
+        margin-bottom: 0.15rem;
+      }
+      .card .card-date .approx {
+        font-style: italic;
+      }
+      .card .card-title {
+        font-weight: 600;
+        line-height: 1.3;
+        margin-bottom: 0.3rem;
+      }
+      .card .first-author-star {
+        color: #b45309;
+      }
+      .card .card-topics {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.3rem;
+      }
+      .card.left .card-topics {
+        justify-content: flex-end;
+      }
+      .topic-pill {
+        display: inline-block;
+        font-size: 0.65rem;
+        padding: 0.1rem 0.45rem;
+        border-radius: 999px;
+        color: #fff;
+        white-space: nowrap;
+      }
+
+      .legend-swatch {
+        display: inline-block;
+        width: 0.7rem;
+        height: 0.7rem;
+        border-radius: 3px;
+        flex: none;
+      }
+      #job-legend label {
+        cursor: default;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Career timeline — preview with REAL data</h1>
+    <p class="note">
+      Ad hoc preview, not a tracked plan.md deliverable. Real jobs (<code>_data/cv.yml</code>), real papers
+      (<code>_bibliography/papers.bib</code>, all 28), real topic colors (<code>_data/timeline_colors.yml</code>).
+      Built by hand-copying current data into this file — the actual Task 3.1-3.3 pipeline (jekyll-scholar → JSON →
+      real Jekyll page) hasn't been built yet.
+    </p>
+    <p class="note warn">
+      <strong>Known gap:</strong> Task 2.4 resolved real months for 23 of 28 papers (4 via Crossref DOI lookup, 16
+      via conference dates, 3 already had one). The remaining 5 — the PhD thesis and 4 physics journal articles,
+      none with a conference to anchor to — default to June of their year, marked with <em>~</em> before the date.
+    </p>
+
+    <div class="controls">
+      <fieldset>
+        <legend>Time range (month granularity)</legend>
+        <div class="range-inputs">
+          <input type="month" id="range-start" />
+          <span>to</span>
+          <input type="month" id="range-end" />
+          <button type="button" id="range-reset">Reset</button>
+        </div>
+      </fieldset>
+      <fieldset id="topic-filters">
+        <legend>Topics</legend>
+      </fieldset>
+      <fieldset id="job-legend">
+        <legend>Jobs</legend>
+      </fieldset>
+    </div>
+
+    <div class="timeline-wrapper">
+      <div class="timeline-container" id="timeline-container">
+        <div class="timeline-track" id="timeline-track"></div>
+        <svg class="leader-lines" id="leader-lines"></svg>
+        <!-- cards injected here by script -->
+      </div>
+    </div>
+
+    <script src="timeline_mock_logic.js"></script>
+    <script>
+      (function () {
+        const TRACK_HEIGHT = 5600;
+        const CARD_HEIGHT = 92;
+        const CARD_MIN_GAP = 14;
+        const TOP_PADDING = 20;
+
+        const now = Date.now();
+        const t = (isoDate) => new Date(isoDate).getTime();
+
+        // --- Real jobs, from _data/cv.yml -----------------------------------
+        const jobs = [
+          { id: "kit", label: "Karlsruhe Institute of Technology — Postdoctoral Researcher", color: "#9C36B5", start: t("2019-01-01"), end: t("2021-01-01") },
+          { id: "jku", label: "Johannes Kepler University Linz — PhD Researcher", color: "#4C6EF5", start: t("2021-01-01"), end: now },
+          { id: "deezer", label: "Deezer Research Team — Research Intern", color: "#F76707", start: t("2024-06-01"), end: t("2024-12-01") },
+          { id: "albatross", label: "Albatross AI — Applied Scientist (L5)", color: "#2F9E44", start: t("2025-01-01"), end: now },
+        ];
+
+        // Real topic colors, from _data/timeline_colors.yml (light-mode values)
+        const TOPIC_COLORS = {
+          "particle-physics": "#2a78d6",
+          "multimodal-learning": "#1baf7a",
+          "recommender-systems": "#eb6834",
+          "music-information-retrieval": "#4a3aa7",
+        };
+
+        // Real papers, from _bibliography/papers.bib (all 28). Month is real
+        // where the bib entry has one (approx: false); otherwise defaulted
+        // to June and flagged (approx: true) — see the warning note above.
+        const papers = [
+          { id: "Li2026DiffusionFairness", title: "Adaptive Autoguidance for Item-Side Fairness in Diffusion Recommender Systems", date: t("2026-07-01"), approx: false, topics: ["recommender-systems"], firstAuthor: false },
+          { id: "Moscati2026FAME_linking", title: "Linking Faces and Voices Across Languages: Insights from the FAME 2026 Challenge", date: t("2026-05-01"), approx: false, topics: ["multimodal-learning"], firstAuthor: true },
+          { id: "Essl2026SBBEVFusion", title: "SB-BEVFusion: Enhancing the Robustness against Sensor Malfunction and Corruptions", date: t("2026-09-01"), approx: false, topics: ["multimodal-learning"], firstAuthor: false },
+          { id: "Moscati2026NetworkedTastes", title: "Networked Tastes: Homophily for Music Recommendation", date: t("2026-06-01"), approx: false, topics: ["recommender-systems", "music-information-retrieval"], firstAuthor: true },
+          { id: "Geiger2025Music4AllAA", title: "Music4All A+A: A Multimodal Dataset for Music Information Retrieval Tasks", date: t("2025-10-01"), approx: false, topics: ["music-information-retrieval", "multimodal-learning"], firstAuthor: false },
+          { id: "Ganhor2025SiBraR_TORS", title: "Single-Branch Network Architectures to Close the Modality Gap in Multimodal Recommendation", date: t("2025-07-01"), approx: false, topics: ["recommender-systems", "multimodal-learning"], firstAuthor: false },
+          { id: "Moscati2025SiBraR_workshop", title: "Single-Branch Architectures for Recommendation", date: t("2025-09-01"), approx: false, topics: ["recommender-systems", "multimodal-learning"], firstAuthor: true },
+          { id: "Schedl2024PIAS_workshop", title: "Psychology-informed Information Access Systems Workshop", date: t("2024-03-01"), approx: false, topics: ["recommender-systems"], firstAuthor: false },
+          { id: "Moscati2025CoBraR", title: "Parameter-Efficient Single Collaborative Branch for Recommendation", date: t("2025-09-01"), approx: false, topics: ["recommender-systems"], firstAuthor: true },
+          { id: "moscati2025multimodal_music_retrieval", title: "Audio, Lyrics, Videoclips, Interactions? Uni- and Multi-Modal Music Retrieval", date: t("2025-09-01"), approx: false, topics: ["music-information-retrieval", "multimodal-learning"], firstAuthor: true },
+          { id: "Moscati2025UMAP_discoveryPattern", title: "Familiarizing with Music: Discovery Patterns for Different Music Discovery Needs", date: t("2025-06-01"), approx: false, topics: ["recommender-systems", "music-information-retrieval"], firstAuthor: true },
+          { id: "Peintner2025emotional_rec", title: "Nuanced Music Emotion Recognition via a Semi-Supervised Multi-Relational GNN", date: t("2025-04-01"), approx: false, topics: ["music-information-retrieval"], firstAuthor: false },
+          { id: "ganhoer_moscati2024sibrar", title: "A Multimodal Single-Branch Embedding Network for Recommendation in Cold-Start and Missing Modality Scenarios", date: t("2024-10-01"), approx: false, topics: ["recommender-systems", "multimodal-learning"], firstAuthor: true },
+          { id: "Moscati2024multimodal_rec", title: "Multimodal Representation Learning for High-Quality Recommendations in Cold-Start and Beyond-Accuracy", date: t("2024-10-01"), approx: false, topics: ["recommender-systems", "multimodal-learning"], firstAuthor: true },
+          { id: "Escobedo2024SBO", title: "Making Alice Appear Like Bob: A Probabilistic Preference Obfuscation Method", date: t("2024-09-01"), approx: false, topics: ["recommender-systems"], firstAuthor: false },
+          { id: "nawaz2024fame", title: "A Synopsis of FAME 2024 Challenge: Associating Faces with Voices in Multilingual Environments", date: t("2024-10-01"), approx: false, topics: ["multimodal-learning"], firstAuthor: true },
+          { id: "Moscati2024emomrs", title: "Emotion-Based Music Recommendation from Quality Annotations and Large-Scale User-Generated Tags", date: t("2024-06-01"), approx: false, topics: ["recommender-systems", "music-information-retrieval"], firstAuthor: true },
+          { id: "Moscati2023actr_cf_music", title: "Integrating the ACT-R Framework with Collaborative Filtering for Explainable Sequential Music Recommendation", date: t("2023-09-01"), approx: false, topics: ["recommender-systems", "music-information-retrieval"], firstAuthor: true },
+          { id: "Moscati2023MultiObjectiveHyperOpt", title: "Multiobjective Hyperparameter Optimization of Recommender Systems", date: t("2023-09-01"), approx: false, topics: ["recommender-systems"], firstAuthor: true },
+          { id: "onion", title: "Music4All-Onion — A Large-Scale Multi-Faceted Content-Centric Music Recommendation Dataset", date: t("2022-10-01"), approx: false, topics: ["music-information-retrieval", "recommender-systems"], firstAuthor: true },
+          { id: "peintner:cars:2022", title: "Unsupervised Graph Embeddings for Session-based Recommendation with Item Features", date: t("2022-09-01"), approx: false, topics: ["recommender-systems"], firstAuthor: false },
+          { id: "Moscati:2019esr", title: "PhD Thesis: Lepton Flavour Non-Universality — From Effective Field Theory to Extended Gauge Models", date: t("2019-06-01"), approx: true, topics: ["particle-physics"], firstAuthor: true },
+          { id: "Moscati:2019unl", title: "New Physics in b→cτν: Impact of Polarisation Observables", date: t("2019-05-01"), approx: false, topics: ["particle-physics"], firstAuthor: true },
+          { id: "Blanke:2019aao", title: "Interplay of R_D(*) and Zll in the Scalar Leptoquark Scenario", date: t("2019-06-01"), approx: true, topics: ["particle-physics"], firstAuthor: true },
+          { id: "Blanke:2019qrx", title: "Addendum: Impact of Polarization Observables on New Physics Explanations", date: t("2019-06-01"), approx: true, topics: ["particle-physics"], firstAuthor: true },
+          { id: "Moscati2026ICASSP_MSM", title: "Face-Voice Association with Inductive Bias for Maximum Class Separation", date: t("2026-05-01"), approx: false, topics: ["multimodal-learning"], firstAuthor: true },
+          { id: "Blanke:2018yud", title: "Impact of Polarization Observables on New Physics Explanations of the Anomaly", date: t("2019-06-01"), approx: true, topics: ["particle-physics"], firstAuthor: true },
+          { id: "Descotes-Genon:2017ptp", title: "Nonminimal 331 Model for Lepton Flavor Universality Violation", date: t("2018-06-01"), approx: true, topics: ["particle-physics"], firstAuthor: true },
+        ];
+
+        const minTime = Math.min(...jobs.map((j) => j.start));
+        const maxTime = Math.max(...jobs.map((j) => j.end), ...papers.map((p) => p.date));
+
+        const pos = (time) => TOP_PADDING + TimelineMockLogic.dateToPosition(time, minTime, maxTime, TRACK_HEIGHT);
+
+        // --- DOM refs --------------------------------------------------------
+        const container = document.getElementById("timeline-container");
+        const track = document.getElementById("timeline-track");
+        const svg = document.getElementById("leader-lines");
+        const topicFieldset = document.getElementById("topic-filters");
+        const rangeStart = document.getElementById("range-start");
+        const rangeEnd = document.getElementById("range-end");
+        const rangeReset = document.getElementById("range-reset");
+
+        const monthInput = (time) => new Date(time).toISOString().slice(0, 7);
+        rangeStart.value = monthInput(minTime);
+        rangeEnd.value = monthInput(maxTime);
+
+        const topicLabel = (topicId) => topicId.split("-").map((word) => word[0].toUpperCase() + word.slice(1)).join(" ");
+
+        Object.entries(TOPIC_COLORS).forEach(([topicId, color]) => {
+          const label = document.createElement("label");
+          const input = document.createElement("input");
+          input.type = "checkbox";
+          input.checked = true;
+          input.dataset.topic = topicId;
+          const swatch = document.createElement("span");
+          swatch.className = "legend-swatch";
+          swatch.style.background = color;
+          label.appendChild(input);
+          label.appendChild(swatch);
+          label.appendChild(document.createTextNode(topicLabel(topicId)));
+          topicFieldset.appendChild(label);
+        });
+
+        const jobLegend = document.getElementById("job-legend");
+        jobs.forEach((job) => {
+          const label = document.createElement("label");
+          const swatch = document.createElement("span");
+          swatch.className = "legend-swatch";
+          swatch.style.background = job.color;
+          label.appendChild(swatch);
+          label.appendChild(document.createTextNode(job.label));
+          jobLegend.appendChild(label);
+        });
+
+        track.style.top = TOP_PADDING + "px";
+        track.style.height = TRACK_HEIGHT + "px";
+
+        function renderTrack() {
+          track.innerHTML = "";
+          const segments = TimelineMockLogic.computeJobSegments(
+            jobs.map((j) => ({ id: j.id, color: j.color, startTime: j.start, endTime: j.end })),
+          );
+          segments.forEach((seg) => {
+            const el = document.createElement("div");
+            el.className = "track-segment";
+            const top = pos(seg.start);
+            const height = Math.max(pos(seg.end) - top, 1);
+            el.style.top = top + "px";
+            el.style.height = height + "px";
+            if (seg.colors.length === 1) {
+              el.style.background = seg.colors[0];
+            } else {
+              const stripeSize = 14;
+              el.style.background = `repeating-linear-gradient(45deg, ${seg.colors[0]} 0 ${stripeSize}px, ${seg.colors[1]} ${stripeSize}px ${stripeSize * 2}px)`;
+            }
+            track.appendChild(el);
+          });
+        }
+
+        function activeFilters() {
+          const startMs = rangeStart.value ? new Date(rangeStart.value + "-01").getTime() : minTime;
+          const endMs = rangeEnd.value ? new Date(rangeEnd.value + "-01").getTime() : maxTime;
+          const activeTopics = new Set(
+            Array.from(topicFieldset.querySelectorAll("input[type=checkbox]:checked")).map((i) => i.dataset.topic),
+          );
+          return { startMs, endMs, activeTopics };
+        }
+
+        function renderCards() {
+          container.querySelectorAll(".card").forEach((n) => n.remove());
+
+          const visible = TimelineMockLogic.filterPapers(papers, activeFilters());
+
+          const packed = TimelineMockLogic.packCards(
+            visible.map((p) => ({ id: p.id, idealPosition: pos(p.date) })),
+            CARD_HEIGHT,
+            CARD_MIN_GAP,
+          );
+          const packedById = Object.fromEntries(packed.map((p) => [p.id, p]));
+
+          // Container must be at least as tall as the bar (TRACK_HEIGHT) or
+          // the deepest packed card, whichever is larger — dense real data
+          // (28 papers, several clustered within months of each other) can
+          // push packed cards past a track height that looked fine with 10
+          // sparse fake ones. Recomputed every render since filters change
+          // how many cards are visible.
+          const maxCardBottom = packed.length ? Math.max(...packed.map((p) => p.top + CARD_HEIGHT)) : 0;
+          const contentHeight = Math.max(TRACK_HEIGHT, maxCardBottom);
+          container.style.height = TOP_PADDING * 2 + contentHeight + "px";
+          svg.innerHTML = "";
+          svg.setAttribute("width", "100%");
+          svg.setAttribute("height", container.style.height);
+
+          visible.forEach((paper) => {
+            const placement = packedById[paper.id];
+            const card = document.createElement("div");
+            card.className = "card " + placement.side;
+            card.style.top = placement.top + "px";
+            card.style.setProperty("--card-color", TOPIC_COLORS[paper.topics[0]]);
+
+            const dateEl = document.createElement("div");
+            dateEl.className = "card-date";
+            const dateText = new Date(paper.date).toLocaleDateString(undefined, { year: "numeric", month: "short" });
+            dateEl.innerHTML = paper.approx ? `<span class="approx">~${dateText}</span>` : dateText;
+            card.appendChild(dateEl);
+
+            const titleEl = document.createElement("div");
+            titleEl.className = "card-title";
+            if (paper.firstAuthor) {
+              const star = document.createElement("span");
+              star.className = "first-author-star";
+              star.title = "First author or shared first authorship";
+              star.textContent = "★ ";
+              titleEl.appendChild(star);
+            }
+            titleEl.appendChild(document.createTextNode(paper.title));
+            card.appendChild(titleEl);
+
+            const topicsEl = document.createElement("div");
+            topicsEl.className = "card-topics";
+            paper.topics.forEach((tp) => {
+              const pill = document.createElement("span");
+              pill.className = "topic-pill";
+              pill.style.background = TOPIC_COLORS[tp];
+              pill.textContent = topicLabel(tp);
+              topicsEl.appendChild(pill);
+            });
+            card.appendChild(topicsEl);
+
+            container.appendChild(card);
+
+            const cardRect = card.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+            const cardMidY = placement.top + CARD_HEIGHT / 2;
+            const barY = pos(paper.date);
+            const barX = containerRect.width / 2;
+            const cardEdgeX = placement.side === "left" ? cardRect.right - containerRect.left : cardRect.left - containerRect.left;
+
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", cardEdgeX);
+            line.setAttribute("y1", cardMidY);
+            line.setAttribute("x2", barX + (placement.side === "left" ? -7 : 7));
+            line.setAttribute("y2", barY);
+            svg.appendChild(line);
+          });
+        }
+
+        function render() {
+          renderTrack();
+          renderCards();
+        }
+
+        [rangeStart, rangeEnd].forEach((el) => el.addEventListener("change", render));
+        topicFieldset.addEventListener("change", render);
+        rangeReset.addEventListener("click", () => {
+          rangeStart.value = monthInput(minTime);
+          rangeEnd.value = monthInput(maxTime);
+          topicFieldset.querySelectorAll("input[type=checkbox]").forEach((i) => (i.checked = true));
+          render();
+        });
+
+        render();
+      })();
+    </script>
+  </body>
+</html>

@@ -134,24 +134,32 @@ Goal: validate the visual design and core interactions cheaply, get sign-off bef
   **Files touched:** `_data/timeline_colors.yml` (new), `tasks/timeline_mock.html`
   **Estimated scope:** XS (ended up M — the all-pairs validation work was the real cost, not the YAML file itself)
 
-- [ ] **Task 2.4: Backfill missing `month` field**
-  **Description:** Only 3 of 28 entries currently have a `month` field — the rest would silently break month-granularity filtering/positioning. For each entry missing `month`, either find the real publication month (from the venue/DOI where feasible) or explicitly decide and document a fallback (e.g. default to the venue's known conference month, or mid-year as a labeled "approximate" placement). Do not silently guess without flagging which entries are approximate.
+- [x] **Task 2.4: Backfill missing `month` field**
+  **Description:** Only 3 of 28 entries currently have a `month` field — the rest would silently break month-granularity filtering/positioning. For each entry missing `month`, either find the real publication month (from the venue/DOI where feasible) or explicitly decide and document a fallback. Do not silently guess without flagging which entries are approximate.
+  **What actually happened:** First attempted to resolve this via web lookups directly; Marta asked to be shown the missing ones and asked one by one instead, so the source-finding stayed collaborative rather than silent, same pattern as Tasks 2.2/2.3. Two lookup passes then resolved 23 of 28 with real, sourced months, and she confirmed using conference dates for the ones found:
+  - **4 via Crossref** (exact DOI-resolved publication dates): `Ganhor2025SiBraR_TORS` (Jul 2026), `Moscati2025CoBraR` (Sep 2025), `ganhoer_moscati2024sibrar` (Oct 2024), `Moscati2024emomrs` (Jun 2024).
+  - **16 via conference dates** (looked up via `WebSearch`, one query per venue rather than per paper — many papers share a venue): SIGIR 2026 (Jul), ICASSP 2026 (May, covers 2 papers), ICIP 2026 (Sep), UMAP 2026 (Jun), CBMI 2025 (Oct), RecSys 2025 + its 2 co-located workshops (Sep — cross-checked against the CoBraR Crossref date, consistent), WSDM 2024 (Mar), RecSys 2024 doctoral symposium (Oct, matching the already-Crossref-dated main conference), ACM MM 2024 (Oct, of a 5-day Oct 28–Nov 1 span), RecSys 2023 + its co-located workshop (Sep), CIKM 2022 (Oct), RecSys 2022's co-located workshop (Sep), FPCP 2019 (May).
+  - **3 already had a real month** from before this task (`Moscati2025UMAP_discoveryPattern`, `Peintner2025emotional_rec`, `Escobedo2024SBO`).
+  - **5 left on the explicit fallback**, `month_approximate = {true}`, default June: the PhD thesis and 4 physics journal articles (`Moscati:2019esr`, `Blanke:2019aao`, `Blanke:2019qrx`, `Blanke:2018yud`, `Descotes-Genon:2017ptp`) — none have a conference to anchor to, and Marta's instruction was scoped to "the ones you found" via conference lookup, not a request to keep researching journal issue dates.
   **Acceptance criteria:**
-  - [ ] All 28 entries have a `month` field
-  - [ ] Entries using the fallback (vs. a confirmed real month) are identifiable (e.g. a `month_approximate: true` field), so the UI can optionally distinguish them later if needed
+  - [x] All 28 entries have a `month` field
+  - [x] Entries using the fallback are identifiable via `month_approximate = {true}` (5 of 28)
   **Verification:**
-  - [ ] `grep -c "month = " _bibliography/papers.bib` returns 28
-  **Dependencies:** None (can run in parallel with Task 2.2/2.3)
-  **Files likely touched:** `_bibliography/papers.bib`
+  - [x] `grep -c "month = " _bibliography/papers.bib` → 28; brace-balance check → depth 0; no entry has two `month` lines (checked via awk)
+  - [x] Built before/after via `git stash`, diffed `_site/publications/index.html`: `month_approximate` appears zero times anywhere in output (correctly filtered). `month` itself **does** now show in 25 more citations than before (e.g. "Sep 2025", "Oct 2024") — this is a real, desired improvement (month is a standard displayed BibTeX field that simply had no data before), not a leak, and is the expected consequence of this task rather than something to guard against.
+  - [x] `node test/unit_timeline_mock_logic.js` and `node test/style_contract.js` both still pass
+  - [x] `bundle exec jekyll build` succeeds
+  **Dependencies:** None (ran in parallel with Task 2.2/2.3, as planned)
+  **Files touched:** `_bibliography/papers.bib`, `_config.yml` (added `month_approximate` to `filtered_bibtex_keywords`)
   **Estimated scope:** M
 
 - [x] **Task 2.5: Keep new fields out of rendered citations** *(done — folded into Task 2.2's commit rather than executed separately; see that task's "Sequencing call" note for why. `first_author` also added to `filtered_bibtex_keywords`, same reasoning as `topic`. Still applies to `month_approximate` once Task 2.4 introduces it — that part remains pending.)*
   **Description:** Add `topic` (and `month_approximate` if used) to `filtered_bibtex_keywords` in `_config.yml` so these internal-only fields don't leak into the citation text shown on `/publications/`. (`month` itself should stay — it's already a standard, displayed BibTeX field.) Resolves the open question already logged in `timeline.md`.
   **Acceptance criteria:**
   - [x] `/publications/` renders with no visible `topic` or `first_author` text in any citation
-  - [ ] Same for `month_approximate`, once Task 2.4 adds it
+  - [x] Same for `month_approximate` — added when Task 2.4 introduced the field, verified zero leakage
   **Verification:**
-  - [x] Built before/after via `git stash`, diffed `_site/publications/index.html` — zero occurrences of the new field names anywhere in output
+  - [x] Built before/after via `git stash`, diffed `_site/publications/index.html` — zero occurrences of `topic`/`first_author`/`month_approximate` anywhere in output
   **Dependencies:** Task 2.2
   **Files touched:** `_config.yml`
   **Estimated scope:** XS
@@ -159,8 +167,8 @@ Goal: validate the visual design and core interactions cheaply, get sign-off bef
 ### Checkpoint: Real data ready
 - [x] `bundle exec jekyll build` succeeds
 - [x] All 28 entries have `topic` and `first_author`
-- [ ] All 28 entries have `month` (Task 2.4 not yet done — blocks full checkpoint)
-- [x] `/publications/` unchanged from before this phase (diffed the rendered HTML text; zero visible change)
+- [x] All 28 entries have `month` (23 real/sourced, 5 flagged `month_approximate`)
+- [x] `/publications/` internal-only fields (`topic`, `first_author`, `month_approximate`) stay invisible; `month` itself now correctly displays where it didn't before — a real improvement, not a regression
 - [x] `npm run lint:style-contract` passes
 
 ### Phase 3: Wire the mock to real data

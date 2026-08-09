@@ -54,6 +54,7 @@ This repo is a thin Jekyll starter (see `AGENTS.md`) — new `_layouts/`, `_incl
  - **Horizontal layout on wide/desktop screens.** Once vertical v1 is solid, add a horizontal variant above a screen-width breakpoint, with vertical staying as the mobile fallback (see Orientation). Deferred because vertical alone gets a working, mobile-friendly timeline shipped fastest.
 
 # Open questions
- - ~~Does the new `topic` field on bib entries need to be added to `filtered_bibtex_keywords`?~~ Resolved: yes, done (along with `first_author`, added for the same reason) — verified by diffing the built `/publications/` page before/after, zero visible change.
+ - ~~Does the new `topic` field on bib entries need to be added to `filtered_bibtex_keywords`?~~ Resolved: yes, done (along with `first_author` and `month_approximate`, added for the same reason) — verified by diffing the built `/publications/` page before/after, zero visible change to those internal-only fields. `month` itself now correctly shows in citation text where it didn't before, since it's a real, always-displayed BibTeX field.
  - ~~Roughly how many distinct topic tags do we expect?~~ Resolved: 4 (see Before Starting).
+ - ~~All 28 papers need a `month` for month-granularity filtering — where does it come from?~~ Resolved: 23 of 28 have a real, sourced month (4 from Crossref DOI lookups, 16 from conference dates, 3 already had one); the remaining 5 (PhD thesis + 4 physics journal articles, none with a conference to anchor to) are flagged `month_approximate = {true}` rather than silently guessed.
  - Awards/scholarships layer: do I have this data anywhere yet? (Not currently in `_data/cv.yml` — would need to be added first if this optional layer is in scope.) Still open.
