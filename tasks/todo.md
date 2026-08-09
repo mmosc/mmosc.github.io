@@ -3,12 +3,12 @@
 Full detail, acceptance criteria, and rationale in [`plan.md`](plan.md). Source spec: [`timeline.md`](../timeline.md).
 
 ## Phase 1: Static mock (fake data)
-- [x] 1.1 Static HTML mock with hardcoded fake jobs + papers (vertical bar, overlap striping, non-overlapping cards, leader lines) — logic unit-tested; **manual in-browser check still needed, not yet done**
-- [ ] 1.2 Time-range filter (month granularity) against fake data
-- [ ] 1.3 Topic filter against fake data
+- [x] 1.1 Static HTML mock with hardcoded fake jobs + papers (vertical bar, overlap striping, non-overlapping cards, leader lines)
+- [x] 1.2 Time-range filter (month granularity) against fake data
+- [x] 1.3 Topic filter against fake data
 
 ## Checkpoint: Mock approved
-- [ ] Reviewed live in-browser with Marta — do not proceed until approved
+- [x] Reviewed live in-browser with Marta — approved ("looks good!") after fixing job-label overlap and bar-continuity issues
 
 ## Phase 2: Real data prep
 - [ ] 2.1 Fix `test/style_contract.js` to allow local `_layouts/` override in this fork

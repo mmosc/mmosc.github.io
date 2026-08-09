@@ -46,7 +46,11 @@
     return segments;
   }
 
-  const api = { dateToPosition, packCards, computeJobSegments };
+  function filterPapers(papers, { startMs, endMs, activeTopics }) {
+    return papers.filter((paper) => paper.date >= startMs && paper.date <= endMs && paper.topics.some((topic) => activeTopics.has(topic)));
+  }
+
+  const api = { dateToPosition, packCards, computeJobSegments, filterPapers };
 
   if (typeof module !== "undefined" && module.exports) {
     module.exports = api;

@@ -324,8 +324,7 @@
           svg.setAttribute("width", "100%");
           svg.setAttribute("height", container.style.height);
 
-          const { startMs, endMs, activeTopics } = activeFilters();
-          const visible = papers.filter((p) => p.date >= startMs && p.date <= endMs && p.topics.some((tp) => activeTopics.has(tp)));
+          const visible = TimelineMockLogic.filterPapers(papers, activeFilters());
 
           const packed = TimelineMockLogic.packCards(
             visible.map((p) => ({ id: p.id, idealPosition: pos(p.date) })),

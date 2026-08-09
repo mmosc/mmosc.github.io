@@ -39,33 +39,34 @@ Goal: validate the visual design and core interactions cheaply, get sign-off bef
   **Files touched:** `tasks/timeline_mock.html`, `tasks/timeline_mock_logic.js`, `test/unit_timeline_mock_logic.js`, `_config.yml` (excluded `tasks/` and `timeline.md` from the Jekyll build as a safety net)
   **Estimated scope:** M
 
-- [ ] **Task 1.2: Time-range filter against fake data** *(implementation already present in `tasks/timeline_mock.html` from Task 1.1 — building the filter controls alongside the base render loop was more natural than a separate pass. Not yet formally verified against this task's own acceptance criteria below; leaving unchecked until that happens.)*
+- [x] **Task 1.2: Time-range filter against fake data**
   **Description:** Add a month-granularity date-range control (two inputs or a dual-handle slider) that shows/hides jobs and papers outside the selected range, re-flowing the remaining cards so they still don't overlap.
   **Acceptance criteria:**
-  - [ ] Narrowing the range hides out-of-range papers and re-packs the remaining ones with no gaps or overlaps
-  - [ ] Widening back out restores everything correctly (no lost state/data)
+  - [x] Narrowing the range hides out-of-range papers and re-packs the remaining ones with no gaps or overlaps
+  - [x] Widening back out restores everything correctly (no lost state/data)
   **Verification:**
-  - [ ] Manual check: drag range to isolate a single fake job's tenure, confirm only that job's papers show
+  - [x] Automated: extracted the inline filter predicate into a tested pure function, `filterPapers(papers, { startMs, endMs, activeTopics })`, in `tasks/timeline_mock_logic.js` (RED confirmed — `filterPapers is not a function` — before implementing, GREEN after). Asserts narrowed ranges exclude out-of-range papers (boundary-inclusive), an out-of-range window returns empty rather than erroring, and widening back out restores every paper with the input array left unmutated.
+  - [x] Automated: integration test chains `filterPapers` into `packCards` and asserts the packed result is still collision-free — the "re-packs with no gaps or overlaps" half of this task's criteria, not just the filtering half.
   **Dependencies:** Task 1.1
-  **Files likely touched:** `tasks/timeline_mock.html`
+  **Files touched:** `tasks/timeline_mock_logic.js`, `test/unit_timeline_mock_logic.js`, `tasks/timeline_mock.html` (now calls `TimelineMockLogic.filterPapers` instead of an inline predicate)
   **Estimated scope:** S
 
-- [ ] **Task 1.3: Topic filter against fake data** *(same note as Task 1.2 — implementation already present, not yet formally verified)*
+- [x] **Task 1.3: Topic filter against fake data**
   **Description:** Add topic-tag toggle controls (checkboxes/pills) that show/hide papers by fake topic, independent of the time-range filter (both can be active together).
   **Acceptance criteria:**
-  - [ ] Deselecting a topic hides only papers tagged with it; the jobs bar is unaffected
-  - [ ] Combining an active time-range filter with a topic filter narrows correctly (AND, not OR)
+  - [x] Deselecting a topic hides only papers tagged with it; the jobs bar is unaffected
+  - [x] Combining an active time-range filter with a topic filter narrows correctly (AND, not OR)
   **Verification:**
-  - [ ] Manual check: combine both filters, confirm the visible card count matches manual expectation from the fake dataset
+  - [x] Automated: same `filterPapers` test suite as Task 1.2 — asserts deselecting topics hides non-matching papers, a paper with multiple topics passes if *any* of its topics is active, and a case where a paper matches the topic filter but not the date range is correctly excluded (proving AND, not OR).
   **Dependencies:** Task 1.2
-  **Files likely touched:** `tasks/timeline_mock.html`
+  **Files touched:** same as Task 1.2 (same underlying change)
   **Estimated scope:** S
 
 ### Checkpoint: Mock approved
-- [ ] Review the mock live in-browser with Marta
-- [ ] Visual direction (colors, card style, leader lines, overlap striping) signed off
-- [ ] Filter interactions feel right
-- [ ] **Do not proceed to Phase 2 tagging work until this is approved** — that's the point of mocking first
+- [x] Review the mock live in-browser with Marta — done; surfaced two real issues (job labels overlapping the bar, a visual gap caused by an unrealistic fake-data gap), both fixed and re-reviewed
+- [x] Visual direction (colors, card style, leader lines, overlap striping) signed off — "looks good!"
+- [x] Filter interactions feel right (and are now automated-test-covered, not just eyeballed — see Tasks 1.2/1.3)
+- [x] Phase 1 complete — proceeding to Phase 2
 
 ### Phase 2: Real data prep
 

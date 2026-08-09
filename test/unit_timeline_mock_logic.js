@@ -1,5 +1,5 @@
 const assert = require("node:assert/strict");
-const { dateToPosition, packCards, computeJobSegments } = require("../tasks/timeline_mock_logic.js");
+const { dateToPosition, packCards, computeJobSegments, filterPapers } = require("../tasks/timeline_mock_logic.js");
 
 // dateToPosition: maps a time value onto a track, clamped to [0, trackHeight]
 assert.strictEqual(dateToPosition(0, 0, 1000, 500), 0, "earliest time maps to position 0");
@@ -94,6 +94,103 @@ assert.strictEqual(dateToPosition(1050, 0, 1000, 500), 500, "time after range cl
     { start: 40, end: 60, colors: ["A", "B"] },
     { start: 60, end: 100, colors: ["A"] },
   ]);
+}
+
+// filterPapers: date-range + topic filtering, combined with AND (plan.md
+// Tasks 1.2 and 1.3's actual acceptance criteria)
+{
+  const papers = [
+    { id: "p1", date: 0, topics: ["a"] },
+    { id: "p2", date: 50, topics: ["a", "b"] },
+    { id: "p3", date: 100, topics: ["b"] },
+    { id: "p4", date: 150, topics: ["c"] },
+  ];
+  const allTopics = new Set(["a", "b", "c"]);
+
+  // no filtering: full range, all topics active -> everything passes through
+  assert.deepStrictEqual(
+    filterPapers(papers, { startMs: 0, endMs: 150, activeTopics: allTopics }).map((p) => p.id),
+    ["p1", "p2", "p3", "p4"],
+    "full range and all topics returns every paper",
+  );
+
+  // Task 1.2: narrowing the date range excludes out-of-range papers, range bounds inclusive
+  assert.deepStrictEqual(
+    filterPapers(papers, { startMs: 25, endMs: 100, activeTopics: allTopics }).map((p) => p.id),
+    ["p2", "p3"],
+    "narrowed range excludes papers outside [startMs, endMs], includes boundary matches",
+  );
+
+  // Task 1.2: date range excluding everything returns empty, not an error
+  assert.deepStrictEqual(
+    filterPapers(papers, { startMs: 1000, endMs: 2000, activeTopics: allTopics }).map((p) => p.id),
+    [],
+    "range outside all paper dates returns no papers",
+  );
+
+  // Task 1.2: widening back out restores everything, and the input array is untouched
+  const beforeFilter = JSON.stringify(papers);
+  filterPapers(papers, { startMs: 25, endMs: 100, activeTopics: allTopics });
+  assert.strictEqual(JSON.stringify(papers), beforeFilter, "filterPapers must not mutate its input");
+  assert.deepStrictEqual(
+    filterPapers(papers, { startMs: 0, endMs: 150, activeTopics: allTopics }).map((p) => p.id),
+    ["p1", "p2", "p3", "p4"],
+    "widening the range back out restores every paper (no lost state)",
+  );
+
+  // Task 1.3: topic filter hides papers matching none of the active topics
+  assert.deepStrictEqual(
+    filterPapers(papers, { startMs: 0, endMs: 150, activeTopics: new Set(["c"]) }).map((p) => p.id),
+    ["p4"],
+    "deselecting topics hides papers that match none of the remaining active topics",
+  );
+
+  // Task 1.3: a paper with multiple topics passes if ANY of its topics is active
+  assert.deepStrictEqual(
+    filterPapers(papers, { startMs: 0, endMs: 150, activeTopics: new Set(["b"]) }).map((p) => p.id),
+    ["p2", "p3"],
+    "multi-topic paper p2 passes because topic b is active, even though topic a is not",
+  );
+
+  // Task 1.3: date range AND topic filter combine as AND, not OR
+  assert.deepStrictEqual(
+    filterPapers(papers, { startMs: 0, endMs: 60, activeTopics: new Set(["b"]) }).map((p) => p.id),
+    ["p2"],
+    "p3 matches the topic filter but not the date range, so it must be excluded (AND, not OR)",
+  );
+
+  // deselecting every topic returns nothing, regardless of date range
+  assert.deepStrictEqual(
+    filterPapers(papers, { startMs: 0, endMs: 150, activeTopics: new Set() }).map((p) => p.id),
+    [],
+    "no active topics returns no papers even with the full date range",
+  );
+}
+
+// integration: filterPapers -> packCards must still produce non-overlapping placements
+{
+  const papers = [
+    { id: "p1", date: 0, topics: ["a"] },
+    { id: "p2", date: 5, topics: ["a"] },
+    { id: "p3", date: 10, topics: ["a"] },
+    { id: "p4", date: 15, topics: ["a"] },
+    { id: "p5", date: 1000, topics: ["b"] }, // filtered out below
+  ];
+  const visible = filterPapers(papers, { startMs: 0, endMs: 20, activeTopics: new Set(["a"]) });
+  const packed = packCards(
+    visible.map((p) => ({ id: p.id, idealPosition: p.date })),
+    20,
+    5,
+  );
+  assert.strictEqual(packed.length, 4, "only the 4 in-range, in-topic papers get packed");
+  const bySide = { left: [], right: [] };
+  packed.forEach((r) => bySide[r.side].push(r));
+  ["left", "right"].forEach((side) => {
+    const placed = bySide[side].sort((a, b) => a.top - b.top);
+    for (let i = 1; i < placed.length; i++) {
+      assert.ok(placed[i].top >= placed[i - 1].top + 20, `filtered+packed ${side} cards must not overlap`);
+    }
+  });
 }
 
 console.log("timeline mock logic: all assertions passed.");
