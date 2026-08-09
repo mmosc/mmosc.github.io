@@ -42,7 +42,7 @@ This repo is a thin Jekyll starter (see `AGENTS.md`) — new `_layouts/`, `_incl
 ## Before starting
  - [x] Provide a mock example of how the timeline would look, with fake timeline and fake papers — done, approved
  - [x] Guide me through the creation/association of topic tags to papers — done; final set: `particle-physics`, `recommender-systems`, `multimodal-learning`, `music-information-retrieval`
- - [ ] Guide me through the creation/association of color codings to topic tags — topics are tagged in `_bibliography/papers.bib`; colors not yet assigned (`_data/timeline_colors.yml` not yet created)
+ - [x] Guide me through the creation/association of color codings to topic tags — done; final mapping in `_data/timeline_colors.yml` (validated with the `dataviz` skill's palette + `validate_palette.js`, not picked by eye)
 
 # Not doing (v1)
  - **Full due-diligence/dossier mode** (filterable table by venue/coauthor/keyword) — topic-tag filtering covers most of this need at much lower cost; revisit only if real visitors ask for more.

@@ -13,7 +13,7 @@ Full detail, acceptance criteria, and rationale in [`plan.md`](plan.md). Source 
 ## Phase 2: Real data prep
 - [x] 2.1 Fix `test/style_contract.js` to allow local `_layouts/` override in this fork
 - [x] 2.2 Guided session: add `topic` + `first_author` fields to all 28 bib entries (first-author filter was a new requirement added mid-session — see `timeline.md`)
-- [ ] 2.3 Guided session: topic → color mapping (`_data/timeline_colors.yml`)
+- [x] 2.3 Guided session: topic → color mapping (`_data/timeline_colors.yml`) — validated with the dataviz skill's palette script, not picked by eye
 - [ ] 2.4 Backfill `month` field on all 28 bib entries (flag approximated ones)
 - [x] 2.5 Add `topic`/`first_author` to `filtered_bibtex_keywords` (folded into 2.2's commit; `month_approximate` part still pending on 2.4)
 - [ ] 2.6 First-author filter in the mock (new task — `filterPapers` extension + checkbox)

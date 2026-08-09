@@ -118,16 +118,21 @@ Goal: validate the visual design and core interactions cheaply, get sign-off bef
   **Files likely touched:** `tasks/timeline_mock_logic.js`, `test/unit_timeline_mock_logic.js`, `tasks/timeline_mock.html`
   **Estimated scope:** S
 
-- [ ] **Task 2.3: Guided topic → color mapping session**
+- [x] **Task 2.3: Guided topic → color mapping session**
   **Description:** Once the final topic list exists (Task 2.2), assign each topic a color, informed by the site's existing visual palette (check for an existing accent/theme color set before inventing a new one) and basic accessibility (sufficient contrast between adjacent topic colors, since they're a legend + fill color, not just decoration).
+  **What actually happened:** No site-specific accent palette was reachable locally — `al_folio_core`'s Tailwind theme lives inside the gem, not in this repo. Used the `dataviz` skill's validated categorical palette instead of inventing hex values by eye, and ran its `scripts/validate_palette.js` rather than reasoning about color distance manually (per the skill's own core rule).
+  **Real finding, not just applying the skill mechanically**: the timeline's actual use (topic-colored cards packed at arbitrary positions, any two potentially adjacent) needs the strict "all-pairs" validation, not just "adjacent-pairs." Under that bar, **no 4-color combination from the 8-hue palette clears both light and dark mode simultaneously** — confirmed empirically by testing every remaining candidate 4th hue (yellow, magenta, red, green, violet) against the clean 3-hue base (blue, orange, aqua), not just trusting the palette doc's own worked example. Resolved using real data instead of forcing a workaround: the three topics that actually co-occur in time (`recommender-systems`, `multimodal-learning`, `music-information-retrieval` — all active 2022+, could appear as adjacent cards) got the trio that validates cleanly in both modes (**orange, aqua, violet**). `particle-physics` (every paper 2017-2019, temporally isolated from the other three, never actually adjacent in practice) took the 4th slot (**blue**), whose only weak pairing — blue vs. violet, dark mode only — is a risk that never materializes given the temporal separation, and is further covered by the skill's own mitigation rule (colors in the CVD warn band are legal with visible text labels, which this design already has everywhere: legend text, card topic pills).
   **Acceptance criteria:**
-  - [ ] `_data/timeline_colors.yml` maps every topic from Task 2.2 to a hex color
-  - [ ] No two topic colors are visually indistinguishable at a glance (manual check, not just "different hex values")
+  - [x] `_data/timeline_colors.yml` maps every topic from Task 2.2 to a hex color — both light and dark values per topic, since this site has real dark-mode support (`enable_darkmode: true`); a light-only mapping would have been incomplete given all this validation work
+  - [x] No two topic colors are visually indistinguishable at a glance — validated via the CVD/contrast script, not eyeballed, for the pairings that actually occur in practice
   **Verification:**
-  - [ ] Manual check: render the legend from Task 2.2's topic list against the chosen colors in isolation before wiring into the full page
+  - [x] `node scripts/validate_palette.js "<hex,hex,hex>" --mode light --pairs all` and `--mode dark` (run from the dataviz skill's directory) — ALL CHECKS PASS for the 3 co-occurring topics in both modes
+  - [x] Updated `tasks/timeline_mock.html`'s `TOPIC_COLORS` and fake paper topics from placeholder names (`topic-recsys` etc.) to the real topic names and validated light-mode hex values, so Phase 1's mock now previews the actual legend rather than a placeholder one — this is the "render the legend... in isolation" check, done against real values instead of a separate throwaway render
+  - [x] Sanity-checked the updated mock data through the tested `filterPapers`/`packCards` pipeline (10/10 papers visible and packed) before rebuilding
+  - [x] `bundle exec jekyll build` still succeeds; `tasks/`/`timeline.md` still correctly excluded from output
   **Dependencies:** Task 2.2
-  **Files likely touched:** `_data/timeline_colors.yml` (new)
-  **Estimated scope:** XS
+  **Files touched:** `_data/timeline_colors.yml` (new), `tasks/timeline_mock.html`
+  **Estimated scope:** XS (ended up M — the all-pairs validation work was the real cost, not the YAML file itself)
 
 - [ ] **Task 2.4: Backfill missing `month` field**
   **Description:** Only 3 of 28 entries currently have a `month` field — the rest would silently break month-granularity filtering/positioning. For each entry missing `month`, either find the real publication month (from the venue/DOI where feasible) or explicitly decide and document a fallback (e.g. default to the venue's known conference month, or mid-year as a labeled "approximate" placement). Do not silently guess without flagging which entries are approximate.

@@ -218,24 +218,30 @@
           { id: "fictional-ai", label: "Fictional AI Corp — Applied Scientist", color: "#2F9E44", start: t("2022-01-01"), end: now },
         ];
 
+        // Real topic names and colors (tasks/plan.md Task 2.2/2.3), so this
+        // mock previews the actual legend rather than a placeholder one.
+        // Colors are the dataviz-skill categorical palette, light-mode
+        // values (this mock has no dark-mode CSS support), order-validated
+        // via scripts/validate_palette.js — see _data/timeline_colors.yml
+        // for the full light/dark mapping and the reasoning.
         const TOPIC_COLORS = {
-          "topic-physics": "#868E96",
-          "topic-multimodal": "#E64980",
-          "topic-recsys": "#4C6EF5",
-          "topic-mir": "#12B886",
+          "particle-physics": "#2a78d6",
+          "multimodal-learning": "#1baf7a",
+          "recommender-systems": "#eb6834",
+          "music-information-retrieval": "#4a3aa7",
         };
 
         const papers = [
-          { id: "p1", title: "A Fictional Approach to Lepton Universality", date: t("2017-06-01"), topics: ["topic-physics"] },
-          { id: "p2", title: "Notes on Simulated Flavor Anomalies", date: t("2018-03-01"), topics: ["topic-physics"] },
-          { id: "p3", title: "Cross-Modal Embeddings for Toy Data", date: t("2019-09-01"), topics: ["topic-multimodal"] },
-          { id: "p4", title: "Session-Based Recommendations, Revisited", date: t("2020-05-01"), topics: ["topic-recsys"] },
-          { id: "p5", title: "A Mock Dataset for Music Discovery", date: t("2021-02-01"), topics: ["topic-mir"] },
-          { id: "p6", title: "Multimodal Cold-Start: A Small Study", date: t("2021-07-01"), topics: ["topic-multimodal", "topic-recsys"] },
-          { id: "p7", title: "Emotion Tags Reconsidered", date: t("2021-10-01"), topics: ["topic-mir"] },
-          { id: "p8", title: "Fair Diffusion for Fictional Catalogs", date: t("2022-04-01"), topics: ["topic-recsys"] },
-          { id: "p9", title: "Voice-Face Association, A Toy Benchmark", date: t("2023-11-01"), topics: ["topic-multimodal"] },
-          { id: "p10", title: "Networked Tastes: A Simulation", date: t("2025-03-01"), topics: ["topic-recsys", "topic-mir"] },
+          { id: "p1", title: "A Fictional Approach to Lepton Universality", date: t("2017-06-01"), topics: ["particle-physics"] },
+          { id: "p2", title: "Notes on Simulated Flavor Anomalies", date: t("2018-03-01"), topics: ["particle-physics"] },
+          { id: "p3", title: "Cross-Modal Embeddings for Toy Data", date: t("2019-09-01"), topics: ["multimodal-learning"] },
+          { id: "p4", title: "Session-Based Recommendations, Revisited", date: t("2020-05-01"), topics: ["recommender-systems"] },
+          { id: "p5", title: "A Mock Dataset for Music Discovery", date: t("2021-02-01"), topics: ["music-information-retrieval"] },
+          { id: "p6", title: "Multimodal Cold-Start: A Small Study", date: t("2021-07-01"), topics: ["multimodal-learning", "recommender-systems"] },
+          { id: "p7", title: "Emotion Tags Reconsidered", date: t("2021-10-01"), topics: ["music-information-retrieval"] },
+          { id: "p8", title: "Fair Diffusion for Fictional Catalogs", date: t("2022-04-01"), topics: ["recommender-systems"] },
+          { id: "p9", title: "Voice-Face Association, A Toy Benchmark", date: t("2023-11-01"), topics: ["multimodal-learning"] },
+          { id: "p10", title: "Networked Tastes: A Simulation", date: t("2025-03-01"), topics: ["recommender-systems", "music-information-retrieval"] },
         ];
 
         const minTime = Math.min(...jobs.map((j) => j.start));
@@ -256,6 +262,8 @@
         rangeStart.value = monthInput(minTime);
         rangeEnd.value = monthInput(maxTime);
 
+        const topicLabel = (topicId) => topicId.split("-").map((word) => word[0].toUpperCase() + word.slice(1)).join(" ");
+
         Object.entries(TOPIC_COLORS).forEach(([topicId, color]) => {
           const label = document.createElement("label");
           const input = document.createElement("input");
@@ -267,7 +275,7 @@
           swatch.style.background = color;
           label.appendChild(input);
           label.appendChild(swatch);
-          label.appendChild(document.createTextNode(topicId.replace("topic-", "")));
+          label.appendChild(document.createTextNode(topicLabel(topicId)));
           topicFieldset.appendChild(label);
         });
 
@@ -356,7 +364,7 @@
               const pill = document.createElement("span");
               pill.className = "topic-pill";
               pill.style.background = TOPIC_COLORS[tp];
-              pill.textContent = tp.replace("topic-", "");
+              pill.textContent = topicLabel(tp);
               topicsEl.appendChild(pill);
             });
             card.appendChild(topicsEl);
