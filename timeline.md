@@ -34,6 +34,8 @@ v1 is **vertical** (top-to-bottom bar, cards to the left/right), on all screen s
 - The main timeline bar is divided into different colors, according to the timeline of my jobs. If two jobs were taken simultaneously, then the two colors are "intertwined" in 45-degrees bars.
 - The papers are appearing as "cards" to the left or right of the main bar, with a color-coding. They are linked to the exact time through dashed lines, and are not overlapping with each other. 
 
+Card contents: date, title, venue (conference or journal name, from the bib entry's `booktitle`/`journal`/`school` field), topic pills. Venue is shown as a single truncated line (ellipsis) with the full name on hover — long venue names (e.g. full SIGIR/ICASSP proceedings titles) would otherwise wrap across multiple lines and break the packing algorithm's fixed-card-height assumption, causing cards to visually overlap even though the layout math says they don't.
+
 Note: checked against real `cv.yml` data — only two-way overlaps occur (KIT postdoc/JKU PhD do not overlap; JKU PhD overlaps with the Deezer internship in 2024, then separately with Albatross AI from 2025), never three simultaneous jobs. The two-color 45° intertwining as specified is sufficient; no need to design for a three-way split. The diagonal-stripe treatment works the same whether the bar is drawn horizontal or vertical, so this isn't affected by the orientation decision above.
 
 ## Technical constraints

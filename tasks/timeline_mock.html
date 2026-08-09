@@ -134,6 +134,16 @@
         line-height: 1.3;
         margin-bottom: 0.3rem;
       }
+      .card .card-venue {
+        font-style: italic;
+        font-size: 0.7rem;
+        color: #555;
+        line-height: 1.3;
+        margin-bottom: 0.3rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
       .card .card-topics {
         display: flex;
         flex-wrap: wrap;
@@ -200,7 +210,7 @@
     <script>
       (function () {
         const TRACK_HEIGHT = 2400;
-        const CARD_HEIGHT = 92;
+        const CARD_HEIGHT = 112; // bumped from 92 to account for the added single-line venue text
         const CARD_MIN_GAP = 14;
         const TOP_PADDING = 20;
 
@@ -232,16 +242,16 @@
         };
 
         const papers = [
-          { id: "p1", title: "A Fictional Approach to Lepton Universality", date: t("2017-06-01"), topics: ["particle-physics"] },
-          { id: "p2", title: "Notes on Simulated Flavor Anomalies", date: t("2018-03-01"), topics: ["particle-physics"] },
-          { id: "p3", title: "Cross-Modal Embeddings for Toy Data", date: t("2019-09-01"), topics: ["multimodal-learning"] },
-          { id: "p4", title: "Session-Based Recommendations, Revisited", date: t("2020-05-01"), topics: ["recommender-systems"] },
-          { id: "p5", title: "A Mock Dataset for Music Discovery", date: t("2021-02-01"), topics: ["music-information-retrieval"] },
-          { id: "p6", title: "Multimodal Cold-Start: A Small Study", date: t("2021-07-01"), topics: ["multimodal-learning", "recommender-systems"] },
-          { id: "p7", title: "Emotion Tags Reconsidered", date: t("2021-10-01"), topics: ["music-information-retrieval"] },
-          { id: "p8", title: "Fair Diffusion for Fictional Catalogs", date: t("2022-04-01"), topics: ["recommender-systems"] },
-          { id: "p9", title: "Voice-Face Association, A Toy Benchmark", date: t("2023-11-01"), topics: ["multimodal-learning"] },
-          { id: "p10", title: "Networked Tastes: A Simulation", date: t("2025-03-01"), topics: ["recommender-systems", "music-information-retrieval"] },
+          { id: "p1", title: "A Fictional Approach to Lepton Universality", venue: "Proc. of Fictional Physics Conference", date: t("2017-06-01"), topics: ["particle-physics"] },
+          { id: "p2", title: "Notes on Simulated Flavor Anomalies", venue: "Fictional Journal of Physics", date: t("2018-03-01"), topics: ["particle-physics"] },
+          { id: "p3", title: "Cross-Modal Embeddings for Toy Data", venue: "Proc. of Toy Multimodal Workshop", date: t("2019-09-01"), topics: ["multimodal-learning"] },
+          { id: "p4", title: "Session-Based Recommendations, Revisited", venue: "Proc. of Fictional RecSys Conference", date: t("2020-05-01"), topics: ["recommender-systems"] },
+          { id: "p5", title: "A Mock Dataset for Music Discovery", venue: "Proc. of Fictional Music Retrieval Conference", date: t("2021-02-01"), topics: ["music-information-retrieval"] },
+          { id: "p6", title: "Multimodal Cold-Start: A Small Study", venue: "Proc. of Fictional RecSys Conference", date: t("2021-07-01"), topics: ["multimodal-learning", "recommender-systems"] },
+          { id: "p7", title: "Emotion Tags Reconsidered", venue: "Transactions of Fictional Music Retrieval", date: t("2021-10-01"), topics: ["music-information-retrieval"] },
+          { id: "p8", title: "Fair Diffusion for Fictional Catalogs", venue: "Proc. of Fictional RecSys Conference", date: t("2022-04-01"), topics: ["recommender-systems"] },
+          { id: "p9", title: "Voice-Face Association, A Toy Benchmark", venue: "Proc. of Toy Multimodal Workshop", date: t("2023-11-01"), topics: ["multimodal-learning"] },
+          { id: "p10", title: "Networked Tastes: A Simulation", venue: "Workshops of Fictional RecSys Conference", date: t("2025-03-01"), topics: ["recommender-systems", "music-information-retrieval"] },
         ];
 
         const minTime = Math.min(...jobs.map((j) => j.start));
@@ -357,6 +367,12 @@
             titleEl.className = "card-title";
             titleEl.textContent = paper.title;
             card.appendChild(titleEl);
+
+            const venueEl = document.createElement("div");
+            venueEl.className = "card-venue";
+            venueEl.textContent = paper.venue;
+            venueEl.title = paper.venue;
+            card.appendChild(venueEl);
 
             const topicsEl = document.createElement("div");
             topicsEl.className = "card-topics";

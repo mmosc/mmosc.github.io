@@ -62,6 +62,12 @@ Goal: validate the visual design and core interactions cheaply, get sign-off bef
   **Files touched:** same as Task 1.2 (same underlying change)
   **Estimated scope:** S
 
+- [x] **Addendum: venue (conference/journal name) on cards** *(requested after Phase 2 was already underway — applied directly to both `tasks/timeline_mock.html` and `tasks/timeline_real_preview.html`, not run through a formal RED/GREEN task since it's a display-only addition, no new core logic)*
+  **What changed:** Cards now show the venue (from the bib entry's `booktitle`/`journal`/`school` field) between the title and topic pills, styled as a single italic line. Real venue text was extracted from all 28 `papers.bib` entries for the real-data preview; the fake mock got matching fictional venue names.
+  **Real risk caught before it shipped:** some real venue names are very long (e.g. the full SIGIR 2026 proceedings title). Left unconstrained, these would wrap across multiple lines, silently invalidating the packing algorithm's fixed-`CARD_HEIGHT` assumption and causing cards to visually overlap even though `packCards` reports zero collisions (the algorithm only knows about the height you tell it, not the DOM's actual rendered height). Fixed two ways: (1) constrained `.card-venue` to one line with CSS ellipsis truncation + a `title` attribute for the full text on hover, keeping actual rendered height back in sync with the fixed constant; (2) bumped `CARD_HEIGHT` from 92 to 112px in both files to reserve room for the added line, then re-verified zero packing collisions in both the 10-paper fake set and the 28-paper real set.
+  **Verification:** `node test/unit_timeline_mock_logic.js` and `node test/style_contract.js` both still pass; `bundle exec jekyll build` succeeds; re-ran the packing sanity check against both datasets with the new `CARD_HEIGHT` — 0 overlaps in both.
+  **Files touched:** `tasks/timeline_mock.html`, `tasks/timeline_real_preview.html`
+
 ### Checkpoint: Mock approved
 - [x] Review the mock live in-browser with Marta — done; surfaced two real issues (job labels overlapping the bar, a visual gap caused by an unrealistic fake-data gap), both fixed and re-reviewed
 - [x] Visual direction (colors, card style, leader lines, overlap striping) signed off — "looks good!"

@@ -146,6 +146,16 @@
       .card .first-author-star {
         color: #b45309;
       }
+      .card .card-venue {
+        font-style: italic;
+        font-size: 0.7rem;
+        color: #555;
+        line-height: 1.3;
+        margin-bottom: 0.3rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
       .card .card-topics {
         display: flex;
         flex-wrap: wrap;
@@ -218,7 +228,7 @@
     <script>
       (function () {
         const TRACK_HEIGHT = 5600;
-        const CARD_HEIGHT = 92;
+        const CARD_HEIGHT = 112; // bumped from 92 to account for the added single-line venue text
         const CARD_MIN_GAP = 14;
         const TOP_PADDING = 20;
 
@@ -245,34 +255,34 @@
         // where the bib entry has one (approx: false); otherwise defaulted
         // to June and flagged (approx: true) — see the warning note above.
         const papers = [
-          { id: "Li2026DiffusionFairness", title: "Adaptive Autoguidance for Item-Side Fairness in Diffusion Recommender Systems", date: t("2026-07-01"), approx: false, topics: ["recommender-systems"], firstAuthor: false },
-          { id: "Moscati2026FAME_linking", title: "Linking Faces and Voices Across Languages: Insights from the FAME 2026 Challenge", date: t("2026-05-01"), approx: false, topics: ["multimodal-learning"], firstAuthor: true },
-          { id: "Essl2026SBBEVFusion", title: "SB-BEVFusion: Enhancing the Robustness against Sensor Malfunction and Corruptions", date: t("2026-09-01"), approx: false, topics: ["multimodal-learning"], firstAuthor: false },
-          { id: "Moscati2026NetworkedTastes", title: "Networked Tastes: Homophily for Music Recommendation", date: t("2026-06-01"), approx: false, topics: ["recommender-systems", "music-information-retrieval"], firstAuthor: true },
-          { id: "Geiger2025Music4AllAA", title: "Music4All A+A: A Multimodal Dataset for Music Information Retrieval Tasks", date: t("2025-10-01"), approx: false, topics: ["music-information-retrieval", "multimodal-learning"], firstAuthor: false },
-          { id: "Ganhor2025SiBraR_TORS", title: "Single-Branch Network Architectures to Close the Modality Gap in Multimodal Recommendation", date: t("2025-07-01"), approx: false, topics: ["recommender-systems", "multimodal-learning"], firstAuthor: false },
-          { id: "Moscati2025SiBraR_workshop", title: "Single-Branch Architectures for Recommendation", date: t("2025-09-01"), approx: false, topics: ["recommender-systems", "multimodal-learning"], firstAuthor: true },
-          { id: "Schedl2024PIAS_workshop", title: "Psychology-informed Information Access Systems Workshop", date: t("2024-03-01"), approx: false, topics: ["recommender-systems"], firstAuthor: false },
-          { id: "Moscati2025CoBraR", title: "Parameter-Efficient Single Collaborative Branch for Recommendation", date: t("2025-09-01"), approx: false, topics: ["recommender-systems"], firstAuthor: true },
-          { id: "moscati2025multimodal_music_retrieval", title: "Audio, Lyrics, Videoclips, Interactions? Uni- and Multi-Modal Music Retrieval", date: t("2025-09-01"), approx: false, topics: ["music-information-retrieval", "multimodal-learning"], firstAuthor: true },
-          { id: "Moscati2025UMAP_discoveryPattern", title: "Familiarizing with Music: Discovery Patterns for Different Music Discovery Needs", date: t("2025-06-01"), approx: false, topics: ["recommender-systems", "music-information-retrieval"], firstAuthor: true },
-          { id: "Peintner2025emotional_rec", title: "Nuanced Music Emotion Recognition via a Semi-Supervised Multi-Relational GNN", date: t("2025-04-01"), approx: false, topics: ["music-information-retrieval"], firstAuthor: false },
-          { id: "ganhoer_moscati2024sibrar", title: "A Multimodal Single-Branch Embedding Network for Recommendation in Cold-Start and Missing Modality Scenarios", date: t("2024-10-01"), approx: false, topics: ["recommender-systems", "multimodal-learning"], firstAuthor: true },
-          { id: "Moscati2024multimodal_rec", title: "Multimodal Representation Learning for High-Quality Recommendations in Cold-Start and Beyond-Accuracy", date: t("2024-10-01"), approx: false, topics: ["recommender-systems", "multimodal-learning"], firstAuthor: true },
-          { id: "Escobedo2024SBO", title: "Making Alice Appear Like Bob: A Probabilistic Preference Obfuscation Method", date: t("2024-09-01"), approx: false, topics: ["recommender-systems"], firstAuthor: false },
-          { id: "nawaz2024fame", title: "A Synopsis of FAME 2024 Challenge: Associating Faces with Voices in Multilingual Environments", date: t("2024-10-01"), approx: false, topics: ["multimodal-learning"], firstAuthor: true },
-          { id: "Moscati2024emomrs", title: "Emotion-Based Music Recommendation from Quality Annotations and Large-Scale User-Generated Tags", date: t("2024-06-01"), approx: false, topics: ["recommender-systems", "music-information-retrieval"], firstAuthor: true },
-          { id: "Moscati2023actr_cf_music", title: "Integrating the ACT-R Framework with Collaborative Filtering for Explainable Sequential Music Recommendation", date: t("2023-09-01"), approx: false, topics: ["recommender-systems", "music-information-retrieval"], firstAuthor: true },
-          { id: "Moscati2023MultiObjectiveHyperOpt", title: "Multiobjective Hyperparameter Optimization of Recommender Systems", date: t("2023-09-01"), approx: false, topics: ["recommender-systems"], firstAuthor: true },
-          { id: "onion", title: "Music4All-Onion — A Large-Scale Multi-Faceted Content-Centric Music Recommendation Dataset", date: t("2022-10-01"), approx: false, topics: ["music-information-retrieval", "recommender-systems"], firstAuthor: true },
-          { id: "peintner:cars:2022", title: "Unsupervised Graph Embeddings for Session-based Recommendation with Item Features", date: t("2022-09-01"), approx: false, topics: ["recommender-systems"], firstAuthor: false },
-          { id: "Moscati:2019esr", title: "PhD Thesis: Lepton Flavour Non-Universality — From Effective Field Theory to Extended Gauge Models", date: t("2019-10-01"), approx: false, topics: ["particle-physics"], firstAuthor: true },
-          { id: "Moscati:2019unl", title: "New Physics in b→cτν: Impact of Polarisation Observables", date: t("2019-05-01"), approx: false, topics: ["particle-physics"], firstAuthor: true },
-          { id: "Blanke:2019aao", title: "Interplay of R_D(*) and Zll in the Scalar Leptoquark Scenario", date: t("2019-06-01"), approx: true, topics: ["particle-physics"], firstAuthor: true },
-          { id: "Blanke:2019qrx", title: "Addendum: Impact of Polarization Observables on New Physics Explanations", date: t("2019-08-01"), approx: false, topics: ["particle-physics"], firstAuthor: true },
-          { id: "Moscati2026ICASSP_MSM", title: "Face-Voice Association with Inductive Bias for Maximum Class Separation", date: t("2026-05-01"), approx: false, topics: ["multimodal-learning"], firstAuthor: true },
-          { id: "Blanke:2018yud", title: "Impact of Polarization Observables on New Physics Explanations of the Anomaly", date: t("2019-01-01"), approx: false, topics: ["particle-physics"], firstAuthor: true },
-          { id: "Descotes-Genon:2017ptp", title: "Nonminimal 331 Model for Lepton Flavor Universality Violation", date: t("2018-12-01"), approx: false, topics: ["particle-physics"], firstAuthor: true },
+          { id: "Li2026DiffusionFairness", title: "Adaptive Autoguidance for Item-Side Fairness in Diffusion Recommender Systems", venue: "Proceedings of the 49th International ACM SIGIR Conference on Research and Development in Information Retrieval", date: t("2026-07-01"), approx: false, topics: ["recommender-systems"], firstAuthor: false },
+          { id: "Moscati2026FAME_linking", title: "Linking Faces and Voices Across Languages: Insights from the FAME 2026 Challenge", venue: "Proceedings of the IEEE International Conference on Acoustics, Speech, and Signal Processing (ICASSP)", date: t("2026-05-01"), approx: false, topics: ["multimodal-learning"], firstAuthor: true },
+          { id: "Essl2026SBBEVFusion", title: "SB-BEVFusion: Enhancing the Robustness against Sensor Malfunction and Corruptions", venue: "Proceedings of the IEEE International Conference on Image Processing (ICIP)", date: t("2026-09-01"), approx: false, topics: ["multimodal-learning"], firstAuthor: false },
+          { id: "Moscati2026NetworkedTastes", title: "Networked Tastes: Homophily for Music Recommendation", venue: "Workshops Proceedings of the 34th ACM Conference on User Modeling, Adaptation and Personalization (UMAP)", date: t("2026-06-01"), approx: false, topics: ["recommender-systems", "music-information-retrieval"], firstAuthor: true },
+          { id: "Geiger2025Music4AllAA", title: "Music4All A+A: A Multimodal Dataset for Music Information Retrieval Tasks", venue: "Proceedings of the 22nd IEEE International Conference on Content-based Multimedia Indexing (CBMI)", date: t("2025-10-01"), approx: false, topics: ["music-information-retrieval", "multimodal-learning"], firstAuthor: false },
+          { id: "Ganhor2025SiBraR_TORS", title: "Single-Branch Network Architectures to Close the Modality Gap in Multimodal Recommendation", venue: "ACM Transactions on Recommender Systems", date: t("2025-07-01"), approx: false, topics: ["recommender-systems", "multimodal-learning"], firstAuthor: false },
+          { id: "Moscati2025SiBraR_workshop", title: "Single-Branch Architectures for Recommendation", venue: "DaQuaMRec Workshop on Data Quality-Aware Multimodal Recommendation co-located with RecSys", date: t("2025-09-01"), approx: false, topics: ["recommender-systems", "multimodal-learning"], firstAuthor: true },
+          { id: "Schedl2024PIAS_workshop", title: "Psychology-informed Information Access Systems Workshop", venue: "Proceedings of the 17th ACM International Conference on Web Search and Data Mining (WSDM)", date: t("2024-03-01"), approx: false, topics: ["recommender-systems"], firstAuthor: false },
+          { id: "Moscati2025CoBraR", title: "Parameter-Efficient Single Collaborative Branch for Recommendation", venue: "Proceedings of the 19th ACM Conference on Recommender Systems", date: t("2025-09-01"), approx: false, topics: ["recommender-systems"], firstAuthor: true },
+          { id: "moscati2025multimodal_music_retrieval", title: "Audio, Lyrics, Videoclips, Interactions? Uni- and Multi-Modal Music Retrieval", venue: "Proc. of the Workshop on Music Recommender Systems (MuRS) co-located with RecSys", date: t("2025-09-01"), approx: false, topics: ["music-information-retrieval", "multimodal-learning"], firstAuthor: true },
+          { id: "Moscati2025UMAP_discoveryPattern", title: "Familiarizing with Music: Discovery Patterns for Different Music Discovery Needs", venue: "Proceedings of the 33rd ACM Conference on User Modeling, Adaptation and Personalization", date: t("2025-06-01"), approx: false, topics: ["recommender-systems", "music-information-retrieval"], firstAuthor: true },
+          { id: "Peintner2025emotional_rec", title: "Nuanced Music Emotion Recognition via a Semi-Supervised Multi-Relational GNN", venue: "Transactions of the International Society for Music Information Retrieval", date: t("2025-04-01"), approx: false, topics: ["music-information-retrieval"], firstAuthor: false },
+          { id: "ganhoer_moscati2024sibrar", title: "A Multimodal Single-Branch Embedding Network for Recommendation in Cold-Start and Missing Modality Scenarios", venue: "Proceedings of the 18th ACM Conference on Recommender Systems (RecSys)", date: t("2024-10-01"), approx: false, topics: ["recommender-systems", "multimodal-learning"], firstAuthor: true },
+          { id: "Moscati2024multimodal_rec", title: "Multimodal Representation Learning for High-Quality Recommendations in Cold-Start and Beyond-Accuracy", venue: "Proceedings of the 18th ACM Conference on Recommender Systems (RecSys)", date: t("2024-10-01"), approx: false, topics: ["recommender-systems", "multimodal-learning"], firstAuthor: true },
+          { id: "Escobedo2024SBO", title: "Making Alice Appear Like Bob: A Probabilistic Preference Obfuscation Method", venue: "Proceedings of ECML PKDD 2024", date: t("2024-09-01"), approx: false, topics: ["recommender-systems"], firstAuthor: false },
+          { id: "nawaz2024fame", title: "A Synopsis of FAME 2024 Challenge: Associating Faces with Voices in Multilingual Environments", venue: "Companion of the 32nd ACM International Conference on Multimedia (MM)", date: t("2024-10-01"), approx: false, topics: ["multimodal-learning"], firstAuthor: true },
+          { id: "Moscati2024emomrs", title: "Emotion-Based Music Recommendation from Quality Annotations and Large-Scale User-Generated Tags", venue: "Proceedings of the 32nd ACM Conference on User Modeling, Adaptation and Personalization (UMAP)", date: t("2024-06-01"), approx: false, topics: ["recommender-systems", "music-information-retrieval"], firstAuthor: true },
+          { id: "Moscati2023actr_cf_music", title: "Integrating the ACT-R Framework with Collaborative Filtering for Explainable Sequential Music Recommendation", venue: "Proc. of ACM RecSys", date: t("2023-09-01"), approx: false, topics: ["recommender-systems", "music-information-retrieval"], firstAuthor: true },
+          { id: "Moscati2023MultiObjectiveHyperOpt", title: "Multiobjective Hyperparameter Optimization of Recommender Systems", venue: "Proc. of Perspectives — ACM RecSys", date: t("2023-09-01"), approx: false, topics: ["recommender-systems"], firstAuthor: true },
+          { id: "onion", title: "Music4All-Onion — A Large-Scale Multi-Faceted Content-Centric Music Recommendation Dataset", venue: "Proc. of CIKM", date: t("2022-10-01"), approx: false, topics: ["music-information-retrieval", "recommender-systems"], firstAuthor: true },
+          { id: "peintner:cars:2022", title: "Unsupervised Graph Embeddings for Session-based Recommendation with Item Features", venue: "Proc. of CARS — ACM RecSys", date: t("2022-09-01"), approx: false, topics: ["recommender-systems"], firstAuthor: false },
+          { id: "Moscati:2019esr", title: "PhD Thesis: Lepton Flavour Non-Universality — From Effective Field Theory to Extended Gauge Models", venue: "PhD Thesis, KIT Karlsruhe", date: t("2019-10-01"), approx: false, topics: ["particle-physics"], firstAuthor: true },
+          { id: "Moscati:2019unl", title: "New Physics in b→cτν: Impact of Polarisation Observables", venue: "Proc. of FPCP", date: t("2019-05-01"), approx: false, topics: ["particle-physics"], firstAuthor: true },
+          { id: "Blanke:2019aao", title: "Interplay of R_D(*) and Zll in the Scalar Leptoquark Scenario", venue: "Springer Proc. Phys.", date: t("2019-06-01"), approx: true, topics: ["particle-physics"], firstAuthor: true },
+          { id: "Blanke:2019qrx", title: "Addendum: Impact of Polarization Observables on New Physics Explanations", venue: "Phys. Rev. D", date: t("2019-08-01"), approx: false, topics: ["particle-physics"], firstAuthor: true },
+          { id: "Moscati2026ICASSP_MSM", title: "Face-Voice Association with Inductive Bias for Maximum Class Separation", venue: "Proceedings of the IEEE International Conference on Acoustics, Speech, and Signal Processing (ICASSP)", date: t("2026-05-01"), approx: false, topics: ["multimodal-learning"], firstAuthor: true },
+          { id: "Blanke:2018yud", title: "Impact of Polarization Observables on New Physics Explanations of the Anomaly", venue: "Phys. Rev. D", date: t("2019-01-01"), approx: false, topics: ["particle-physics"], firstAuthor: true },
+          { id: "Descotes-Genon:2017ptp", title: "Nonminimal 331 Model for Lepton Flavor Universality Violation", venue: "Phys. Rev. D", date: t("2018-12-01"), approx: false, topics: ["particle-physics"], firstAuthor: true },
         ];
 
         const minTime = Math.min(...jobs.map((j) => j.start));
@@ -404,6 +414,12 @@
             }
             titleEl.appendChild(document.createTextNode(paper.title));
             card.appendChild(titleEl);
+
+            const venueEl = document.createElement("div");
+            venueEl.className = "card-venue";
+            venueEl.textContent = paper.venue;
+            venueEl.title = paper.venue;
+            card.appendChild(venueEl);
 
             const topicsEl = document.createElement("div");
             topicsEl.className = "card-topics";
