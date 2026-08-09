@@ -270,16 +270,20 @@ Goal: validate the visual design and core interactions cheaply, get sign-off bef
   **Verification:** built a temporary spike test page (`_pages/spike_timeline_json.md`, `{% bibliography -f papers -q @* -T timeline_pub_entry %}`, not committed — built, checked, then deleted, matching the established spike-test pattern from Task 2.2's investigation) and, in Node, extracted every `<li>` inside `<ol class="bibliography">` from the built HTML and ran `JSON.parse` on each: 28/28 parsed, 28 unique keys, zero type errors across all 9 fields (topics is a real array; `first_author`/`month_approximate` are real booleans, confirmed via `typeof`, not string comparison). `node test/unit_timeline_mock_logic.js`, `node test/style_contract.js`, and `bundle exec jekyll build --baseurl /al-folio` all pass on `timeline-planning` post-merge; `tasks/timeline_real_preview.html`'s embedded `<script>` re-checked with `node --check` to confirm the merge didn't disturb it.
   **Files touched:** `_layouts/timeline_pub_entry.html` (new, on `timeline-planning`); `_bibliography/papers.bib` (stray-field fix, on `master`, then merged into `timeline-planning`)
 
-- [ ] **Task 3.2: Timeline page skeleton with real data islands**
+- [x] **Task 3.2: Timeline page skeleton with real data islands**
   **Description:** Create `_pages/timeline.md` (`nav_order: 5`, the first open slot). Embed the Task 3.1 bibliography call as a hidden data island, plus a second hidden data island looping `site.data.cv.cv.sections.experience` (existing job data — no schema change needed) through `| jsonify`. Load `assets/js/timeline.js` and `assets/css/timeline.css`.
   **Acceptance criteria:**
-  - [ ] Page builds and is reachable at `/timeline/`
-  - [ ] Both data islands are present in the rendered HTML and parse correctly in-browser
+  - [x] Page builds and is reachable at `/timeline/`
+  - [x] Both data islands are present in the rendered HTML and parse correctly in-browser
   **Verification:**
-  - [ ] `bundle exec jekyll build`; manual check in browser devtools console
+  - [x] `bundle exec jekyll build`; manual check in browser devtools console
   **Dependencies:** Task 3.1
   **Files likely touched:** `_pages/timeline.md` (new)
   **Estimated scope:** S
+  **What actually happened:** `nav: false` deliberately, even though `nav_order: 5` is set — Task 4.1 ("Nav + page chrome") is explicitly responsible for flipping this to `true` once the widget is actually functional; a half-built page (data islands present, no rendering JS/CSS yet) has no business showing up in the live nav. `nav_order: 5` confirmed as the correct next slot (existing pages use 2/3/4; `about.md` has none, implicitly first).
+  **Two real data islands, two different shapes — a design decision, not an oversight:** jekyll-scholar's `{% bibliography %}` tag always wraps its output in `<ol class="bibliography"><li>...</li>...</ol>` (grouped by year, with an `<h2>` per year group), even with a custom `-T` template — confirmed again here, matching Task 3.1's spike test finding. There is no jekyll-scholar option to get a bare JSON array out directly, so the papers island is a hidden container of individually-JSON `<li>` elements (parse: `Array.from(el.querySelectorAll("li")).map(li => JSON.parse(li.textContent))`), while the jobs island — no plugin involved, just `{{ ... | jsonify }}` on a plain Liquid array — is a single clean JSON array in a `<script type="application/json">` tag (parse: `JSON.parse(el.textContent)`). Task 3.3's widget JS needs both parsing strategies, not one.
+  **Verification:** built the real page (not a spike this time — it's a real Task 3.2 deliverable) and, in Node, parsed both islands directly from the built HTML: papers island → 28 entries, 28 unique keys; jobs island → 5 entries, and by inspection every one already carries the corrected dates from the CV fixes earlier this session (Albatross 2025-11, JKU 2021-10, ESK Karlsruhe 2020-09→2021-10, KIT →2020-09) — end-to-end confirmation that the real data pipeline (not the hand-copied preview) reflects the current, correct `_data/cv.yml`. `node test/unit_timeline_mock_logic.js` and `node test/style_contract.js` pass; `bundle exec jekyll build --baseurl /al-folio` succeeds; confirmed `_pages/timeline.md` (the real page) renders while the unrelated root `timeline.md` (the spec) stays excluded from `_site/`; confirmed `/timeline/` does not yet appear as a nav link (matches `nav: false`).
+  **Files touched:** `_pages/timeline.md` (new)
 
 - [ ] **Task 3.3: Point the Phase-1 widget at real data**
   **Description:** Move/adapt the JS and CSS built in Tasks 1.1-1.3 into `assets/js/timeline.js` / `assets/css/timeline.css`, swapping the hardcoded fake-data array for parsing the two real data islands from Task 3.2. Interaction logic (packing, filters) should need minimal changes if the fake-data shape in Phase 1 matched the real shape from Task 3.1 — confirm it does, adjust if not.
