@@ -1,0 +1,32 @@
+# Topic -> color mapping for the career timeline page (tasks/plan.md, Task 2.3).
+#
+# Colors are the validated categorical palette from the `dataviz` skill
+# (references/palette.md), chosen and order-fixed via
+# scripts/validate_palette.js rather than picked by eye. Both light and dark
+# values are provided since this site has dark mode (enable_darkmode: true).
+#
+# 4 categories can't all clear the strict "all-pairs" CVD/contrast floors at
+# once with this 8-hue palette in both modes (the palette doc calls this out
+# explicitly for a default 4th slot). Resolved using real data: the three
+# ML-era topics below (multimodal-learning, recommender-systems,
+# music-information-retrieval) actually co-occur in time and could appear as
+# adjacent cards on the timeline, so they get the trio that validates
+# cleanly together in both modes (orange, aqua, violet). particle-physics is
+# temporally isolated -- every paper is from 2017-2019, years before any ML
+# paper -- so it never actually appears adjacent to the other three in
+# practice, and gets blue, whose only weak pairing (blue vs. violet, dark
+# mode only) is a risk that never materializes on this timeline. This is
+# safe specifically because every use of these colors is paired with a
+# visible text label (legend text, card topic pills) -- never color alone.
+particle-physics:
+  light: "#2a78d6"
+  dark: "#3987e5"
+multimodal-learning:
+  light: "#1baf7a"
+  dark: "#199e70"
+recommender-systems:
+  light: "#eb6834"
+  dark: "#d95926"
+music-information-retrieval:
+  light: "#4a3aa7"
+  dark: "#9085e9"

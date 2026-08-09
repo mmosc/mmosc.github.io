@@ -236,6 +236,8 @@ exclude:
   - al-folio-upgrade-report.md
   - bin/
   - CLAUDE.md
+  - tasks/
+  - timeline.md
   - Dockerfile
   - docker-compose.yml
   - docker-compose-slim.yml
@@ -406,10 +408,12 @@ filtered_bibtex_keywords:
     code,
     dimensions,
     eprint,
+    first_author,
     google_scholar_id,
     hal,
     html,
     inspirehep_id,
+    month_approximate,
     pdf,
     pmid,
     poster,
@@ -417,6 +421,8 @@ filtered_bibtex_keywords:
     selected,
     slides,
     supp,
+    topic,
+    venue_short,
     video,
     website,
   ]
