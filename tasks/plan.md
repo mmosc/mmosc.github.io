@@ -114,6 +114,11 @@ Goal: validate the visual design and core interactions cheaply, get sign-off bef
   **Verification:** `node --check` on the extracted `<script>` block; `node test/unit_timeline_mock_logic.js` and `node test/style_contract.js` pass (no logic changed, just the default); `bundle exec jekyll build` succeeds. Opened the preview in the local browser for Marta to confirm it now loads compact by default.
   **Files touched:** `tasks/timeline_real_preview.html`
 
+- [x] **Addendum: default time-window starts October 2021** *(requested: "set the default time-window to begin on October 2021")*
+  **What changed:** Added a `DEFAULT_RANGE_START` constant (`2021-10-01`, matching the corrected JKU start date from the ESK addendum above) and pointed both the initial `rangeStart.value` and the Reset button at it, in place of the dataset's actual `minTime`. The end of the range is untouched (`maxTime`, i.e. no change there). Applied to both initial load and Reset consistently, so "Reset" restores the same default rather than reverting to the full unfiltered history — treating "default" as one single state rather than two different ones. Effect: the 6 pre-JKU physics papers (2018–2021) are hidden by default; the date-range control still lets a visitor manually widen it back to see the full physics era. Job-bar segments (KIT/ESK/JKU/Deezer/Albatross) are unaffected — the date-range filter only ever applied to paper cards, not the job bar.
+  **Verification:** re-derived the filter in Node against the real 28-paper dataset — 22 of 28 visible by default, and the 6 hidden ones are exactly the pre-October-2021 physics papers. `node test/unit_timeline_mock_logic.js` and `node test/style_contract.js` pass (no logic changed, just a default value); `bundle exec jekyll build` succeeds; embedded `<script>` re-checked with `node --check`. Opened the preview in the local browser for Marta to confirm.
+  **Files touched:** `tasks/timeline_real_preview.html`
+
 ### Checkpoint: Mock approved
 - [x] Review the mock live in-browser with Marta — done; surfaced two real issues (job labels overlapping the bar, a visual gap caused by an unrealistic fake-data gap), both fixed and re-reviewed
 - [x] Visual direction (colors, card style, leader lines, overlap striping) signed off — "looks good!"

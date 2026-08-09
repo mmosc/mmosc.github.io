@@ -334,6 +334,7 @@
 
         const minTime = Math.min(...jobs.map((j) => j.start));
         const maxTime = Math.max(...jobs.map((j) => j.end), ...papers.map((p) => p.date));
+        const DEFAULT_RANGE_START = t("2021-10-01");
 
         // Time-to-pixel mapping always uses this fixed scale, so the bar stays
         // strictly linear/proportional to elapsed time (dateToPosition(maxTime)
@@ -388,7 +389,7 @@
         const scaleModeInputs = document.querySelectorAll('input[name="scale-mode"]');
 
         const monthInput = (time) => new Date(time).toISOString().slice(0, 7);
-        rangeStart.value = monthInput(minTime);
+        rangeStart.value = monthInput(DEFAULT_RANGE_START);
         rangeEnd.value = monthInput(maxTime);
 
         const topicLabel = (topicId) => topicId.split("-").map((word) => word[0].toUpperCase() + word.slice(1)).join(" ");
@@ -590,7 +591,7 @@
           });
         });
         rangeReset.addEventListener("click", () => {
-          rangeStart.value = monthInput(minTime);
+          rangeStart.value = monthInput(DEFAULT_RANGE_START);
           rangeEnd.value = monthInput(maxTime);
           topicFieldset.querySelectorAll("input[type=checkbox]").forEach((i) => (i.checked = true));
           firstAuthorOnly.checked = false;
