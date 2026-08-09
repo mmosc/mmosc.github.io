@@ -66,3 +66,8 @@ This repo is a thin Jekyll starter (see `AGENTS.md`) — new `_layouts/`, `_incl
  - ~~Roughly how many distinct topic tags do we expect?~~ Resolved: 4 (see Before Starting).
  - ~~All 28 papers need a `month` for month-granularity filtering — where does it come from?~~ Resolved: 27 of 28 have a real, sourced month (4 from Crossref DOI lookups, 16 from conference dates, 3 already had one, 4 supplied directly by Marta for the physics-era entries with no conference to anchor to). Only `Blanke:2019aao` remains on the `month_approximate = {true}` fallback.
  - Awards/scholarships layer: do I have this data anywhere yet? (Not currently in `_data/cv.yml` — would need to be added first if this optional layer is in scope.) Still open.
+
+ # Follow-ups
+  - select only PhD-related papers (I will provide a list)
+  - create a horizontal-view mode
+  - update automatically when new papers are added to the .bib (I will add some recently accepted papers soon)
