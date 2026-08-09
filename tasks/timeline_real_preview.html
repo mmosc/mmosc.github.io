@@ -287,7 +287,7 @@
           { id: "esk", label: "ESK Karlsruhe — Maths and Physics High-School Teacher", color: "#15AABF", start: t("2020-09-01"), end: t("2021-10-01") },
           { id: "jku", label: "Johannes Kepler University Linz — PhD Researcher", color: "#4C6EF5", start: t("2021-10-01"), end: now },
           { id: "deezer", label: "Deezer Research Team — Research Intern", color: "#F76707", start: t("2024-06-01"), end: t("2024-12-01") },
-          { id: "albatross", label: "Albatross AI — Applied Scientist (L5)", color: "#2F9E44", start: t("2025-01-01"), end: now },
+          { id: "albatross", label: "Albatross AI — Applied Scientist (L5)", color: "#2F9E44", start: t("2025-11-01"), end: now },
         ];
 
         // Real topic colors, from _data/timeline_colors.yml (light-mode values)
@@ -357,22 +357,20 @@
         const PITCH = CARD_HEIGHT + CARD_MIN_GAP;
         const compactAxis = TimelineMockLogic.computeCompactPositions(papers.map((p) => p.date), PITCH);
         const compactPos = (time) => TOP_PADDING + TimelineMockLogic.interpolateOnAxis(time, compactAxis);
-        const compactAxisSpan = compactAxis.length ? compactAxis[compactAxis.length - 1].position : 0;
         const compactPacked = TimelineMockLogic.packCards(
           papers.map((p) => ({ id: p.id, idealPosition: compactPos(p.date) })),
           CARD_HEIGHT,
           CARD_MIN_GAP,
         );
         const compactPackedById = Object.fromEntries(compactPacked.map((p) => [p.id, p]));
-        const compactTrackHeight =
-          TimelineMockLogic.computeRequiredTrackHeight(
-            papers.map((p) => ({ id: p.id, idealPosition: compactPos(p.date) })),
-            CARD_HEIGHT,
-            CARD_MIN_GAP,
-            TOP_PADDING + compactAxisSpan,
-          ) - TOP_PADDING;
 
         let compactMode = true;
+        // Recomputed once per render (see render()): how far the current
+        // render's visible content (clipped bar segments + visible cards) sits
+        // below the natural TOP_PADDING origin. Subtracted from every element's
+        // top so the page crops to just where content actually is -- no empty
+        // space above the first visible thing or below the last.
+        let cropOffset = 0;
 
         // --- DOM refs --------------------------------------------------------
         const container = document.getElementById("timeline-container");
@@ -429,9 +427,14 @@
 
         hoverZone.addEventListener("mousemove", (e) => {
           const y = e.clientY - hoverZone.getBoundingClientRect().top;
+          // hoverZone's own top never moves (it always starts at TOP_PADDING,
+          // matching the first visible content post-crop), so y is expressed
+          // in the cropped frame; add cropOffset back to recover the real
+          // axis position before converting to a date.
+          const realPosition = y + cropOffset;
           const date = compactMode
-            ? TimelineMockLogic.interpolateAxisInverse(y, compactAxis)
-            : TimelineMockLogic.positionToDate(y, minTime, maxTime, BASELINE_TRACK_HEIGHT);
+            ? TimelineMockLogic.interpolateAxisInverse(realPosition, compactAxis)
+            : TimelineMockLogic.positionToDate(realPosition, minTime, maxTime, BASELINE_TRACK_HEIGHT);
           hoverIndicator.style.top = hoverTooltip.style.top = TOP_PADDING + y + "px";
           hoverIndicator.style.display = hoverTooltip.style.display = "block";
           hoverTooltip.textContent = formatDate(date);
@@ -440,20 +443,13 @@
           hoverIndicator.style.display = hoverTooltip.style.display = "none";
         });
 
-        function renderTrack(posFn, startMs, endMs) {
+        function renderTrack(segments, posFn) {
           track.innerHTML = "";
-          const allSegments = TimelineMockLogic.computeJobSegments(
-            jobs.map((j) => ({ id: j.id, color: j.color, startTime: j.start, endTime: j.end })),
-          );
-          // The bar only shows color within the active date-range filter — a
-          // job period entirely outside the window disappears; one straddling
-          // a boundary is truncated to it, same as the papers themselves.
-          const segments = TimelineMockLogic.clipSegmentsToRange(allSegments, startMs, endMs);
           segments.forEach((seg) => {
             const el = document.createElement("div");
             el.className = "track-segment";
-            const top = posFn(seg.start);
-            const height = Math.max(posFn(seg.end) - top, 1);
+            const top = posFn(seg.start) - cropOffset;
+            const height = Math.max(posFn(seg.end) - posFn(seg.start), 1);
             el.style.top = top + "px";
             el.style.height = height + "px";
             if (seg.colors.length === 1) {
@@ -478,10 +474,10 @@
         function renderCards(visible, packedById, posFn) {
           container.querySelectorAll(".card").forEach((n) => n.remove());
 
-          // Container = top padding + the bar (effectiveTrackHeight, already
-          // sized by computeEffectiveTrackHeight to fit every packed card) +
-          // a matching bottom padding, so the bar always exactly fills the
-          // content area with zero dead zone below the last card.
+          // Container = top padding + the bar (effectiveTrackHeight, now the
+          // cropped span of whatever content is actually visible this render)
+          // + a matching bottom padding — the page shows only where the bar
+          // and cards are, nothing above the first or below the last.
           container.style.height = TOP_PADDING * 2 + effectiveTrackHeight + "px";
           svg.innerHTML = "";
           svg.setAttribute("width", "100%");
@@ -491,7 +487,7 @@
             const placement = packedById[paper.id];
             const card = document.createElement("div");
             card.className = "card " + placement.side;
-            card.style.top = placement.top + "px";
+            card.style.top = placement.top - cropOffset + "px";
             card.style.setProperty("--card-color", TOPIC_COLORS[paper.topics[0]]);
 
             const dateEl = document.createElement("div");
@@ -533,8 +529,8 @@
 
             const cardRect = card.getBoundingClientRect();
             const containerRect = container.getBoundingClientRect();
-            const cardMidY = placement.top + CARD_HEIGHT / 2;
-            const barY = posFn(paper.date);
+            const cardMidY = placement.top - cropOffset + CARD_HEIGHT / 2;
+            const barY = posFn(paper.date) - cropOffset;
             const barX = containerRect.width / 2;
             const cardEdgeX = placement.side === "left" ? cardRect.right - containerRect.left : cardRect.left - containerRect.left;
 
@@ -554,35 +550,48 @@
           let packedById;
           let posFn;
           if (compactMode) {
-            // Compact mode: bar length and every paper's position come from
-            // the pre-packed ALL-28-papers layout computed once above — never
-            // recomputed from the filtered `visible` set, so they don't shift
-            // when a filter is applied (per Marta's spec).
-            effectiveTrackHeight = compactTrackHeight;
+            // Compact mode: every paper's position comes from the pre-packed
+            // ALL-28-papers layout computed once above — never recomputed from
+            // the filtered `visible` set, so a card that stays visible across
+            // a filter change never jumps to a different rank (per Marta's
+            // spec). Only the crop below trims empty space around it.
             packedById = compactPackedById;
             posFn = compactPos;
           } else {
-            // Proportional mode: ask (at the fixed time scale) how much room
-            // the *currently visible* packed cards need, so there's never a
-            // dead zone below the last card, without ever touching pos()'s
-            // time-proportional mapping.
+            // Proportional mode: pack at the fixed time scale, from whichever
+            // papers are currently visible (unchanged from before).
             const idealPositions = visible.map((p) => ({ id: p.id, idealPosition: pos(p.date) }));
-            const requiredContentBottom = TimelineMockLogic.computeRequiredTrackHeight(
-              idealPositions,
-              CARD_HEIGHT,
-              CARD_MIN_GAP,
-              TOP_PADDING + BASELINE_TRACK_HEIGHT,
-            );
-            effectiveTrackHeight = requiredContentBottom - TOP_PADDING;
             const packed = TimelineMockLogic.packCards(idealPositions, CARD_HEIGHT, CARD_MIN_GAP);
             packedById = Object.fromEntries(packed.map((p) => [p.id, p]));
             posFn = pos;
           }
 
+          const allSegments = TimelineMockLogic.computeJobSegments(
+            jobs.map((j) => ({ id: j.id, color: j.color, startTime: j.start, endTime: j.end })),
+          );
+          // The bar only shows color within the active date-range filter — a
+          // job period entirely outside the window disappears; one straddling
+          // a boundary is truncated to it, same as the papers themselves.
+          const segments = TimelineMockLogic.clipSegmentsToRange(allSegments, filters.startMs, filters.endMs);
+
+          // Crop the page to just where content actually is: the true extent
+          // of the clipped bar segments plus the currently visible cards, with
+          // no leftover empty space above the first or below the last.
+          const pairs = segments.map((seg) => [posFn(seg.start), posFn(seg.end)]);
+          visible.forEach((p) => {
+            const top = packedById[p.id].top;
+            pairs.push([top, top + CARD_HEIGHT]);
+          });
+          const bounds = TimelineMockLogic.computeContentBounds(pairs);
+          const contentTop = bounds ? bounds.top : TOP_PADDING;
+          const contentBottom = bounds ? bounds.bottom : TOP_PADDING;
+          cropOffset = contentTop - TOP_PADDING;
+          effectiveTrackHeight = Math.max(contentBottom - contentTop, 0);
+
           track.style.height = effectiveTrackHeight + "px";
           hoverZone.style.height = effectiveTrackHeight + "px";
 
-          renderTrack(posFn, filters.startMs, filters.endMs);
+          renderTrack(segments, posFn);
           renderCards(visible, packedById, posFn);
         }
 

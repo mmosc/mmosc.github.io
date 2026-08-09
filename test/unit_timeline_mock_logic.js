@@ -10,6 +10,7 @@ const {
   interpolateOnAxis,
   interpolateAxisInverse,
   clipSegmentsToRange,
+  computeContentBounds,
 } = require("../tasks/timeline_mock_logic.js");
 
 // dateToPosition: maps a time value onto a track, clamped to [0, trackHeight]
@@ -181,6 +182,39 @@ assert.strictEqual(dateToPosition(1050, 0, 1000, 500), 500, "time after range cl
     { start: 180, end: 200, colors: ["B"] },
   ]);
   assert.strictEqual(JSON.stringify(segments), beforeClip, "clipSegmentsToRange must not mutate its input");
+}
+
+// computeContentBounds: finds the true min-top/max-bottom across whatever is
+// actually being rendered (clipped bar segments + visible cards), so the
+// page can crop away empty space above/below where nothing is shown.
+{
+  assert.strictEqual(computeContentBounds([]), null, "no content means no bounds");
+}
+
+{
+  assert.deepStrictEqual(computeContentBounds([[50, 90]]), { top: 50, bottom: 90 }, "a single pair is its own bounds");
+}
+
+{
+  // true min/max, not just the first/last pair in the array
+  const pairs = [
+    [100, 150],
+    [20, 60],
+    [200, 400],
+    [70, 110],
+  ];
+  assert.deepStrictEqual(computeContentBounds(pairs), { top: 20, bottom: 400 }, "finds the true min top and max bottom across all pairs");
+}
+
+{
+  // no-mutation guarantee
+  const pairs = [
+    [10, 20],
+    [30, 40],
+  ];
+  const before = JSON.stringify(pairs);
+  computeContentBounds(pairs);
+  assert.strictEqual(JSON.stringify(pairs), before, "computeContentBounds must not mutate its input");
 }
 
 // filterPapers: date-range + topic filtering, combined with AND (plan.md

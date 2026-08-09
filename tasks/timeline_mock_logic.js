@@ -57,6 +57,13 @@
       .filter((seg) => seg.start < seg.end);
   }
 
+  function computeContentBounds(pairs) {
+    if (pairs.length === 0) return null;
+    const top = Math.min(...pairs.map(([t]) => t));
+    const bottom = Math.max(...pairs.map(([, b]) => b));
+    return { top, bottom };
+  }
+
   function filterPapers(papers, { startMs, endMs, activeTopics, firstAuthorOnly }) {
     return papers.filter(
       (paper) =>
@@ -119,6 +126,7 @@
     packCards,
     computeJobSegments,
     clipSegmentsToRange,
+    computeContentBounds,
     filterPapers,
     computeRequiredTrackHeight,
     computeCompactPositions,
