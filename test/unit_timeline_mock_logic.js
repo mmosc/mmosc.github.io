@@ -1,5 +1,5 @@
 const assert = require("node:assert/strict");
-const { dateToPosition, packCards, computeJobSegments, filterPapers } = require("../tasks/timeline_mock_logic.js");
+const { dateToPosition, packCards, computeJobSegments, filterPapers, computeRequiredTrackHeight } = require("../tasks/timeline_mock_logic.js");
 
 // dateToPosition: maps a time value onto a track, clamped to [0, trackHeight]
 assert.strictEqual(dateToPosition(0, 0, 1000, 500), 0, "earliest time maps to position 0");
@@ -190,6 +190,67 @@ assert.strictEqual(dateToPosition(1050, 0, 1000, 500), 500, "time after range cl
     for (let i = 1; i < placed.length; i++) {
       assert.ok(placed[i].top >= placed[i - 1].top + 20, `filtered+packed ${side} cards must not overlap`);
     }
+  });
+}
+
+// computeRequiredTrackHeight: the bar/track must always be at least as tall as
+// the space packCards actually needs, so the bar never ends before the last
+// card (the "dead zone" bug: CARD_HEIGHT grew from 92->112 for venue text,
+// pushing maxCardBottom past the old fixed TRACK_HEIGHT).
+{
+  // sparse cards well within the baseline height: required height is just the baseline
+  const cards = [
+    { id: "a", idealPosition: 0 },
+    { id: "b", idealPosition: 100 },
+    { id: "c", idealPosition: 200 },
+  ];
+  const height = computeRequiredTrackHeight(cards, 20, 10, 500);
+  assert.strictEqual(height, 500, "sparse cards that fit within the baseline don't grow the track");
+}
+
+{
+  // no cards at all: required height is just the baseline, not 0
+  const height = computeRequiredTrackHeight([], 20, 10, 500);
+  assert.strictEqual(height, 500, "no cards falls back to the baseline height");
+}
+
+{
+  // clustered cards on one side need more room than the baseline provides
+  const cards = [
+    { id: "a", idealPosition: 0 },
+    { id: "b", idealPosition: 2 },
+    { id: "c", idealPosition: 4 },
+    { id: "d", idealPosition: 6 },
+    { id: "e", idealPosition: 8 },
+  ];
+  const cardHeight = 100;
+  const minGap = 10;
+  const baseline = 50;
+  const height = computeRequiredTrackHeight(cards, cardHeight, minGap, baseline);
+
+  const packed = packCards(cards, cardHeight, minGap);
+  const maxBottom = Math.max(...packed.map((c) => c.top + cardHeight));
+  assert.strictEqual(height, maxBottom, "cramped cards grow the track to exactly fit the deepest packed card");
+  assert.ok(height > baseline, "the computed height must actually exceed the too-small baseline in this case");
+}
+
+{
+  // regression guard for the real bug: the returned height must never leave a
+  // dead zone below the last card when re-packed at that same height
+  const cards = [
+    { id: "a", idealPosition: 0 },
+    { id: "b", idealPosition: 1 },
+    { id: "c", idealPosition: 2 },
+    { id: "d", idealPosition: 3 },
+    { id: "e", idealPosition: 4 },
+    { id: "f", idealPosition: 5 },
+  ];
+  const cardHeight = 112;
+  const minGap = 12;
+  const height = computeRequiredTrackHeight(cards, cardHeight, minGap, 100);
+  const packed = packCards(cards, cardHeight, minGap);
+  packed.forEach((c) => {
+    assert.ok(c.top + cardHeight <= height, `card ${c.id} bottom (${c.top + cardHeight}) must not exceed the computed track height (${height})`);
   });
 }
 

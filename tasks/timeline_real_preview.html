@@ -227,7 +227,7 @@
     <script src="timeline_mock_logic.js"></script>
     <script>
       (function () {
-        const TRACK_HEIGHT = 5600;
+        const BASELINE_TRACK_HEIGHT = 5600; // floor height; grows if packed cards need more room (see computeEffectiveTrackHeight)
         const CARD_HEIGHT = 112; // bumped from 92 to account for the added single-line venue text
         const CARD_MIN_GAP = 14;
         const TOP_PADDING = 20;
@@ -288,7 +288,17 @@
         const minTime = Math.min(...jobs.map((j) => j.start));
         const maxTime = Math.max(...jobs.map((j) => j.end), ...papers.map((p) => p.date));
 
-        const pos = (time) => TOP_PADDING + TimelineMockLogic.dateToPosition(time, minTime, maxTime, TRACK_HEIGHT);
+        // Time-to-pixel mapping always uses this fixed scale, so the bar stays
+        // strictly linear/proportional to elapsed time (dateToPosition(maxTime)
+        // always lands exactly at BASELINE_TRACK_HEIGHT, never stretched or
+        // compressed). Cards that collide when packed (most often papers that
+        // share an exact month, which no amount of rescaling can separate --
+        // a zero time-gap stays zero at any scale) may need extra *visual* room
+        // below that point; effectiveTrackHeight (computed once per render in
+        // render(), from the actual packed cards) reserves that extra space
+        // without touching the time scale itself.
+        let effectiveTrackHeight = BASELINE_TRACK_HEIGHT;
+        const pos = (time) => TOP_PADDING + TimelineMockLogic.dateToPosition(time, minTime, maxTime, BASELINE_TRACK_HEIGHT);
 
         // --- DOM refs --------------------------------------------------------
         const container = document.getElementById("timeline-container");
@@ -332,7 +342,6 @@
         });
 
         track.style.top = TOP_PADDING + "px";
-        track.style.height = TRACK_HEIGHT + "px";
 
         function renderTrack() {
           track.innerHTML = "";
@@ -365,10 +374,8 @@
           return { startMs, endMs, activeTopics };
         }
 
-        function renderCards() {
+        function renderCards(visible) {
           container.querySelectorAll(".card").forEach((n) => n.remove());
-
-          const visible = TimelineMockLogic.filterPapers(papers, activeFilters());
 
           const packed = TimelineMockLogic.packCards(
             visible.map((p) => ({ id: p.id, idealPosition: pos(p.date) })),
@@ -377,15 +384,11 @@
           );
           const packedById = Object.fromEntries(packed.map((p) => [p.id, p]));
 
-          // Container must be at least as tall as the bar (TRACK_HEIGHT) or
-          // the deepest packed card, whichever is larger — dense real data
-          // (28 papers, several clustered within months of each other) can
-          // push packed cards past a track height that looked fine with 10
-          // sparse fake ones. Recomputed every render since filters change
-          // how many cards are visible.
-          const maxCardBottom = packed.length ? Math.max(...packed.map((p) => p.top + CARD_HEIGHT)) : 0;
-          const contentHeight = Math.max(TRACK_HEIGHT, maxCardBottom);
-          container.style.height = TOP_PADDING * 2 + contentHeight + "px";
+          // Container = top padding + the bar (effectiveTrackHeight, already
+          // sized by computeEffectiveTrackHeight to fit every packed card) +
+          // a matching bottom padding, so the bar always exactly fills the
+          // content area with zero dead zone below the last card.
+          container.style.height = TOP_PADDING * 2 + effectiveTrackHeight + "px";
           svg.innerHTML = "";
           svg.setAttribute("width", "100%");
           svg.setAttribute("height", container.style.height);
@@ -451,8 +454,24 @@
         }
 
         function render() {
+          const visible = TimelineMockLogic.filterPapers(papers, activeFilters());
+
+          // Ask (once, at the fixed time scale above) how much room the packed
+          // cards actually need; grow the bar/container to match so there's
+          // never a dead zone below the last card, without ever touching pos()'s
+          // time-proportional mapping.
+          const idealPositions = visible.map((p) => ({ id: p.id, idealPosition: pos(p.date) }));
+          const requiredContentBottom = TimelineMockLogic.computeRequiredTrackHeight(
+            idealPositions,
+            CARD_HEIGHT,
+            CARD_MIN_GAP,
+            TOP_PADDING + BASELINE_TRACK_HEIGHT,
+          );
+          effectiveTrackHeight = requiredContentBottom - TOP_PADDING;
+          track.style.height = effectiveTrackHeight + "px";
+
           renderTrack();
-          renderCards();
+          renderCards(visible);
         }
 
         [rangeStart, rangeEnd].forEach((el) => el.addEventListener("change", render));

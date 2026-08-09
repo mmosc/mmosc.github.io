@@ -16,6 +16,7 @@ Full detail, acceptance criteria, and rationale in [`plan.md`](plan.md). Source 
 - [x] 2.3 Guided session: topic → color mapping (`_data/timeline_colors.yml`) — validated with the dataviz skill's palette script, not picked by eye
 - [x] 2.4 Backfill `month` field on all 28 bib entries — 27 real/sourced (4 Crossref, 16 conference dates, 3 pre-existing, 4 supplied directly by Marta), only `Blanke:2019aao` still flagged `month_approximate`
 - [x] 2.5 Add `topic`/`first_author`/`month_approximate` to `filtered_bibtex_keywords` (folded into 2.2/2.4's commits, not done separately)
+- [x] Addendum: bar length not matching required content height — bar/container now always fully spans packed cards (`computeRequiredTrackHeight`, single-pass, both mock and real preview)
 - [ ] 2.6 First-author filter in the mock (new task — `filterPapers` extension + checkbox)
 
 ## Checkpoint: Real data ready

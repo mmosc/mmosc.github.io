@@ -50,7 +50,13 @@
     return papers.filter((paper) => paper.date >= startMs && paper.date <= endMs && paper.topics.some((topic) => activeTopics.has(topic)));
   }
 
-  const api = { dateToPosition, packCards, computeJobSegments, filterPapers };
+  function computeRequiredTrackHeight(cards, cardHeight, minGap, baselineHeight) {
+    const packed = packCards(cards, cardHeight, minGap);
+    const maxBottom = packed.reduce((max, card) => Math.max(max, card.top + cardHeight), 0);
+    return Math.max(baselineHeight, maxBottom);
+  }
+
+  const api = { dateToPosition, packCards, computeJobSegments, filterPapers, computeRequiredTrackHeight };
 
   if (typeof module !== "undefined" && module.exports) {
     module.exports = api;
