@@ -1,5 +1,15 @@
 const assert = require("node:assert/strict");
-const { dateToPosition, packCards, computeJobSegments, filterPapers, computeRequiredTrackHeight } = require("../tasks/timeline_mock_logic.js");
+const {
+  dateToPosition,
+  packCards,
+  computeJobSegments,
+  filterPapers,
+  computeRequiredTrackHeight,
+  positionToDate,
+  computeCompactPositions,
+  interpolateOnAxis,
+  interpolateAxisInverse,
+} = require("../tasks/timeline_mock_logic.js");
 
 // dateToPosition: maps a time value onto a track, clamped to [0, trackHeight]
 assert.strictEqual(dateToPosition(0, 0, 1000, 500), 0, "earliest time maps to position 0");
@@ -251,6 +261,91 @@ assert.strictEqual(dateToPosition(1050, 0, 1000, 500), 500, "time after range cl
   const packed = packCards(cards, cardHeight, minGap);
   packed.forEach((c) => {
     assert.ok(c.top + cardHeight <= height, `card ${c.id} bottom (${c.top + cardHeight}) must not exceed the computed track height (${height})`);
+  });
+}
+
+// positionToDate: the inverse of dateToPosition, needed to convert a mouse
+// position on the bar back into a date for the hover tooltip.
+assert.strictEqual(positionToDate(0, 0, 1000, 500), 0, "position 0 maps to earliest time");
+assert.strictEqual(positionToDate(500, 0, 1000, 500), 1000, "position at trackHeight maps to latest time");
+assert.strictEqual(positionToDate(250, 0, 1000, 500), 500, "midpoint position maps to midpoint time");
+assert.strictEqual(positionToDate(-50, 0, 1000, 500), 0, "position before the track clamps to the earliest time");
+assert.strictEqual(positionToDate(600, 0, 1000, 500), 1000, "position past the track clamps to the latest time");
+
+{
+  // round-trip: dateToPosition then positionToDate must recover the original time
+  const minTime = 1000;
+  const maxTime = 100000;
+  const trackHeight = 5600;
+  [minTime, maxTime, 50000, 12345].forEach((time) => {
+    const position = dateToPosition(time, minTime, maxTime, trackHeight);
+    assert.strictEqual(positionToDate(position, minTime, maxTime, trackHeight), time, `round-trip must recover ${time}`);
+  });
+}
+
+// computeCompactPositions: "compact time" mode — evenly-spaced, rank-based
+// positions instead of real-elapsed-time proportional ones, so the bar is
+// only ever as long as needed to list every distinct paper date.
+{
+  assert.deepStrictEqual(computeCompactPositions([], 20), [], "no times produces no axis points");
+}
+
+{
+  assert.deepStrictEqual(computeCompactPositions([100], 20), [{ time: 100, position: 0 }], "a single time sits at position 0");
+}
+
+{
+  // unsorted, with a duplicate: output must be sorted, duplicates collapsed to one entry
+  const result = computeCompactPositions([300, 100, 300, 200], 20);
+  assert.deepStrictEqual(
+    result,
+    [
+      { time: 100, position: 0 },
+      { time: 200, position: 20 },
+      { time: 300, position: 40 },
+    ],
+    "distinct times get evenly-spaced ranks in ascending order; duplicates collapse to one axis point",
+  );
+}
+
+// interpolateOnAxis: maps an arbitrary time onto the compact (piecewise-linear)
+// axis built by computeCompactPositions, so job-boundary dates (which rarely
+// land exactly on a paper's date) still get a sensible position.
+{
+  assert.strictEqual(interpolateOnAxis(500, []), 0, "an empty axis falls back to position 0");
+}
+
+{
+  const axis = computeCompactPositions([0, 100, 200], 50);
+  assert.strictEqual(interpolateOnAxis(0, axis), 0, "a time exactly on an axis point returns that point's position");
+  assert.strictEqual(interpolateOnAxis(100, axis), 50, "a time exactly on a middle axis point returns that point's position");
+  assert.strictEqual(interpolateOnAxis(50, axis), 25, "a time halfway between two axis points interpolates linearly");
+  assert.strictEqual(interpolateOnAxis(-100, axis), 0, "a time before the first axis point clamps to its position");
+  assert.strictEqual(interpolateOnAxis(500, axis), 100, "a time after the last axis point clamps to its position");
+}
+
+// interpolateAxisInverse: the inverse of interpolateOnAxis (position -> time),
+// needed so the hover tooltip still shows a sensible date in compact mode.
+{
+  assert.strictEqual(interpolateAxisInverse(30, []), 0, "an empty axis falls back to time 0");
+}
+
+{
+  const axis = computeCompactPositions([0, 100, 200], 50);
+  assert.strictEqual(interpolateAxisInverse(0, axis), 0, "a position exactly on an axis point returns that point's time");
+  assert.strictEqual(interpolateAxisInverse(50, axis), 100, "a position exactly on a middle axis point returns that point's time");
+  assert.strictEqual(interpolateAxisInverse(25, axis), 50, "a position halfway between two axis points interpolates linearly");
+  assert.strictEqual(interpolateAxisInverse(-40, axis), 0, "a position before the first axis point clamps to its time");
+  assert.strictEqual(interpolateAxisInverse(1000, axis), 200, "a position after the last axis point clamps to its time");
+}
+
+{
+  // round-trip: interpolateOnAxis then interpolateAxisInverse recovers the
+  // original time for any value that lands within the axis's range
+  const axis = computeCompactPositions([10, 40, 90, 91, 200], 30);
+  [10, 40, 65, 90, 91, 150, 200].forEach((time) => {
+    const position = interpolateOnAxis(time, axis);
+    assert.strictEqual(interpolateAxisInverse(position, axis), time, `round-trip must recover ${time}`);
   });
 }
 

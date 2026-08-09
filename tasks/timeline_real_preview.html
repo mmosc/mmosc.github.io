@@ -107,6 +107,40 @@
         stroke-dasharray: 4 4;
       }
 
+      .track-hover-zone {
+        position: absolute;
+        left: 50%;
+        top: 0;
+        width: 40px;
+        transform: translateX(-50%);
+        cursor: crosshair;
+      }
+      .hover-indicator {
+        position: absolute;
+        left: 50%;
+        width: 28px;
+        height: 2px;
+        background: #1a1a1a;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        opacity: 0.55;
+        display: none;
+      }
+      .hover-tooltip {
+        position: absolute;
+        left: calc(50% + 22px);
+        transform: translateY(-50%);
+        background: #1a1a1a;
+        color: #fff;
+        font-size: 0.75rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        white-space: nowrap;
+        pointer-events: none;
+        display: none;
+        z-index: 10;
+      }
+
       .card {
         position: absolute;
         width: 320px;
@@ -214,12 +248,20 @@
       <fieldset id="job-legend">
         <legend>Jobs</legend>
       </fieldset>
+      <fieldset id="scale-mode">
+        <legend>Bar scale</legend>
+        <label><input type="radio" name="scale-mode" value="proportional" checked /> Proportional to time</label>
+        <label><input type="radio" name="scale-mode" value="compact" /> Compact (fit all papers)</label>
+      </fieldset>
     </div>
 
     <div class="timeline-wrapper">
       <div class="timeline-container" id="timeline-container">
         <div class="timeline-track" id="timeline-track"></div>
         <svg class="leader-lines" id="leader-lines"></svg>
+        <div class="track-hover-zone" id="track-hover-zone"></div>
+        <div class="hover-indicator" id="hover-indicator"></div>
+        <div class="hover-tooltip" id="hover-tooltip"></div>
         <!-- cards injected here by script -->
       </div>
     </div>
@@ -300,14 +342,44 @@
         let effectiveTrackHeight = BASELINE_TRACK_HEIGHT;
         const pos = (time) => TOP_PADDING + TimelineMockLogic.dateToPosition(time, minTime, maxTime, BASELINE_TRACK_HEIGHT);
 
+        // --- "Compact time" mode ----------------------------------------------
+        // Positions papers by chronological rank instead of real elapsed time,
+        // so long gaps between papers don't waste bar length. Per Marta's spec,
+        // this is computed once from ALL papers and never changes when filters
+        // are applied — the bar length and every visible card's position stay
+        // fixed regardless of which subset is currently shown.
+        const PITCH = CARD_HEIGHT + CARD_MIN_GAP;
+        const compactAxis = TimelineMockLogic.computeCompactPositions(papers.map((p) => p.date), PITCH);
+        const compactPos = (time) => TOP_PADDING + TimelineMockLogic.interpolateOnAxis(time, compactAxis);
+        const compactAxisSpan = compactAxis.length ? compactAxis[compactAxis.length - 1].position : 0;
+        const compactPacked = TimelineMockLogic.packCards(
+          papers.map((p) => ({ id: p.id, idealPosition: compactPos(p.date) })),
+          CARD_HEIGHT,
+          CARD_MIN_GAP,
+        );
+        const compactPackedById = Object.fromEntries(compactPacked.map((p) => [p.id, p]));
+        const compactTrackHeight =
+          TimelineMockLogic.computeRequiredTrackHeight(
+            papers.map((p) => ({ id: p.id, idealPosition: compactPos(p.date) })),
+            CARD_HEIGHT,
+            CARD_MIN_GAP,
+            TOP_PADDING + compactAxisSpan,
+          ) - TOP_PADDING;
+
+        let compactMode = false;
+
         // --- DOM refs --------------------------------------------------------
         const container = document.getElementById("timeline-container");
         const track = document.getElementById("timeline-track");
         const svg = document.getElementById("leader-lines");
+        const hoverZone = document.getElementById("track-hover-zone");
+        const hoverIndicator = document.getElementById("hover-indicator");
+        const hoverTooltip = document.getElementById("hover-tooltip");
         const topicFieldset = document.getElementById("topic-filters");
         const rangeStart = document.getElementById("range-start");
         const rangeEnd = document.getElementById("range-end");
         const rangeReset = document.getElementById("range-reset");
+        const scaleModeInputs = document.querySelectorAll('input[name="scale-mode"]');
 
         const monthInput = (time) => new Date(time).toISOString().slice(0, 7);
         rangeStart.value = monthInput(minTime);
@@ -342,8 +414,26 @@
         });
 
         track.style.top = TOP_PADDING + "px";
+        hoverZone.style.top = TOP_PADDING + "px";
 
-        function renderTrack() {
+        function formatDate(time) {
+          return new Date(time).toLocaleDateString(undefined, { year: "numeric", month: "short" });
+        }
+
+        hoverZone.addEventListener("mousemove", (e) => {
+          const y = e.clientY - hoverZone.getBoundingClientRect().top;
+          const date = compactMode
+            ? TimelineMockLogic.interpolateAxisInverse(y, compactAxis)
+            : TimelineMockLogic.positionToDate(y, minTime, maxTime, BASELINE_TRACK_HEIGHT);
+          hoverIndicator.style.top = hoverTooltip.style.top = TOP_PADDING + y + "px";
+          hoverIndicator.style.display = hoverTooltip.style.display = "block";
+          hoverTooltip.textContent = formatDate(date);
+        });
+        hoverZone.addEventListener("mouseleave", () => {
+          hoverIndicator.style.display = hoverTooltip.style.display = "none";
+        });
+
+        function renderTrack(posFn) {
           track.innerHTML = "";
           const segments = TimelineMockLogic.computeJobSegments(
             jobs.map((j) => ({ id: j.id, color: j.color, startTime: j.start, endTime: j.end })),
@@ -351,8 +441,8 @@
           segments.forEach((seg) => {
             const el = document.createElement("div");
             el.className = "track-segment";
-            const top = pos(seg.start);
-            const height = Math.max(pos(seg.end) - top, 1);
+            const top = posFn(seg.start);
+            const height = Math.max(posFn(seg.end) - top, 1);
             el.style.top = top + "px";
             el.style.height = height + "px";
             if (seg.colors.length === 1) {
@@ -374,15 +464,8 @@
           return { startMs, endMs, activeTopics };
         }
 
-        function renderCards(visible) {
+        function renderCards(visible, packedById, posFn) {
           container.querySelectorAll(".card").forEach((n) => n.remove());
-
-          const packed = TimelineMockLogic.packCards(
-            visible.map((p) => ({ id: p.id, idealPosition: pos(p.date) })),
-            CARD_HEIGHT,
-            CARD_MIN_GAP,
-          );
-          const packedById = Object.fromEntries(packed.map((p) => [p.id, p]));
 
           // Container = top padding + the bar (effectiveTrackHeight, already
           // sized by computeEffectiveTrackHeight to fit every packed card) +
@@ -440,7 +523,7 @@
             const cardRect = card.getBoundingClientRect();
             const containerRect = container.getBoundingClientRect();
             const cardMidY = placement.top + CARD_HEIGHT / 2;
-            const barY = pos(paper.date);
+            const barY = posFn(paper.date);
             const barX = containerRect.width / 2;
             const cardEdgeX = placement.side === "left" ? cardRect.right - containerRect.left : cardRect.left - containerRect.left;
 
@@ -456,26 +539,49 @@
         function render() {
           const visible = TimelineMockLogic.filterPapers(papers, activeFilters());
 
-          // Ask (once, at the fixed time scale above) how much room the packed
-          // cards actually need; grow the bar/container to match so there's
-          // never a dead zone below the last card, without ever touching pos()'s
-          // time-proportional mapping.
-          const idealPositions = visible.map((p) => ({ id: p.id, idealPosition: pos(p.date) }));
-          const requiredContentBottom = TimelineMockLogic.computeRequiredTrackHeight(
-            idealPositions,
-            CARD_HEIGHT,
-            CARD_MIN_GAP,
-            TOP_PADDING + BASELINE_TRACK_HEIGHT,
-          );
-          effectiveTrackHeight = requiredContentBottom - TOP_PADDING;
-          track.style.height = effectiveTrackHeight + "px";
+          let packedById;
+          let posFn;
+          if (compactMode) {
+            // Compact mode: bar length and every paper's position come from
+            // the pre-packed ALL-28-papers layout computed once above — never
+            // recomputed from the filtered `visible` set, so they don't shift
+            // when a filter is applied (per Marta's spec).
+            effectiveTrackHeight = compactTrackHeight;
+            packedById = compactPackedById;
+            posFn = compactPos;
+          } else {
+            // Proportional mode: ask (at the fixed time scale) how much room
+            // the *currently visible* packed cards need, so there's never a
+            // dead zone below the last card, without ever touching pos()'s
+            // time-proportional mapping.
+            const idealPositions = visible.map((p) => ({ id: p.id, idealPosition: pos(p.date) }));
+            const requiredContentBottom = TimelineMockLogic.computeRequiredTrackHeight(
+              idealPositions,
+              CARD_HEIGHT,
+              CARD_MIN_GAP,
+              TOP_PADDING + BASELINE_TRACK_HEIGHT,
+            );
+            effectiveTrackHeight = requiredContentBottom - TOP_PADDING;
+            const packed = TimelineMockLogic.packCards(idealPositions, CARD_HEIGHT, CARD_MIN_GAP);
+            packedById = Object.fromEntries(packed.map((p) => [p.id, p]));
+            posFn = pos;
+          }
 
-          renderTrack();
-          renderCards(visible);
+          track.style.height = effectiveTrackHeight + "px";
+          hoverZone.style.height = effectiveTrackHeight + "px";
+
+          renderTrack(posFn);
+          renderCards(visible, packedById, posFn);
         }
 
         [rangeStart, rangeEnd].forEach((el) => el.addEventListener("change", render));
         topicFieldset.addEventListener("change", render);
+        scaleModeInputs.forEach((input) => {
+          input.addEventListener("change", () => {
+            compactMode = document.querySelector('input[name="scale-mode"]:checked').value === "compact";
+            render();
+          });
+        });
         rangeReset.addEventListener("click", () => {
           rangeStart.value = monthInput(minTime);
           rangeEnd.value = monthInput(maxTime);

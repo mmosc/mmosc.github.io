@@ -7,6 +7,11 @@
     return ((clamped - minTime) / (maxTime - minTime)) * trackHeight;
   }
 
+  function positionToDate(position, minTime, maxTime, trackHeight) {
+    const clamped = Math.min(Math.max(position, 0), trackHeight);
+    return minTime + (clamped / trackHeight) * (maxTime - minTime);
+  }
+
   function packCards(cards, cardHeight, minGap) {
     const sorted = [...cards].sort((a, b) => a.idealPosition - b.idealPosition);
     const cursors = { left: -Infinity, right: -Infinity };
@@ -56,7 +61,57 @@
     return Math.max(baselineHeight, maxBottom);
   }
 
-  const api = { dateToPosition, packCards, computeJobSegments, filterPapers, computeRequiredTrackHeight };
+  // "Compact time" mode: rank-based positions instead of real-elapsed-time
+  // proportional ones, so the bar is only ever as long as needed to list
+  // every distinct time value, regardless of how much real time separates them.
+  function computeCompactPositions(times, pitch) {
+    const distinct = Array.from(new Set(times)).sort((a, b) => a - b);
+    return distinct.map((time, index) => ({ time, position: index * pitch }));
+  }
+
+  function interpolateOnAxis(time, axisPoints) {
+    if (axisPoints.length === 0) return 0;
+    if (time <= axisPoints[0].time) return axisPoints[0].position;
+    const last = axisPoints[axisPoints.length - 1];
+    if (time >= last.time) return last.position;
+    for (let i = 1; i < axisPoints.length; i++) {
+      if (time <= axisPoints[i].time) {
+        const prev = axisPoints[i - 1];
+        const next = axisPoints[i];
+        const fraction = (time - prev.time) / (next.time - prev.time);
+        return prev.position + fraction * (next.position - prev.position);
+      }
+    }
+    return last.position;
+  }
+
+  function interpolateAxisInverse(position, axisPoints) {
+    if (axisPoints.length === 0) return 0;
+    if (position <= axisPoints[0].position) return axisPoints[0].time;
+    const last = axisPoints[axisPoints.length - 1];
+    if (position >= last.position) return last.time;
+    for (let i = 1; i < axisPoints.length; i++) {
+      if (position <= axisPoints[i].position) {
+        const prev = axisPoints[i - 1];
+        const next = axisPoints[i];
+        const fraction = (position - prev.position) / (next.position - prev.position);
+        return prev.time + fraction * (next.time - prev.time);
+      }
+    }
+    return last.time;
+  }
+
+  const api = {
+    dateToPosition,
+    positionToDate,
+    packCards,
+    computeJobSegments,
+    filterPapers,
+    computeRequiredTrackHeight,
+    computeCompactPositions,
+    interpolateOnAxis,
+    interpolateAxisInverse,
+  };
 
   if (typeof module !== "undefined" && module.exports) {
     module.exports = api;
