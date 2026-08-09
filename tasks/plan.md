@@ -22,19 +22,23 @@ Add a new `/timeline/` page: a vertical, interactive milestone timeline. A singl
 
 Goal: validate the visual design and core interactions cheaply, get sign-off before touching real data (28 bib entries is a lot to tag twice if the design changes).
 
-- [ ] **Task 1.1: Static HTML mock with hardcoded fake data**
+- [x] **Task 1.1: Static HTML mock with hardcoded fake data**
   **Description:** Build a standalone page (can live outside Jekyll's build initially, e.g. `tasks/timeline_mock.html`, opened directly in a browser) with ~4 fake jobs (including one overlap, to prove the 45° intertwining) and ~10 fake papers across 3-4 fake topics, hardcoded as a JS array. Renders the vertical bar with color-coded segments, diagonal-stripe overlap rendering, and non-overlapping paper cards with dashed leader lines to their date on the bar. Confirms whether hand-rolled SVG or a library (d3) is the right call (see Architecture Decisions).
   **Acceptance criteria:**
-  - [ ] Jobs bar renders top-to-bottom, correctly colored per fake job, with visible 45° diagonal striping during the one overlapping period
-  - [ ] 10 fake paper cards render with zero visual overlap between cards, each with a dashed line to its correct date position on the bar
-  - [ ] Design choice (hand-rolled SVG vs. d3) is made and noted in this plan
+  - [x] Jobs bar renders top-to-bottom, correctly colored per fake job, with visible 45° diagonal striping during the one overlapping period
+  - [x] 10 fake paper cards render with zero visual overlap between cards, each with a dashed line to its correct date position on the bar
+  - [x] Design choice (hand-rolled SVG vs. d3) is made and noted in this plan
+  **Design decision:** Hand-rolled CSS + a single SVG overlay, no charting library. The bar's diagonal overlap striping uses CSS `repeating-linear-gradient(45deg, ...)` directly on each segment `div` (no SVG `<pattern>` needed). Cards are plain positioned `div`s (need text wrapping, which SVG `<foreignObject>` handles more awkwardly). Only the dashed leader lines (connecting a dynamically-positioned card to a dynamically-computed bar point) use SVG `<line>`, via one `<svg>` overlay sized to the whole timeline container. This confirms the plan's "no new charting dependency" call — d3 wasn't needed.
+  **Core layout logic factored out and unit-tested** in `tasks/timeline_mock_logic.js` / `test/unit_timeline_mock_logic.js` (`dateToPosition`, `packCards`, `computeJobSegments`) rather than inlined in the mock's `<script>` block, since Task 3.3 reuses this same logic against real data — see Architecture Decisions.
   **Verification:**
-  - [ ] Manual check: open in a real browser (not just build success) at phone width (~375px) and desktop width (~1440px); confirm no card overlap or clipping at either
+  - [x] Automated: `node test/unit_timeline_mock_logic.js` passes (RED confirmed against the not-yet-existing module, then GREEN after implementing it)
+  - [x] Automated: ran the mock's actual fake dataset (all 4 jobs, all 10 papers) through the tested logic directly (bypassing the DOM) — confirmed exactly 1 overlap segment, 0 same-side card collisions, all 10 papers placed
+  - [ ] **Still outstanding — manual check**: open `tasks/timeline_mock.html` in a real browser at phone width (~375px) and desktop width (~1440px). No browser-automation tooling (e.g. Playwright browser binaries) is installed in this environment, so the actual visual rendering has not been eyeballed by either the agent or a human yet. **Do this before treating Phase 1 as done.**
   **Dependencies:** None
-  **Files likely touched:** `tasks/timeline_mock.html` (scratch, not shipped)
+  **Files touched:** `tasks/timeline_mock.html`, `tasks/timeline_mock_logic.js`, `test/unit_timeline_mock_logic.js`, `_config.yml` (excluded `tasks/` and `timeline.md` from the Jekyll build as a safety net)
   **Estimated scope:** M
 
-- [ ] **Task 1.2: Time-range filter against fake data**
+- [ ] **Task 1.2: Time-range filter against fake data** *(implementation already present in `tasks/timeline_mock.html` from Task 1.1 — building the filter controls alongside the base render loop was more natural than a separate pass. Not yet formally verified against this task's own acceptance criteria below; leaving unchecked until that happens.)*
   **Description:** Add a month-granularity date-range control (two inputs or a dual-handle slider) that shows/hides jobs and papers outside the selected range, re-flowing the remaining cards so they still don't overlap.
   **Acceptance criteria:**
   - [ ] Narrowing the range hides out-of-range papers and re-packs the remaining ones with no gaps or overlaps
@@ -45,7 +49,7 @@ Goal: validate the visual design and core interactions cheaply, get sign-off bef
   **Files likely touched:** `tasks/timeline_mock.html`
   **Estimated scope:** S
 
-- [ ] **Task 1.3: Topic filter against fake data**
+- [ ] **Task 1.3: Topic filter against fake data** *(same note as Task 1.2 — implementation already present, not yet formally verified)*
   **Description:** Add topic-tag toggle controls (checkboxes/pills) that show/hide papers by fake topic, independent of the time-range filter (both can be active together).
   **Acceptance criteria:**
   - [ ] Deselecting a topic hides only papers tagged with it; the jobs bar is unaffected

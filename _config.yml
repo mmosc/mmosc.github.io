@@ -236,6 +236,8 @@ exclude:
   - al-folio-upgrade-report.md
   - bin/
   - CLAUDE.md
+  - tasks/
+  - timeline.md
   - Dockerfile
   - docker-compose.yml
   - docker-compose-slim.yml

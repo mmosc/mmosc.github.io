@@ -3,7 +3,7 @@
 Full detail, acceptance criteria, and rationale in [`plan.md`](plan.md). Source spec: [`timeline.md`](../timeline.md).
 
 ## Phase 1: Static mock (fake data)
-- [ ] 1.1 Static HTML mock with hardcoded fake jobs + papers (vertical bar, overlap striping, non-overlapping cards, leader lines)
+- [x] 1.1 Static HTML mock with hardcoded fake jobs + papers (vertical bar, overlap striping, non-overlapping cards, leader lines) — logic unit-tested; **manual in-browser check still needed, not yet done**
 - [ ] 1.2 Time-range filter (month granularity) against fake data
 - [ ] 1.3 Topic filter against fake data
 
