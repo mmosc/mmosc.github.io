@@ -34,28 +34,33 @@
     firstAuthor: p.first_author,
   }));
 
-  // Job colors have no source field in _data/cv.yml (plan.md's Task 3.2
-  // explicitly chose "no schema change" over adding one), so this is a
-  // hardcoded lookup by company name, carried over from the validated set
-  // used in tasks/timeline_real_preview.html. A future job whose company
-  // string isn't listed here falls back to a neutral gray rather than
-  // erroring -- update this map when a new job is added.
-  const JOB_COLORS = {
-    "Karlsruhe Institute of Technology (KIT), Germany": "#9C36B5",
-    "ESK Karlsruhe, Germany": "#15AABF",
-    "Johannes Kepler University Linz, Austria": "#4C6EF5",
-    "Deezer Research Team, Paris, France": "#F76707",
-    "Albatross AI": "#2F9E44",
+  // Job color and legend label have no source field in _data/cv.yml
+  // (plan.md's Task 3.2 explicitly chose "no schema change" over adding
+  // one), so this is a hardcoded lookup by company name, carried over from
+  // the validated color set used in tasks/timeline_real_preview.html, with
+  // a short display name added per Marta's request. A future job whose
+  // company string isn't listed here falls back to a neutral gray and the
+  // full company string rather than erroring -- update this map when a new
+  // job is added.
+  const JOB_META = {
+    "Karlsruhe Institute of Technology (KIT), Germany": { color: "#9C36B5", shortName: "KIT" },
+    "ESK Karlsruhe, Germany": { color: "#15AABF", shortName: "ESK" },
+    "Johannes Kepler University Linz, Austria": { color: "#4C6EF5", shortName: "JKU" },
+    "Deezer Research Team, Paris, France": { color: "#F76707", shortName: "Deezer" },
+    "Albatross AI": { color: "#2F9E44", shortName: "Albatross" },
   };
-  const DEFAULT_JOB_COLOR = "#888888";
+  const DEFAULT_JOB_META = { color: "#888888", shortName: null };
 
-  const jobs = parseJobsIsland().map((j, i) => ({
-    id: "job-" + i,
-    label: j.company + " — " + j.position,
-    color: JOB_COLORS[j.company] || DEFAULT_JOB_COLOR,
-    start: TimelineMockLogic.parseJobDate(j.start_date, now),
-    end: TimelineMockLogic.parseJobDate(j.end_date, now),
-  }));
+  const jobs = parseJobsIsland().map((j, i) => {
+    const meta = JOB_META[j.company] || DEFAULT_JOB_META;
+    return {
+      id: "job-" + i,
+      label: meta.shortName || j.company,
+      color: meta.color,
+      start: TimelineMockLogic.parseJobDate(j.start_date, now),
+      end: TimelineMockLogic.parseJobDate(j.end_date, now),
+    };
+  });
 
   // Topic colors ARE real per-topic data (_data/timeline_colors.yml) with
   // both light and dark values, already validated for both via the dataviz

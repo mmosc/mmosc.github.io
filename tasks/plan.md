@@ -327,6 +327,11 @@ Goal: validate the visual design and core interactions cheaply, get sign-off bef
   **Verification:** rebuilt and grepped the output for the leaked default-template's tell (`class="row"`, `Entry bib key` — both jekyll-scholar's own default-template markup, present before the fix, absent after); live Playwright check confirmed no stray visible text anywhere on the page (checked for characteristic leaked strings), 22 cards in the default view, 0 card overlaps, 0 console/page errors, and a full-page screenshot visually confirming the page now ends cleanly right after the widget. `node test/unit_timeline_mock_logic.js` and `node test/style_contract.js` pass.
   **Files touched:** `_pages/timeline.md`
 
+- [x] **Addendum: short job legend names** *(requested: change job names to "Albatross" / "Deezer" / "JKU" / "KIT" / "ESK")*
+  **What changed:** Job legend labels were the full "Company — Position" string (e.g. "Albatross AI — Applied Scientist (L5)"); confirmed `label` has exactly one consumer (the legend text node) before simplifying, so nothing else depends on the fuller string. Consolidated the existing per-company `JOB_COLORS` lookup and a new per-company short-name lookup into one `JOB_META` object (`{color, shortName}` per company) in `assets/js/timeline.js`, since both are now the same kind of hardcoded-by-necessity presentation data (no `_data/cv.yml` schema change, per Task 3.2's standing decision). A future job whose company string isn't in the map falls back to the full company string (not `null`/blank), matching the existing gray-color fallback's "degrade, don't break" pattern. Mirrored the same 5 short labels in `tasks/timeline_real_preview.html` for consistency.
+  **Verification:** `node test/unit_timeline_mock_logic.js` and `node test/style_contract.js` pass (no logic changed); `bundle exec jekyll build` succeeds; live Playwright check against `bundle exec jekyll serve` confirms the job legend reads exactly `["Albatross","Deezer","JKU","ESK","KIT"]`, 22 cards still render, 0 console/page errors.
+  **Files touched:** `assets/js/timeline.js`, `tasks/timeline_real_preview.html`
+
 ### Checkpoint: Real timeline works end-to-end
 - [x] All 28 papers visible and correctly placed with no filters active
 - [x] Both real overlap periods render correctly
