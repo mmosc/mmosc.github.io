@@ -9,6 +9,7 @@ const {
   computeCompactPositions,
   interpolateOnAxis,
   interpolateAxisInverse,
+  clipSegmentsToRange,
 } = require("../tasks/timeline_mock_logic.js");
 
 // dateToPosition: maps a time value onto a track, clamped to [0, trackHeight]
@@ -104,6 +105,82 @@ assert.strictEqual(dateToPosition(1050, 0, 1000, 500), 500, "time after range cl
     { start: 40, end: 60, colors: ["A", "B"] },
     { start: 60, end: 100, colors: ["A"] },
   ]);
+}
+
+// clipSegmentsToRange: the job bar must only show color within the active
+// date-range filter — a segment entirely outside the window disappears
+// entirely, and one straddling a boundary is truncated to it.
+{
+  assert.deepStrictEqual(clipSegmentsToRange([], 0, 100), [], "no segments produces no clipped segments");
+}
+
+{
+  const segments = [{ start: 0, end: 50, colors: ["A"] }];
+  assert.deepStrictEqual(clipSegmentsToRange(segments, 100, 200), [], "a segment entirely before the range is dropped");
+}
+
+{
+  const segments = [{ start: 300, end: 400, colors: ["A"] }];
+  assert.deepStrictEqual(clipSegmentsToRange(segments, 100, 200), [], "a segment entirely after the range is dropped");
+}
+
+{
+  const segments = [{ start: 120, end: 180, colors: ["A"] }];
+  assert.deepStrictEqual(
+    clipSegmentsToRange(segments, 100, 200),
+    [{ start: 120, end: 180, colors: ["A"] }],
+    "a segment fully inside the range is unchanged",
+  );
+}
+
+{
+  const segments = [{ start: 50, end: 150, colors: ["A"] }];
+  assert.deepStrictEqual(
+    clipSegmentsToRange(segments, 100, 200),
+    [{ start: 100, end: 150, colors: ["A"] }],
+    "a segment straddling the start boundary is truncated to it",
+  );
+}
+
+{
+  const segments = [{ start: 150, end: 250, colors: ["A"] }];
+  assert.deepStrictEqual(
+    clipSegmentsToRange(segments, 100, 200),
+    [{ start: 150, end: 200, colors: ["A"] }],
+    "a segment straddling the end boundary is truncated to it",
+  );
+}
+
+{
+  const segments = [{ start: 0, end: 500, colors: ["A"] }];
+  assert.deepStrictEqual(
+    clipSegmentsToRange(segments, 100, 200),
+    [{ start: 100, end: 200, colors: ["A"] }],
+    "a segment spanning the entire range is truncated to exactly the range",
+  );
+}
+
+{
+  // touching a boundary exactly leaves a zero-width segment, which must be dropped, not rendered
+  const segments = [{ start: 0, end: 100, colors: ["A"] }];
+  assert.deepStrictEqual(clipSegmentsToRange(segments, 100, 200), [], "a segment that only touches the boundary is dropped, not a zero-width render");
+}
+
+{
+  // mixed set + no-mutation guarantee
+  const segments = [
+    { start: 0, end: 50, colors: ["A"] },
+    { start: 80, end: 150, colors: ["A", "B"] },
+    { start: 180, end: 220, colors: ["B"] },
+    { start: 400, end: 500, colors: ["C"] },
+  ];
+  const beforeClip = JSON.stringify(segments);
+  const result = clipSegmentsToRange(segments, 100, 200);
+  assert.deepStrictEqual(result, [
+    { start: 100, end: 150, colors: ["A", "B"] },
+    { start: 180, end: 200, colors: ["B"] },
+  ]);
+  assert.strictEqual(JSON.stringify(segments), beforeClip, "clipSegmentsToRange must not mutate its input");
 }
 
 // filterPapers: date-range + topic filtering, combined with AND (plan.md

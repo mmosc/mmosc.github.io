@@ -440,11 +440,15 @@
           hoverIndicator.style.display = hoverTooltip.style.display = "none";
         });
 
-        function renderTrack(posFn) {
+        function renderTrack(posFn, startMs, endMs) {
           track.innerHTML = "";
-          const segments = TimelineMockLogic.computeJobSegments(
+          const allSegments = TimelineMockLogic.computeJobSegments(
             jobs.map((j) => ({ id: j.id, color: j.color, startTime: j.start, endTime: j.end })),
           );
+          // The bar only shows color within the active date-range filter — a
+          // job period entirely outside the window disappears; one straddling
+          // a boundary is truncated to it, same as the papers themselves.
+          const segments = TimelineMockLogic.clipSegmentsToRange(allSegments, startMs, endMs);
           segments.forEach((seg) => {
             const el = document.createElement("div");
             el.className = "track-segment";
@@ -544,7 +548,8 @@
         }
 
         function render() {
-          const visible = TimelineMockLogic.filterPapers(papers, activeFilters());
+          const filters = activeFilters();
+          const visible = TimelineMockLogic.filterPapers(papers, filters);
 
           let packedById;
           let posFn;
@@ -577,7 +582,7 @@
           track.style.height = effectiveTrackHeight + "px";
           hoverZone.style.height = effectiveTrackHeight + "px";
 
-          renderTrack(posFn);
+          renderTrack(posFn, filters.startMs, filters.endMs);
           renderCards(visible, packedById, posFn);
         }
 

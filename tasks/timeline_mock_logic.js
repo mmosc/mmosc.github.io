@@ -51,6 +51,12 @@
     return segments;
   }
 
+  function clipSegmentsToRange(segments, startMs, endMs) {
+    return segments
+      .map((seg) => ({ ...seg, start: Math.max(seg.start, startMs), end: Math.min(seg.end, endMs) }))
+      .filter((seg) => seg.start < seg.end);
+  }
+
   function filterPapers(papers, { startMs, endMs, activeTopics, firstAuthorOnly }) {
     return papers.filter(
       (paper) =>
@@ -112,6 +118,7 @@
     positionToDate,
     packCards,
     computeJobSegments,
+    clipSegmentsToRange,
     filterPapers,
     computeRequiredTrackHeight,
     computeCompactPositions,
