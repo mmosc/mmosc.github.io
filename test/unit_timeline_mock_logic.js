@@ -11,7 +11,9 @@ const {
   interpolateAxisInverse,
   clipSegmentsToRange,
   computeContentBounds,
-} = require("../tasks/timeline_mock_logic.js");
+  parseMonthYear,
+  parseJobDate,
+} = require("../assets/js/timeline_mock_logic.js");
 
 // dateToPosition: maps a time value onto a track, clamped to [0, trackHeight]
 assert.strictEqual(dateToPosition(0, 0, 1000, 500), 0, "earliest time maps to position 0");
@@ -505,6 +507,26 @@ assert.strictEqual(positionToDate(600, 0, 1000, 500), 1000, "position past the t
     const position = interpolateOnAxis(time, axis);
     assert.strictEqual(interpolateAxisInverse(position, axis), time, `round-trip must recover ${time}`);
   });
+}
+
+// parseMonthYear: bib entries carry year + an abbreviated month name (e.g.
+// "jul", "jun", "dec" -- jekyll-scholar's own normalization, confirmed while
+// verifying Task 3.1's JSON template), not an ISO date string.
+{
+  assert.strictEqual(parseMonthYear("2019", "jan"), Date.UTC(2019, 0, 1), "January (abbreviated) maps to month index 0");
+  assert.strictEqual(parseMonthYear("2026", "dec"), Date.UTC(2026, 11, 1), "December (abbreviated) maps to month index 11");
+  assert.strictEqual(parseMonthYear("2019", "Jun"), Date.UTC(2019, 5, 1), "month name comparison is case-insensitive");
+  assert.strictEqual(parseMonthYear("2019", "june"), Date.UTC(2019, 5, 1), "a full month name (not just the 3-letter abbreviation) still resolves");
+  assert.strictEqual(parseMonthYear("2019", "not-a-month"), Date.UTC(2019, 0, 1), "an unrecognized month falls back to January rather than throwing");
+}
+
+// parseJobDate: cv.yml's start_date/end_date are "YYYY-MM" strings, or the
+// literal string "present" for an ongoing job.
+{
+  const now = 1234567890;
+  assert.strictEqual(parseJobDate("present", now), now, '"present" resolves to the given current time');
+  assert.strictEqual(parseJobDate("2021-10", now), Date.UTC(2021, 9, 1), '"YYYY-MM" resolves to the 1st of that month (month is 1-indexed in the string)');
+  assert.strictEqual(parseJobDate("2019-01", now), Date.UTC(2019, 0, 1), "January (numeric \"01\") maps to month index 0");
 }
 
 console.log("timeline mock logic: all assertions passed.");

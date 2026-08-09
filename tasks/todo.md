@@ -32,13 +32,13 @@ Full detail, acceptance criteria, and rationale in [`plan.md`](plan.md). Source 
 ## Phase 3: Wire mock to real data
 - [x] 3.1 `_layouts/timeline_pub_entry.html` JSON-emitting template + live JSON.parse check — found and fixed a real bug along the way: 16 bib entries had a stray `key = {value}` field causing duplicate/invalid HTML ids on the live `/publications/` page (fixed on `master`, merged into `timeline-planning`)
 - [x] 3.2 `_pages/timeline.md` skeleton with two hidden data islands (papers, jobs) — `nav: false` until Task 4.1
-- [ ] 3.3 Point Phase-1 widget JS/CSS at real data
+- [x] 3.3 Point Phase-1 widget JS/CSS at real data — `timeline_mock_logic.js` moved to `assets/js/` (real deployed code, wasn't before); found and fixed a real bug via Playwright: card titles had no line-clamp, so unusually long real titles wrapped to 3-4 lines and visually overlapped the next card; also added full dark-mode reactivity for topic colors + page chrome (not originally in scope, turned out cheap given `_data/timeline_colors.yml` and the site's own `--global-*` theme tokens already existed)
 
 ## Checkpoint: Real timeline works end-to-end
-- [ ] All 28 papers visible and correctly placed, no filters active
-- [ ] Both real overlap periods (JKU/Deezer 2024, JKU/Albatross 2025–present) render correctly
-- [ ] Filters work against real data
-- [ ] No regressions on `/publications/`, `/cv/`
+- [x] All 28 papers visible and correctly placed, no filters active
+- [x] Both real overlap periods (JKU/Deezer 2024, JKU/Albatross 2025–present) render correctly
+- [x] Filters work against real data
+- [x] No regressions on `/publications/`, `/cv/`
 
 ## Phase 4: Polish & ship
 - [ ] 4.1 Nav entry + page chrome

@@ -1,0 +1,212 @@
+/* Career timeline widget (tasks/plan.md, Task 3.3). Adapted from the ad hoc
+   preview (tasks/timeline_real_preview.html) built in Phase 1-2. Structural
+   colors (backgrounds, borders, muted text) use the site's own --global-*
+   theme tokens (see al_folio_core's _sass/_themes.scss) instead of hardcoded
+   hex, so this widget follows the site's real light/dark toggle automatically
+   -- the ad hoc preview never had to, since it was a standalone page forced
+   to color-scheme: light. Topic colors are wired up the same way by
+   assets/js/timeline.js, which injects --topic-<id> custom properties from
+   the timeline-colors data island (light + dark values both already exist in
+   _data/timeline_colors.yml). Job colors are a fixed hardcoded set, not yet
+   validated for a dark surface -- a known gap, not fixed here (see
+   tasks/plan.md's Task 3.3 notes). */
+
+#timeline-widget {
+  font-size: 0.95rem;
+}
+
+.timeline-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: var(--global-bg-color);
+  border: 1px solid var(--global-divider-color);
+  border-radius: 8px;
+}
+.timeline-controls fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+.timeline-controls legend {
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 0.4rem;
+  padding: 0;
+  color: var(--global-text-color);
+}
+.timeline-controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  margin-right: 0.75rem;
+  color: var(--global-text-color);
+}
+.timeline-range-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--global-text-color);
+}
+
+.timeline-wrapper {
+  position: relative;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.timeline-container {
+  position: relative;
+}
+.timeline-track {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 14px;
+  transform: translateX(-50%);
+  border-radius: 7px;
+  overflow: hidden;
+}
+.timeline-track-segment {
+  position: absolute;
+  left: 0;
+  width: 100%;
+}
+.timeline-leader-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.timeline-leader-lines line {
+  stroke: var(--global-text-color-light);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+}
+
+.timeline-track-hover-zone {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 40px;
+  transform: translateX(-50%);
+  cursor: crosshair;
+}
+.timeline-hover-indicator {
+  position: absolute;
+  left: 50%;
+  width: 28px;
+  height: 2px;
+  background: var(--global-text-color);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  opacity: 0.55;
+  display: none;
+}
+.timeline-hover-tooltip {
+  position: absolute;
+  left: calc(50% + 22px);
+  transform: translateY(-50%);
+  background: var(--global-text-color);
+  color: var(--global-bg-color);
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  display: none;
+  z-index: 10;
+}
+
+.timeline-card {
+  position: absolute;
+  width: 320px;
+  box-sizing: border-box;
+  background: var(--global-card-bg-color);
+  border: 1px solid var(--global-divider-color);
+  border-left: 6px solid var(--card-color, var(--global-theme-color));
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  color: var(--global-text-color);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  transition:
+    opacity 0.15s ease,
+    top 0.15s ease;
+}
+.timeline-card.left {
+  right: calc(50% + 30px);
+  text-align: right;
+}
+.timeline-card.right {
+  left: calc(50% + 30px);
+  text-align: left;
+}
+.timeline-card .timeline-card-date {
+  font-size: 0.7rem;
+  color: var(--global-text-color-light);
+  margin-bottom: 0.15rem;
+}
+.timeline-card .timeline-card-date .timeline-approx {
+  font-style: italic;
+}
+.timeline-card .timeline-card-title {
+  font-weight: 600;
+  line-height: 1.3;
+  margin-bottom: 0.3rem;
+  /* Clamped to 2 lines (full title on hover) so every card matches the
+     fixed CARD_HEIGHT the packing algorithm assumes -- an unusually long
+     real title (e.g. "Audio, Lyrics, Videoclips, Interactions? ...")
+     wrapping to 3-4 lines otherwise grows the card past what packCards
+     reserved, causing real visual overlap with the next same-side card.
+     Same fix already applied to venue for the same reason. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.timeline-card .timeline-first-author-star {
+  color: var(--global-highlight-color);
+}
+.timeline-card .timeline-card-venue {
+  font-style: italic;
+  font-size: 0.7rem;
+  color: var(--global-text-color-light);
+  line-height: 1.3;
+  margin-bottom: 0.3rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.timeline-card .timeline-card-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+.timeline-card.left .timeline-card-topics {
+  justify-content: flex-end;
+}
+.timeline-topic-pill {
+  display: inline-block;
+  font-size: 0.65rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.timeline-legend-swatch {
+  display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 3px;
+  flex: none;
+}
+#timeline-job-legend label {
+  cursor: default;
+}

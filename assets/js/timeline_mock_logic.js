@@ -120,6 +120,23 @@
     return last.time;
   }
 
+  const MONTH_ABBREVIATIONS = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+
+  // Bib entries carry year + an abbreviated month name (jekyll-scholar's own
+  // normalization, e.g. "jul", not "July" or "07") -- see Task 3.1.
+  function parseMonthYear(year, month) {
+    const monthIndex = MONTH_ABBREVIATIONS.indexOf(String(month).toLowerCase().slice(0, 3));
+    return Date.UTC(parseInt(year, 10), monthIndex === -1 ? 0 : monthIndex, 1);
+  }
+
+  // cv.yml's start_date/end_date are "YYYY-MM" strings, or the literal
+  // string "present" for an ongoing job.
+  function parseJobDate(dateStr, now) {
+    if (dateStr === "present") return now;
+    const [year, month] = dateStr.split("-");
+    return Date.UTC(parseInt(year, 10), parseInt(month, 10) - 1, 1);
+  }
+
   const api = {
     dateToPosition,
     positionToDate,
@@ -132,6 +149,8 @@
     computeCompactPositions,
     interpolateOnAxis,
     interpolateAxisInverse,
+    parseMonthYear,
+    parseJobDate,
   };
 
   if (typeof module !== "undefined" && module.exports) {

@@ -176,6 +176,15 @@
         font-weight: 600;
         line-height: 1.3;
         margin-bottom: 0.3rem;
+        /* Clamped to 2 lines (full title on hover), same reasoning as
+           .card-venue's ellipsis fix: an unusually long real title wrapping
+           to 3-4 lines breaks packCards' fixed-CARD_HEIGHT assumption,
+           causing real visual overlap -- found while verifying Task 3.3's
+           real page via Playwright. */
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
       }
       .card .first-author-star {
         color: #b45309;
@@ -270,7 +279,7 @@
       </div>
     </div>
 
-    <script src="timeline_mock_logic.js"></script>
+    <script src="../assets/js/timeline_mock_logic.js"></script>
     <script>
       (function () {
         const BASELINE_TRACK_HEIGHT = 5600; // floor height; grows if packed cards need more room (see computeEffectiveTrackHeight)
@@ -498,6 +507,7 @@
 
             const titleEl = document.createElement("div");
             titleEl.className = "card-title";
+            titleEl.title = paper.title;
             if (paper.firstAuthor) {
               const star = document.createElement("span");
               star.className = "first-author-star";

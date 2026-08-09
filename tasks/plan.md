@@ -285,23 +285,41 @@ Goal: validate the visual design and core interactions cheaply, get sign-off bef
   **Verification:** built the real page (not a spike this time — it's a real Task 3.2 deliverable) and, in Node, parsed both islands directly from the built HTML: papers island → 28 entries, 28 unique keys; jobs island → 5 entries, and by inspection every one already carries the corrected dates from the CV fixes earlier this session (Albatross 2025-11, JKU 2021-10, ESK Karlsruhe 2020-09→2021-10, KIT →2020-09) — end-to-end confirmation that the real data pipeline (not the hand-copied preview) reflects the current, correct `_data/cv.yml`. `node test/unit_timeline_mock_logic.js` and `node test/style_contract.js` pass; `bundle exec jekyll build --baseurl /al-folio` succeeds; confirmed `_pages/timeline.md` (the real page) renders while the unrelated root `timeline.md` (the spec) stays excluded from `_site/`; confirmed `/timeline/` does not yet appear as a nav link (matches `nav: false`).
   **Files touched:** `_pages/timeline.md` (new)
 
-- [ ] **Task 3.3: Point the Phase-1 widget at real data**
+- [x] **Task 3.3: Point the Phase-1 widget at real data**
   **Description:** Move/adapt the JS and CSS built in Tasks 1.1-1.3 into `assets/js/timeline.js` / `assets/css/timeline.css`, swapping the hardcoded fake-data array for parsing the two real data islands from Task 3.2. Interaction logic (packing, filters) should need minimal changes if the fake-data shape in Phase 1 matched the real shape from Task 3.1 — confirm it does, adjust if not.
   **Acceptance criteria:**
-  - [ ] All 28 real papers render as cards, correctly positioned and non-overlapping
-  - [ ] The jobs bar correctly shows the two real overlap periods (JKU/Deezer 2024, JKU/Albatross AI 2025–present) with 45° striping
-  - [ ] Time-range and topic filters both work against the real dataset
+  - [x] All 28 real papers render as cards, correctly positioned and non-overlapping
+  - [x] The jobs bar correctly shows the two real overlap periods (JKU/Deezer 2024, JKU/Albatross AI 2025–present) with 45° striping
+  - [x] Time-range and topic filters both work against the real dataset
   **Verification:**
-  - [ ] Manual check: `bundle exec jekyll serve`, visually confirm against the actual `cv.yml`/`papers.bib` data (e.g. count of visible cards matches `grep -c "^@"` when no filters are active)
+  - [x] Manual check: `bundle exec jekyll serve`, visually confirm against the actual `cv.yml`/`papers.bib` data (e.g. count of visible cards matches `grep -c "^@"` when no filters are active)
   **Dependencies:** Task 3.2
   **Files likely touched:** `assets/js/timeline.js` (new), `assets/css/timeline.css` (new), `_pages/timeline.md`
   **Estimated scope:** M
 
+  **What actually happened — significantly larger than "adapt the JS/CSS," for reasons that only became visible once real data hit a real browser page:**
+
+  **1. `tasks/timeline_mock_logic.js` moved to `assets/js/timeline_mock_logic.js`.** It was living in `tasks/`, which is excluded from every build (`_config.yml`) — fine for the ad hoc preview (a standalone file, `<script src="timeline_mock_logic.js">` sitting right next to it), but the real `/timeline/` page needs this module actually deployed. Updated `test/unit_timeline_mock_logic.js`'s require path and the ad hoc preview's `<script src>` to match. This formalizes something already true in spirit — an earlier addendum noted the "mock" name was misleading, since it's real, shared, tested logic, not throwaway code.
+
+  **2. Two new tested functions for real-data shape mismatches `tasks/timeline_mock.html` never had to handle:** `parseMonthYear(year, month)` (bib entries carry an abbreviated month name, e.g. `"jul"` — jekyll-scholar's own normalization, discovered in Task 3.1 — not an ISO date) and `parseJobDate(dateStr, now)` (`cv.yml`'s `start_date`/`end_date` are `"YYYY-MM"` strings or the literal string `"present"`). Both RED/GREEN tested in `test/unit_timeline_mock_logic.js`, including case-insensitivity and an unrecognized-month fallback for the former.
+
+  **3. A third data island, `_pages/timeline.md`'s `{{ site.data.timeline_colors | jsonify }}`,** rather than hardcoding `TOPIC_COLORS` in JS (which the ad hoc preview did, copy-pasted from `_data/timeline_colors.yml` — exactly the kind of drift risk a "real" implementation shouldn't accept).
+
+  **4. Full dark-mode reactivity for topic colors and page chrome — not in the original acceptance criteria, added after discovering it was nearly free.** `_data/timeline_colors.yml` already carries validated light *and* dark hex values per topic (confirmed in its own header comment), and `al_folio_core`'s `_sass/_themes.scss` already exposes site-wide `--global-*` CSS custom properties (`--global-card-bg-color`, `--global-text-color`, etc.) that automatically follow `html[data-theme="dark"]`, set by the theme's own `theme.js`. `assets/css/timeline.css` uses those tokens for all structural/chrome colors instead of the ad hoc preview's hardcoded `#fff`/`#1a1a1a` (which was fine for a standalone page forced to `color-scheme: light`, but would have looked broken — a stark white card — on the real site in dark mode). `assets/js/timeline.js` injects `--topic-<id>` custom properties (light values on `:root`, dark values under `html[data-theme="dark"]`) from the new data island, and every topic-colored element references `var(--topic-<id>)` instead of a resolved hex string — verified live via Playwright: toggling `data-theme` changes both card border-color and background with zero JS re-render. **Job colors are a deliberate exception, left as a single hardcoded hex per company** (same 5 values as the ad hoc preview) — re-running `validate_palette.js --mode dark` on them surfaced real lightness-band and contrast failures against a dark surface that would need genuinely new colors to fix, not just wiring; flagged as a known gap, not fixed here (job colors were already flagged once this session for a pre-existing light-mode CVD issue on the green/orange pair — same "not in scope to fix here" reasoning applies).
+
+  **5. `venueShort` falls back to the full `venue` string.** No `venue_short` bib field exists — flagged as a Task-3.3-or-later decision back in the venue-shortening addendum, and this is that "later": cards on the real page currently show the full, unshortened venue name (still single-line-ellipsized, so nothing breaks, just less terse than the ad hoc preview's hand-curated short forms). Adding a curated `venue_short` field (reusing the 28 already-approved values) is a fast, low-risk follow-up whenever wanted — flagging here rather than blocking this task on it.
+
+  **6. Real, reproducible card-overlap bug found and fixed — the acceptance criteria's "non-overlapping" was actually failing before this fix.** Installed Playwright (`npm install`, `npx playwright install chromium` — not previously set up in this environment) specifically because this task's blast radius (real data, real browser, real CSS cascade sharing the page with the rest of the site) was large enough that a hand-rolled Node/DOM stub wouldn't have caught what a real browser did: 7 of 22 default-view cards visually overlapped their same-side neighbor by a consistent, reproducible amount. Root cause: `.card-title` had no line-clamp (only `.card-venue` did, from the earlier venue-truncation addendum), and several real titles (e.g. "Audio, Lyrics, Videoclips, Interactions? ...") wrap to 3-4 lines instead of the 2 lines `CARD_HEIGHT = 112` assumes — the *same* class of bug the venue-truncation fix already solved once, just never applied to title because the ad hoc preview's real titles apparently always fit in 2 lines (different font stack, different effective width — genuinely never triggered there). Fixed with the same pattern: `-webkit-line-clamp: 2` + full title on hover via the `title` attribute, applied to *both* `assets/css/timeline.css` and, for consistency, `tasks/timeline_real_preview.html`. Re-verified via Playwright after the fix: 0 overlaps in compact mode (22-card default view, 28-card full view) and proportional mode (28-card full view), 6 job-bar segments with exactly 2 correctly striped (the real JKU/Deezer and JKU/Albatross overlaps), 0 console/page errors throughout every interaction tested (Reset, both scale modes, first-author-only, topic toggling, date-range widening, hover tooltip).
+
+  **Verification:** `node test/unit_timeline_mock_logic.js` and `node test/style_contract.js` pass; `bundle exec jekyll build --baseurl /al-folio` succeeds; confirmed `tasks/`/`timeline.md` still absent from `_site/` and `/publications/`/`/cv/` still build. Real end-to-end verification via Playwright against `bundle exec jekyll serve` (not just a static build inspection): card counts cross-checked against independent Node calculations at every filter state (22 default / 14 default+first-author / 28 full-range, all matching exactly), 0 visual card overlaps in both scale modes, correct job-bar segment/striping count, dark-mode color reactivity confirmed live, 0 console/page errors.
+
+  **Files touched:** `assets/js/timeline.js` (new), `assets/js/timeline_mock_logic.js` (moved from `tasks/`), `assets/css/timeline.css` (new), `_pages/timeline.md`, `test/unit_timeline_mock_logic.js`, `tasks/timeline_real_preview.html` (script-src path update + the same title-clamp fix), `package.json`/`package-lock.json` (Playwright dependency, already declared but not yet installed in this environment)
+
 ### Checkpoint: Real timeline works end-to-end
-- [ ] All 28 papers visible and correctly placed with no filters active
-- [ ] Both real overlap periods render correctly
-- [ ] Filters work against real data
-- [ ] No regressions: `/publications/`, `/cv/` still render correctly
+- [x] All 28 papers visible and correctly placed with no filters active
+- [x] Both real overlap periods render correctly
+- [x] Filters work against real data
+- [x] No regressions: `/publications/`, `/cv/` still render correctly
 
 ### Phase 4: Polish & ship
 
