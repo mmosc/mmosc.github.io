@@ -23,14 +23,11 @@
     return JSON.parse(document.getElementById("timeline-topic-colors-data").textContent);
   }
 
-  // venueShort has no source field yet -- no venue_short bib field exists
-  // (flagged in tasks/plan.md's venue-shortening addendum as a later
-  // decision). Falls back to the full venue name until that's added.
   const papers = parsePapersIsland().map((p) => ({
     id: p.key,
     title: p.title,
     venue: p.venue,
-    venueShort: p.venue,
+    venueShort: p.venue_short,
     date: TimelineMockLogic.parseMonthYear(p.year, p.month),
     approx: p.month_approximate,
     topics: p.topics,

@@ -422,6 +422,7 @@ filtered_bibtex_keywords:
     slides,
     supp,
     topic,
+    venue_short,
     video,
     website,
   ]

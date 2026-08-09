@@ -2,6 +2,7 @@
   "key": {{ entry.key | jsonify }},
   "title": {{ entry.title | strip_html | jsonify }},
   "venue": {{ entry.booktitle | default: entry.journal | default: entry.school | strip_html | jsonify }},
+  "venue_short": {{ entry.venue_short | default: entry.booktitle | default: entry.journal | default: entry.school | strip_html | jsonify }},
   "year": {{ entry.year | jsonify }},
   "month": {{ entry.month | jsonify }},
   "month_approximate": {{ entry.month_approximate | default: "false" }},
