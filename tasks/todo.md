@@ -43,9 +43,9 @@ Full detail, acceptance criteria, and rationale in [`plan.md`](plan.md). Source 
 ## Phase 4: Polish & ship
 - [x] 4.1 Nav entry + page chrome — `nav: true`, added a real page description; "timeline" confirmed last in nav (order 5), real click-through navigation verified
 - [x] 4.2 Accessibility pass (keyboard, contrast, aria-labels) — found a real WCAG failure: white pill text failed 4.5:1 against 7 of 8 real topic-color/mode combinations; fixed with a computed per-color black/white text choice (`pickContrastingTextColor`), not a hardcoded guess
-- [ ] 4.3 Responsive smoke check at 375px / 768px / 1440px (vertical layout only)
+- [x] 4.3 Responsive smoke check at 375px / 768px / 1440px (vertical layout only) — 375px was flatly broken (horizontal scroll, all cards clipped), not just tight; fixing it surfaced two more real bugs (cards overlapping at narrow widths, then leader lines desyncing on live browser resize) — see plan.md for all three
 
 ## Checkpoint: Complete
-- [ ] All acceptance criteria met
+- [x] All acceptance criteria met
 - [ ] Fresh-eyes 30-second-read check
 - [ ] Reviewed with Marta before merge/publish

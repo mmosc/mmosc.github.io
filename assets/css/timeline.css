@@ -49,6 +49,7 @@
 }
 .timeline-range-inputs {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
   font-size: 0.85rem;
@@ -126,7 +127,12 @@
 
 .timeline-card {
   position: absolute;
-  width: 320px;
+  /* Fixed 320px overflowed the viewport below ~760px wide (Task 4.3's
+     375px check): clamp() keeps the existing 320px on tablet/desktop
+     (42vw already exceeds 320px well before 768px) while shrinking
+     proportionally on narrow phones instead of causing horizontal
+     scroll/clipping. */
+  width: clamp(150px, 42vw, 320px);
   box-sizing: border-box;
   background: var(--global-card-bg-color);
   border: 1px solid var(--global-divider-color);
@@ -141,11 +147,11 @@
     top 0.15s ease;
 }
 .timeline-card.left {
-  right: calc(50% + 30px);
+  right: calc(50% + clamp(10px, 4vw, 30px));
   text-align: right;
 }
 .timeline-card.right {
-  left: calc(50% + 30px);
+  left: calc(50% + clamp(10px, 4vw, 30px));
   text-align: left;
 }
 .timeline-card .timeline-card-date {

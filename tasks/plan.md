@@ -376,15 +376,25 @@ Goal: validate the visual design and core interactions cheaply, get sign-off bef
   **Verification:** confirmed `<p class="post-description">` renders empty in the built HTML; live Playwright check confirms the title still renders, the widget still shows 22 cards, 0 console/page errors. `node test/unit_timeline_mock_logic.js` and `node test/style_contract.js` pass.
   **Files touched:** `_pages/timeline.md`
 
-- [ ] **Task 4.3: Responsive smoke check (vertical layout only — horizontal is deferred)**
+- [x] **Task 4.3: Responsive smoke check (vertical layout only — horizontal is deferred)**
   **Description:** Confirm the vertical layout itself holds up from narrow phone width through wide desktop width, per the v1 orientation decision in `timeline.md`. Not building the horizontal variant now.
   **Acceptance criteria:**
-  - [ ] No horizontal scrollbar, clipped cards, or broken leader lines at 375px, 768px, and 1440px widths
+  - [x] No horizontal scrollbar, clipped cards, or broken leader lines at 375px, 768px, and 1440px widths
   **Verification:**
-  - [ ] Manual check at all three widths
+  - [x] Manual check at all three widths
   **Dependencies:** Task 4.2
   **Files likely touched:** `assets/css/timeline.css`
   **Estimated scope:** S
+  **What actually happened — this was not a smoke-check-passes-cleanly task; it found two real, compounding layout bugs.**
+
+  **Bug 1: 375px was flatly broken, not just tight.** Measured (not assumed) via Playwright before touching anything: at 375px, `.timeline-card`'s fixed `width: 320px` — fine on the ad hoc preview's always-desktop-sized testing, never revisited for the real page — overflowed the viewport by ~163px, causing a horizontal scrollbar and all 22 visible cards clipped off-screen on both edges; the `.timeline-range-inputs` control row (two month inputs + Reset button) had no `flex-wrap` and also overflowed, cutting the Reset button off entirely. 768px and 1440px already passed (confirmed, not assumed — 768px's fixed-width math happens to just fit). Fixed with `width: clamp(150px, 42vw, 320px)` on `.timeline-card` (unchanged 320px above ~762px viewport width, where 42vw already exceeds it — so 768px/1440px are pixel-identical to before) and matching `clamp(10px, 4vw, 30px)` for the card-to-bar gap, plus `flex-wrap: wrap` on `.timeline-range-inputs`.
+
+  **Bug 2 (found by the narrower cards from fixing Bug 1): 8 cards overlapped at 375px.** `CARD_HEIGHT = 112` (the packing algorithm's fixed-height assumption, already once fixed for title-wrapping in Task 3.3) assumes topic pills fit on one line — true at 320px, false at ~158px, where a 2-topic paper's pills wrap to a second line and the card grows to 137px, same class of bug as Task 3.3's title-clamp fix, just triggered by *width* instead of *content length* this time. Fixed by computing `CARD_HEIGHT` from `window.innerWidth` at render time (140 below the same ~762px breakpoint the CSS uses, 112 above it) rather than a single constant.
+
+  **Bug 3, reported directly by Marta after the first fix looked right in isolation: "the lines are fine initially, but if I enlarge the browser they get messed up."** Real and distinct from bugs 1-2 — this widget had *no resize handling at all* before this task, which was never a problem while every dimension was a fixed constant (nothing to desync). Making card width genuinely viewport-dependent changed that: CSS updates card width/position live on resize (browsers reflow automatically), but every JS-computed value — `CARD_HEIGHT`, the compact-mode packing built from it, and each leader line's `<line>` coordinates (one-shot `getBoundingClientRect()` snapshots taken at render time) — stayed frozen at whatever the viewport was at initial page load. Resizing after load left cards able to drift back into overlapping (packed under the old CARD_HEIGHT assumption) and leader lines visibly detached from their card (pointing at the pre-resize position). Fixed by extracting the CARD_HEIGHT-dependent compact-mode setup (previously one-shot top-level `const`s) into a re-callable `setupCompactLayout()` function, and adding a debounced `resize` listener that recomputes `CARD_HEIGHT`, re-runs `setupCompactLayout()`, and calls `render()` again — reusing the exact same render pipeline filter changes already use, not new logic. Compact mode's positions stay filter-invariant per the original spec (resizing isn't a filter); a plain "add a resize listener" without this refactor wouldn't have worked, since `render()` alone never touched `CARD_HEIGHT` or the compact packing built from it.
+
+  **Verification:** for every one of the three fixes above, re-measured via Playwright rather than trusting the fix looked plausible: 0 horizontal scroll, 0 overflowing cards, 0 card overlaps at all of 375/768/1440px (confirmed by direct `getBoundingClientRect()` comparison, the same method that first caught the bugs); explicitly simulated Marta's exact reported scenario (load at 375px → resize to 1440px → resize back to 375px) and screenshotted each stage — 0 overlaps and correctly-attached leader lines at every step, both directions. `node test/unit_timeline_mock_logic.js` and `node test/style_contract.js` pass; `bundle exec jekyll build` succeeds; re-checked Task 4.2's pill-contrast/aria-label work for regressions (none) since this task touched the same `CARD_HEIGHT`/`timeline.js` code. 0 console/page errors throughout every check.
+  **Files touched:** `assets/css/timeline.css`, `assets/js/timeline.js`
 
 ### Checkpoint: Complete
 - [ ] All acceptance criteria above met

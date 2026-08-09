@@ -4,7 +4,16 @@
 // first (exposes window.TimelineMockLogic) and runs against the page
 // skeleton in _pages/timeline.md (data islands + #timeline-widget markup).
 (function () {
-  const CARD_HEIGHT = 112;
+  // assets/css/timeline.css shrinks .timeline-card's width below ~762px
+  // viewport width (clamp(150px, 42vw, 320px) stops growing past 320px
+  // right around 42vw=320px, i.e. ~762px) so it fits without horizontal
+  // overflow (Task 4.3's 375px check). Narrower cards wrap a paper's topic
+  // pills onto more lines when it has 2 topics (measured: 137px actual vs
+  // the 112px/1-topic-card assumption), so CARD_HEIGHT needs the same
+  // breakpoint -- otherwise cards with 2 topics grow past what packCards
+  // reserved and visually overlap the next same-side card.
+  const NARROW_VIEWPORT_BREAKPOINT_PX = 762;
+  let CARD_HEIGHT = window.innerWidth < NARROW_VIEWPORT_BREAKPOINT_PX ? 140 : 112;
   const CARD_MIN_GAP = 14;
   const TOP_PADDING = 20;
   const BASELINE_TRACK_HEIGHT = 5600;
@@ -108,15 +117,26 @@
   const pos = (time) => TOP_PADDING + TimelineMockLogic.dateToPosition(time, minTime, maxTime, BASELINE_TRACK_HEIGHT);
 
   // --- "Compact time" mode -------------------------------------------------
-  const PITCH = CARD_HEIGHT + CARD_MIN_GAP;
-  const compactAxis = TimelineMockLogic.computeCompactPositions(papers.map((p) => p.date), PITCH);
-  const compactPos = (time) => TOP_PADDING + TimelineMockLogic.interpolateOnAxis(time, compactAxis);
-  const compactPacked = TimelineMockLogic.packCards(
-    papers.map((p) => ({ id: p.id, idealPosition: compactPos(p.date) })),
-    CARD_HEIGHT,
-    CARD_MIN_GAP,
-  );
-  const compactPackedById = Object.fromEntries(compactPacked.map((p) => [p.id, p]));
+  // CARD_HEIGHT-dependent (PITCH folds it into the rank spacing itself), so
+  // this whole block needs to be re-run whenever CARD_HEIGHT changes --
+  // wrapped in a function rather than one-shot top-level consts, called
+  // once at startup and again on every resize (see the "resize" listener
+  // below), not just on filter changes -- compact mode's positions still
+  // stay filter-invariant, per Marta's original spec, since resizing isn't
+  // a filter.
+  let compactAxis, compactPos, compactPackedById;
+  function setupCompactLayout() {
+    const pitch = CARD_HEIGHT + CARD_MIN_GAP;
+    compactAxis = TimelineMockLogic.computeCompactPositions(papers.map((p) => p.date), pitch);
+    compactPos = (time) => TOP_PADDING + TimelineMockLogic.interpolateOnAxis(time, compactAxis);
+    const compactPacked = TimelineMockLogic.packCards(
+      papers.map((p) => ({ id: p.id, idealPosition: compactPos(p.date) })),
+      CARD_HEIGHT,
+      CARD_MIN_GAP,
+    );
+    compactPackedById = Object.fromEntries(compactPacked.map((p) => [p.id, p]));
+  }
+  setupCompactLayout();
 
   let compactMode = true;
   let cropOffset = 0;
@@ -358,6 +378,26 @@
     topicFieldset.querySelectorAll("input[type=checkbox]").forEach((i) => (i.checked = true));
     firstAuthorOnly.checked = false;
     render();
+  });
+
+  // CSS makes .timeline-card's width genuinely viewport-dependent
+  // (clamp(150px, 42vw, 320px) -- see the CARD_HEIGHT comment above), so a
+  // live browser resize after the initial render leaves the CSS-driven
+  // width/position correct but every JS-computed value (CARD_HEIGHT, the
+  // compact-mode packing built from it, and the leader lines' <line>
+  // coordinates, which are one-shot getBoundingClientRect() snapshots)
+  // stale -- cards can drift back into overlapping each other, and leader
+  // lines visibly detach from their card as its real position moves out
+  // from under them. Debounced so a continuous drag-resize doesn't
+  // recompute on every intermediate frame.
+  let resizeTimer;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      CARD_HEIGHT = window.innerWidth < NARROW_VIEWPORT_BREAKPOINT_PX ? 140 : 112;
+      setupCompactLayout();
+      render();
+    }, 150);
   });
 
   render();
