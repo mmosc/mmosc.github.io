@@ -371,6 +371,11 @@ Goal: validate the visual design and core interactions cheaply, get sign-off bef
   **Verification:** `node test/unit_timeline_mock_logic.js` (including the new regression-guard test asserting all 8 real topic-color/mode combinations clear WCAG AA 4.5:1 with their chosen text color) and `node test/style_contract.js` pass; `bundle exec jekyll build` succeeds. Live Playwright verification against `bundle exec jekyll serve`: keyboard-only activation of all 4 filter types confirmed by actual card-count/state changes (not just focus), `role`/`aria-label`/`aria-hidden` attributes confirmed present with correct values, computed pill text color in a real browser matches the pure-function calculation exactly for sampled pills, 0 job-legend `<label>` elements remain, 0 console/page errors throughout.
   **Files touched:** `assets/js/timeline_mock_logic.js`, `test/unit_timeline_mock_logic.js`, `assets/js/timeline.js`, `assets/css/timeline.css`, `_pages/timeline.md`
 
+- [x] **Addendum: removed the page subheader** *(requested: remove the "An interactive career timeline — jobs and publications together, filterable by date and topic." subheader)*
+  **What changed:** Blanked `description:` in `_pages/timeline.md`'s front matter (Task 4.1 had added a real description; reverted here), matching `repositories.md`/`publications.md`'s existing blank/absent pattern rather than `cv.md`'s real one.
+  **Verification:** confirmed `<p class="post-description">` renders empty in the built HTML; live Playwright check confirms the title still renders, the widget still shows 22 cards, 0 console/page errors. `node test/unit_timeline_mock_logic.js` and `node test/style_contract.js` pass.
+  **Files touched:** `_pages/timeline.md`
+
 - [ ] **Task 4.3: Responsive smoke check (vertical layout only — horizontal is deferred)**
   **Description:** Confirm the vertical layout itself holds up from narrow phone width through wide desktop width, per the v1 orientation decision in `timeline.md`. Not building the horizontal variant now.
   **Acceptance criteria:**

@@ -2,7 +2,7 @@
 layout: page
 permalink: /timeline/
 title: timeline
-description: An interactive career timeline — jobs and publications together, filterable by date and topic.
+description:
 nav: true
 nav_order: 5
 ---
