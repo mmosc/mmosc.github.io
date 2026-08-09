@@ -20,7 +20,7 @@ Full detail, acceptance criteria, and rationale in [`plan.md`](plan.md). Source 
 - [x] Addendum: hover-to-see-date on the bar (`positionToDate`, wider hit zone)
 - [x] Addendum: `tasks/timeline_mock.html` (fake data) removed — Marta confirmed the real-data preview visually and asked to focus on it exclusively going forward; `timeline_mock_logic.js` (the tested pure-logic module) stays, now consumed only by `timeline_real_preview.html`
 - [x] Addendum: "compact time" bar-scale toggle — cards/segments positioned by chronological rank instead of real elapsed time, sized once from all 28 papers regardless of active filters (`computeCompactPositions`, `interpolateOnAxis`/`interpolateAxisInverse`)
-- [ ] 2.6 First-author filter (checkbox against `timeline_real_preview.html`, now the sole preview file)
+- [x] 2.6 First-author filter (checkbox against `timeline_real_preview.html`, now the sole preview file)
 
 ## Checkpoint: Real data ready
 - [x] `bundle exec jekyll build` succeeds

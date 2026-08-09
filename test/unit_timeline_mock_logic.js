@@ -177,6 +177,53 @@ assert.strictEqual(dateToPosition(1050, 0, 1000, 500), 500, "time after range cl
   );
 }
 
+// Task 2.6: first-author-only filter, ANDed with the existing date-range and
+// topic filters
+{
+  const papers = [
+    { id: "p1", date: 0, topics: ["a"], firstAuthor: true },
+    { id: "p2", date: 50, topics: ["a", "b"], firstAuthor: false },
+    { id: "p3", date: 100, topics: ["b"], firstAuthor: true },
+    { id: "p4", date: 150, topics: ["c"], firstAuthor: false },
+  ];
+  const allTopics = new Set(["a", "b", "c"]);
+
+  // firstAuthorOnly omitted (undefined): behaves exactly as before, no filtering by authorship
+  assert.deepStrictEqual(
+    filterPapers(papers, { startMs: 0, endMs: 150, activeTopics: allTopics }).map((p) => p.id),
+    ["p1", "p2", "p3", "p4"],
+    "omitting firstAuthorOnly doesn't filter by authorship (backward compatible)",
+  );
+
+  // firstAuthorOnly: false explicitly: same as omitted
+  assert.deepStrictEqual(
+    filterPapers(papers, { startMs: 0, endMs: 150, activeTopics: allTopics, firstAuthorOnly: false }).map((p) => p.id),
+    ["p1", "p2", "p3", "p4"],
+    "firstAuthorOnly: false includes every paper regardless of authorship",
+  );
+
+  // firstAuthorOnly: true: only papers with firstAuthor: true pass
+  assert.deepStrictEqual(
+    filterPapers(papers, { startMs: 0, endMs: 150, activeTopics: allTopics, firstAuthorOnly: true }).map((p) => p.id),
+    ["p1", "p3"],
+    "firstAuthorOnly: true hides papers where firstAuthor is false",
+  );
+
+  // combines as AND with the date-range filter
+  assert.deepStrictEqual(
+    filterPapers(papers, { startMs: 0, endMs: 60, activeTopics: allTopics, firstAuthorOnly: true }).map((p) => p.id),
+    ["p1"],
+    "p3 is first-author but outside the date range, so it must be excluded (AND, not OR)",
+  );
+
+  // combines as AND with the topic filter
+  assert.deepStrictEqual(
+    filterPapers(papers, { startMs: 0, endMs: 150, activeTopics: new Set(["c"]), firstAuthorOnly: true }).map((p) => p.id),
+    [],
+    "p4 matches the topic filter but not firstAuthorOnly, so it must be excluded (AND, not OR)",
+  );
+}
+
 // integration: filterPapers -> packCards must still produce non-overlapping placements
 {
   const papers = [

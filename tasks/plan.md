@@ -157,18 +157,19 @@ Goal: validate the visual design and core interactions cheaply, get sign-off bef
   **Files touched:** `_bibliography/papers.bib`, `_config.yml` (folded in Task 2.5's change)
   **Estimated scope:** M (28 entries × 2 fields, but the conversation/confirmation was the real work)
 
-- [ ] **Task 2.6: First-author filter (new requirement, added mid-session)**
+- [x] **Task 2.6: First-author filter (new requirement, added mid-session)**
   **Description:** Extend the mock's tested `filterPapers` function with an optional first-author-only predicate, ANDed with the existing date-range and topic filters. Add a matching checkbox to `tasks/timeline_mock.html`. No new visual/layout risk (reuses the same checkbox pattern and filter-composition already built and tested in Tasks 1.2/1.3), so this doesn't need a full mock-first design cycle — just the same RED/GREEN unit-test treatment `filterPapers` already got.
   **Acceptance criteria:**
-  - [ ] `filterPapers` accepts a `firstAuthorOnly` option; when true, only papers with `first_author: true` in their fake data pass
-  - [ ] Combines correctly with the existing date-range and topic filters (AND, not OR)
-  - [ ] Mock UI has a working "first author only" toggle
+  - [x] `filterPapers` accepts a `firstAuthorOnly` option; when true, only papers with `first_author: true` in their fake data pass
+  - [x] Combines correctly with the existing date-range and topic filters (AND, not OR)
+  - [x] Mock UI has a working "first author only" toggle
   **Verification:**
-  - [ ] Automated: RED/GREEN unit tests in `test/unit_timeline_mock_logic.js`
-  - [ ] `node test/unit_timeline_mock_logic.js` and `node test/style_contract.js` both still pass
+  - [x] Automated: RED/GREEN unit tests in `test/unit_timeline_mock_logic.js`
+  - [x] `node test/unit_timeline_mock_logic.js` and `node test/style_contract.js` both still pass
   **Dependencies:** Task 1.3 (reuses its `filterPapers` function)
   **Files likely touched:** `tasks/timeline_mock_logic.js`, `test/unit_timeline_mock_logic.js`, `tasks/timeline_mock.html`
   **Estimated scope:** S
+  **What actually happened:** Target file retargeted to `tasks/timeline_real_preview.html` (the mock was removed earlier this session — see that addendum). `filterPapers` gained a `firstAuthorOnly` option, defaulting to falsy so every existing call site (which never passes it) is unaffected — RED/GREEN in `test/unit_timeline_mock_logic.js`: omitted/false behave identically to before, `true` hides `firstAuthor: false` papers, and it combines as AND with both the date-range and topic filters (mirroring the existing Task 1.2/1.3 test pattern). Added a "First author only" checkbox in a new `#author-filter` fieldset, wired into `activeFilters()` and reset by the existing Reset button. Spot-checked the real dataset: 20 papers `firstAuthor: true` / 8 `false`, matching the count already documented from Task 2.2's tagging session. `timeline.md`'s spec for this ("papers where I'm first author (or share first authorship)") is already satisfied by the existing `firstAuthor` boolean, which was set `true` for both solo-first and the 2 shared-first-author (asterisk) cases back in Task 2.2 — no new authorship data needed.
 
 - [x] **Task 2.3: Guided topic → color mapping session**
   **Description:** Once the final topic list exists (Task 2.2), assign each topic a color, informed by the site's existing visual palette (check for an existing accent/theme color set before inventing a new one) and basic accessibility (sufficient contrast between adjacent topic colors, since they're a legend + fill color, not just decoration).

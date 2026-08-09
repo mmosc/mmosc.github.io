@@ -245,6 +245,10 @@
       <fieldset id="topic-filters">
         <legend>Topics</legend>
       </fieldset>
+      <fieldset id="author-filter">
+        <legend>Authorship</legend>
+        <label><input type="checkbox" id="first-author-only" /> First author only</label>
+      </fieldset>
       <fieldset id="job-legend">
         <legend>Jobs</legend>
       </fieldset>
@@ -377,6 +381,7 @@
         const hoverIndicator = document.getElementById("hover-indicator");
         const hoverTooltip = document.getElementById("hover-tooltip");
         const topicFieldset = document.getElementById("topic-filters");
+        const firstAuthorOnly = document.getElementById("first-author-only");
         const rangeStart = document.getElementById("range-start");
         const rangeEnd = document.getElementById("range-end");
         const rangeReset = document.getElementById("range-reset");
@@ -462,7 +467,7 @@
           const activeTopics = new Set(
             Array.from(topicFieldset.querySelectorAll("input[type=checkbox]:checked")).map((i) => i.dataset.topic),
           );
-          return { startMs, endMs, activeTopics };
+          return { startMs, endMs, activeTopics, firstAuthorOnly: firstAuthorOnly.checked };
         }
 
         function renderCards(visible, packedById, posFn) {
@@ -577,6 +582,7 @@
 
         [rangeStart, rangeEnd].forEach((el) => el.addEventListener("change", render));
         topicFieldset.addEventListener("change", render);
+        firstAuthorOnly.addEventListener("change", render);
         scaleModeInputs.forEach((input) => {
           input.addEventListener("change", () => {
             compactMode = document.querySelector('input[name="scale-mode"]:checked').value === "compact";
@@ -587,6 +593,7 @@
           rangeStart.value = monthInput(minTime);
           rangeEnd.value = monthInput(maxTime);
           topicFieldset.querySelectorAll("input[type=checkbox]").forEach((i) => (i.checked = true));
+          firstAuthorOnly.checked = false;
           render();
         });
 

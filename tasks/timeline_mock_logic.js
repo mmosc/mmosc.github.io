@@ -51,8 +51,14 @@
     return segments;
   }
 
-  function filterPapers(papers, { startMs, endMs, activeTopics }) {
-    return papers.filter((paper) => paper.date >= startMs && paper.date <= endMs && paper.topics.some((topic) => activeTopics.has(topic)));
+  function filterPapers(papers, { startMs, endMs, activeTopics, firstAuthorOnly }) {
+    return papers.filter(
+      (paper) =>
+        paper.date >= startMs &&
+        paper.date <= endMs &&
+        paper.topics.some((topic) => activeTopics.has(topic)) &&
+        (!firstAuthorOnly || paper.firstAuthor),
+    );
   }
 
   function computeRequiredTrackHeight(cards, cardHeight, minGap, baselineHeight) {
