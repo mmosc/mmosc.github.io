@@ -70,16 +70,22 @@ Goal: validate the visual design and core interactions cheaply, get sign-off bef
 
 ### Phase 2: Real data prep
 
-- [ ] **Task 2.1: Un-break the local `_layouts/` override for this fork**
+- [x] **Task 2.1: Un-break the local `_layouts/` override for this fork**
   **Description:** Adjust this repo's copy of `test/style_contract.js` (and/or `unit-tests.yml`) so it stops treating a local `_layouts/` directory as an error, per the documented, sanctioned exception for user sites in `docs/ARCHITECTURE.md`/`docs/BOUNDARIES.md`. Simplest option: remove `_layouts`/`_includes`/`_sass` from the `forbiddenPath` check, or skip that specific check entirely in this fork — either is fine since this check exists to protect the *upstream* starter repo, not this site.
   **Acceptance criteria:**
-  - [ ] `npm run lint:style-contract` passes with a placeholder `_layouts/_test.html` file present
-  - [ ] The check still catches its other original violations (forbidden `build:css`/`build:tailwind` npm scripts, missing `theme: al_folio_core`, missing SRI pins, `al_math` git-branch pin) — only the path-existence check changes
+  - [x] `npm run lint:style-contract` passes with a placeholder `_layouts/_test.html` file present
+  - [x] The check still catches its other original violations (forbidden `build:css`/`build:tailwind` npm scripts, missing `theme: al_folio_core`, missing SRI pins, `al_math` git-branch pin) — only the path-existence check changes
+  **What changed:** Removed only `_includes`, `_layouts`, `_sass` from the `forbiddenPath` loop (with a comment explaining why, citing the two docs). Left `_scripts`, `assets/tailwind`, `tailwind.config.js`, `assets/webfonts` in a separate, still-enforced loop — neither doc extends the user-site carve-out to those, they stay build/starter-ownership concerns even for a personal fork.
   **Verification:**
-  - [ ] Tests pass: `npm run lint:style-contract`
-  - [ ] Remove the placeholder file after confirming
-  **Dependencies:** None (can run in parallel with Phase 1)
-  **Files likely touched:** `test/style_contract.js`
+  - [x] RED: confirmed the *unmodified* script failed, specifically citing the `_layouts` path, with a placeholder `_layouts/_test.html` present
+  - [x] GREEN: after the edit, same placeholder present, check passes
+  - [x] Also live-tested `_includes` and `_sass` placeholders (not just `_layouts`) — all three pass now
+  - [x] Regression: `_scripts` and `assets/tailwind` placeholders are still correctly caught (proves the carve-out didn't overreach)
+  - [x] Regression: temporarily broke `theme: al_folio_core` in `_config.yml` (unrelated check) — still correctly caught, then reverted — proves the edit didn't accidentally disable other checks
+  - [x] All placeholder files/dirs removed after verification; `git status` clean except the one intended file
+  - [x] `bundle exec jekyll build` still succeeds
+  **Dependencies:** None (ran in parallel with Phase 1, as planned)
+  **Files touched:** `test/style_contract.js`
   **Estimated scope:** XS
 
 - [ ] **Task 2.2: Guided topic tagging session (conversational, not silent automation)**

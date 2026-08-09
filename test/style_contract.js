@@ -65,7 +65,18 @@ if (/gem 'al_math',\s*:git =>/.test(gemfile)) {
   failures.push("`Gemfile` must not use git-branch pin for `al_math`; use released gem version.");
 }
 
-for (const forbiddenPath of ["_includes", "_layouts", "_sass", "_scripts", "assets/tailwind", "tailwind.config.js", "assets/webfonts"]) {
+// `_includes`, `_layouts`, and `_sass` are deliberately not checked here.
+// This file is al-folio's own upstream style-contract check, copied into
+// every site created from this template (see docs/ARCHITECTURE.md and
+// docs/BOUNDARIES.md) — its thin-starter boundary applies to the
+// `alshedivat/al-folio` starter repo itself, not to a user's own site.
+// Both docs explicitly confirm a user's own site may legally shadow
+// gem-owned files under these three paths (`_layouts/bib.liquid`,
+// `_includes/repository/repo.liquid`, `_sass/_variables.scss`, etc.).
+// `_scripts`, the Tailwind build pipeline, and webfont artifacts remain
+// starter/build-ownership concerns even for a user site, so they stay
+// checked below.
+for (const forbiddenPath of ["_scripts", "assets/tailwind", "tailwind.config.js", "assets/webfonts"]) {
   if (exists(forbiddenPath)) {
     failures.push(`Starter must not own core component path \`${forbiddenPath}\`; move ownership to the corresponding gem.`);
   }

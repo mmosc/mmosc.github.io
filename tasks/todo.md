@@ -11,7 +11,7 @@ Full detail, acceptance criteria, and rationale in [`plan.md`](plan.md). Source 
 - [x] Reviewed live in-browser with Marta — approved ("looks good!") after fixing job-label overlap and bar-continuity issues
 
 ## Phase 2: Real data prep
-- [ ] 2.1 Fix `test/style_contract.js` to allow local `_layouts/` override in this fork
+- [x] 2.1 Fix `test/style_contract.js` to allow local `_layouts/` override in this fork
 - [ ] 2.2 Guided session: add `topic` field to all 28 bib entries
 - [ ] 2.3 Guided session: topic → color mapping (`_data/timeline_colors.yml`)
 - [ ] 2.4 Backfill `month` field on all 28 bib entries (flag approximated ones)
