@@ -88,17 +88,35 @@ Goal: validate the visual design and core interactions cheaply, get sign-off bef
   **Files touched:** `test/style_contract.js`
   **Estimated scope:** XS
 
-- [ ] **Task 2.2: Guided topic tagging session (conversational, not silent automation)**
-  **Description:** Go through the 28 entries in `_bibliography/papers.bib` with Marta, proposing a `topic = {...}` value per entry (comma-separated tags) from a shortlist derived from her actual research areas (already drafted in `_data/cv.yml`'s `research_interests` section: multimodal learning, recommender systems, music information retrieval — likely needs 1-2 more granular tags once real papers are sorted, e.g. distinguishing physics-era papers from ML-era ones). Confirm each with Marta rather than guessing silently — this is explicitly requested in `timeline.md`'s "Before starting" list.
+- [x] **Task 2.2: Guided topic tagging session (conversational, not silent automation)**
+  **Description:** Go through the 28 entries in `_bibliography/papers.bib` with Marta, proposing a `topic = {...}` value per entry from a shortlist derived from her actual research areas. Confirm each with Marta rather than guessing silently — this is explicitly requested in `timeline.md`'s "Before starting" list.
+  **What actually happened:** Presented a full 28-row draft table in chat (topic + first-author status per paper) rather than writing anything to the file first — one correction came back (`Moscati2025CoBraR` should be `recommender-systems` only, not also `multimodal-learning`), applied before writing. **Scope grew mid-session**: Marta also asked for a first-author (or shared-first-author) filter, which needed the same kind of per-paper confirmation — one real discrepancy surfaced there too (does `Ganhor2025SiBraR_TORS`, the journal extension of `ganhoer_moscati2024sibrar`, carry the same equal-contribution marking as the conference version?). Confirmed: no, genuinely different, not an oversight. `timeline.md` updated to record the new first-author-filter requirement (see its Interactivity section).
+  **Final topic set** (reused from `_data/cv.yml`'s existing `research_interests`, so the CV and timeline pages use matching vocabulary instead of two parallel taxonomies): `particle-physics` (6 papers), `recommender-systems` (15), `multimodal-learning` (10), `music-information-retrieval` (8) — most papers carry 1-2 tags. 4 topics, well under the ≤8 target.
+  **First-author data**: added `first_author = {true|false}` to every entry (always present, never omitted — matches the file's existing convention for the `selected` boolean field). 20 true (including 2 shared-first-author cases marked by asterisk in the original `.bib` author list: `ganhoer_moscati2024sibrar`, `nawaz2024fame`), 8 false.
+  **Sequencing call**: folded Task 2.5 (filtered_bibtex_keywords) into this same commit rather than doing it as planned in a later, separate task — writing the new custom fields without also filtering them out would have left `/publications/` visibly regressed (raw field text leaking into citations) for however long until 2.5 landed. Each task should leave the system in a working state; splitting these across two commits would have violated that.
   **Acceptance criteria:**
-  - [ ] All 28 bib entries have a `topic` field
-  - [ ] Final topic list is short enough to fit as an on-screen legend without crowding (resolves the open question in `timeline.md`; target ≤8 topics)
+  - [x] All 28 bib entries have a `topic` field
+  - [x] Final topic list is short enough to fit as an on-screen legend without crowding (resolves the open question in `timeline.md`; target ≤8 topics) — 4 topics
   **Verification:**
-  - [ ] `grep -c "topic = " _bibliography/papers.bib` returns 28
-  - [ ] `bundle exec jekyll build` still succeeds; `/publications/` page spot-checked to confirm citation text is unchanged (topic not yet filtered — that's Task 2.5)
+  - [x] `grep -c "topic = " _bibliography/papers.bib` → 28; brace-balance check on the full file → depth 0
+  - [x] Built the site before and after (via `git stash`/`git stash pop` to diff cleanly) and diffed `_site/publications/index.html`: zero occurrences of `topic` or `first_author` anywhere in the output, including the raw "show BibTeX" toggle. Only diff: a cosmetic trailing-comma change on the `key = {value}` line in that raw toggle (an artifact of how the renderer joins the filtered field list) — no visible citation text changed at all.
+  - [x] **Spike test** (built and torn down, not committed): a real `_layouts/spike_json.html` custom bibliography template, invoked via `{% bibliography -f papers -q @*[key=Moscati2025CoBraR] -T spike_json %}`, correctly rendered `{"key":"Moscati2025CoBraR","topic":"recommender-systems","first_author":"true"}` — confirms the Architecture Decisions' core technical assumption (custom bib fields reachable via `entry.<field>` in a local `_layouts/` override) actually works, not just that it should work per reading gem source. One real gotcha found: **the layout filename itself must not start with `_`** (Jekyll's default file-level exclude applies inside `_layouts/` too, separate from the directory-level `include:` mechanism) — noted here so Task 3.1 doesn't repeat the mistake.
   **Dependencies:** Checkpoint (mock approved)
-  **Files likely touched:** `_bibliography/papers.bib`
-  **Estimated scope:** M (28 small edits, but the conversation/confirmation is the real work, not the edits)
+  **Files touched:** `_bibliography/papers.bib`, `_config.yml` (folded in Task 2.5's change)
+  **Estimated scope:** M (28 entries × 2 fields, but the conversation/confirmation was the real work)
+
+- [ ] **Task 2.6: First-author filter (new requirement, added mid-session)**
+  **Description:** Extend the mock's tested `filterPapers` function with an optional first-author-only predicate, ANDed with the existing date-range and topic filters. Add a matching checkbox to `tasks/timeline_mock.html`. No new visual/layout risk (reuses the same checkbox pattern and filter-composition already built and tested in Tasks 1.2/1.3), so this doesn't need a full mock-first design cycle — just the same RED/GREEN unit-test treatment `filterPapers` already got.
+  **Acceptance criteria:**
+  - [ ] `filterPapers` accepts a `firstAuthorOnly` option; when true, only papers with `first_author: true` in their fake data pass
+  - [ ] Combines correctly with the existing date-range and topic filters (AND, not OR)
+  - [ ] Mock UI has a working "first author only" toggle
+  **Verification:**
+  - [ ] Automated: RED/GREEN unit tests in `test/unit_timeline_mock_logic.js`
+  - [ ] `node test/unit_timeline_mock_logic.js` and `node test/style_contract.js` both still pass
+  **Dependencies:** Task 1.3 (reuses its `filterPapers` function)
+  **Files likely touched:** `tasks/timeline_mock_logic.js`, `test/unit_timeline_mock_logic.js`, `tasks/timeline_mock.html`
+  **Estimated scope:** S
 
 - [ ] **Task 2.3: Guided topic → color mapping session**
   **Description:** Once the final topic list exists (Task 2.2), assign each topic a color, informed by the site's existing visual palette (check for an existing accent/theme color set before inventing a new one) and basic accessibility (sufficient contrast between adjacent topic colors, since they're a legend + fill color, not just decoration).
@@ -122,21 +140,23 @@ Goal: validate the visual design and core interactions cheaply, get sign-off bef
   **Files likely touched:** `_bibliography/papers.bib`
   **Estimated scope:** M
 
-- [ ] **Task 2.5: Keep new fields out of rendered citations**
+- [x] **Task 2.5: Keep new fields out of rendered citations** *(done — folded into Task 2.2's commit rather than executed separately; see that task's "Sequencing call" note for why. `first_author` also added to `filtered_bibtex_keywords`, same reasoning as `topic`. Still applies to `month_approximate` once Task 2.4 introduces it — that part remains pending.)*
   **Description:** Add `topic` (and `month_approximate` if used) to `filtered_bibtex_keywords` in `_config.yml` so these internal-only fields don't leak into the citation text shown on `/publications/`. (`month` itself should stay — it's already a standard, displayed BibTeX field.) Resolves the open question already logged in `timeline.md`.
   **Acceptance criteria:**
-  - [ ] `/publications/` renders with no visible `topic` or `month_approximate` text in any citation
+  - [x] `/publications/` renders with no visible `topic` or `first_author` text in any citation
+  - [ ] Same for `month_approximate`, once Task 2.4 adds it
   **Verification:**
-  - [ ] `bundle exec jekyll build --baseurl /al-folio` succeeds; grep the built `_site/publications/index.html` for the literal string `topic` and confirm no leakage into visible text
+  - [x] Built before/after via `git stash`, diffed `_site/publications/index.html` — zero occurrences of the new field names anywhere in output
   **Dependencies:** Task 2.2
-  **Files likely touched:** `_config.yml`
+  **Files touched:** `_config.yml`
   **Estimated scope:** XS
 
 ### Checkpoint: Real data ready
-- [ ] `bundle exec jekyll build` succeeds
-- [ ] All 28 entries have both `topic` and `month`
-- [ ] `/publications/` unchanged from before this phase (diff the rendered HTML text, ignoring the new bib fields)
-- [ ] `npm run lint:style-contract` passes (Task 2.1 confirmed working)
+- [x] `bundle exec jekyll build` succeeds
+- [x] All 28 entries have `topic` and `first_author`
+- [ ] All 28 entries have `month` (Task 2.4 not yet done — blocks full checkpoint)
+- [x] `/publications/` unchanged from before this phase (diffed the rendered HTML text; zero visible change)
+- [x] `npm run lint:style-contract` passes
 
 ### Phase 3: Wire the mock to real data
 

@@ -12,16 +12,18 @@ Full detail, acceptance criteria, and rationale in [`plan.md`](plan.md). Source 
 
 ## Phase 2: Real data prep
 - [x] 2.1 Fix `test/style_contract.js` to allow local `_layouts/` override in this fork
-- [ ] 2.2 Guided session: add `topic` field to all 28 bib entries
+- [x] 2.2 Guided session: add `topic` + `first_author` fields to all 28 bib entries (first-author filter was a new requirement added mid-session — see `timeline.md`)
 - [ ] 2.3 Guided session: topic → color mapping (`_data/timeline_colors.yml`)
 - [ ] 2.4 Backfill `month` field on all 28 bib entries (flag approximated ones)
-- [ ] 2.5 Add `topic`/`month_approximate` to `filtered_bibtex_keywords`
+- [x] 2.5 Add `topic`/`first_author` to `filtered_bibtex_keywords` (folded into 2.2's commit; `month_approximate` part still pending on 2.4)
+- [ ] 2.6 First-author filter in the mock (new task — `filterPapers` extension + checkbox)
 
 ## Checkpoint: Real data ready
-- [ ] `bundle exec jekyll build` succeeds
-- [ ] All 28 entries have `topic` + `month`
-- [ ] `/publications/` output unchanged
-- [ ] `npm run lint:style-contract` passes
+- [x] `bundle exec jekyll build` succeeds
+- [x] All 28 entries have `topic` + `first_author`
+- [ ] All 28 entries have `month` (blocks full checkpoint)
+- [x] `/publications/` output unchanged
+- [x] `npm run lint:style-contract` passes
 
 ## Phase 3: Wire mock to real data
 - [ ] 3.1 `_layouts/timeline_pub_entry.html` JSON-emitting template + live JSON.parse check

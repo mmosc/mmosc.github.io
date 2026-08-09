@@ -22,6 +22,8 @@ The webpage should allow selecting a specific time range (with month granularity
 
 It should also allow selecting which topics should be included in the timeline, according to the papers' topic tag(s). This filtering is also what lets a more thorough reader (e.g. a PC chair checking my recsys-specific output) narrow the view themselves, instead of needing a separate search/table mode — recommend leaning on this rather than building a second "dossier" interface (see Not Doing).
 
+A toggle to show only papers where I'm first author (or share first authorship, marked in the source `.bib` by an asterisk on multiple authors) should also be available, combined with the other filters as AND.
+
 Optionally, other things such as awards and scholarships, should be shown.
 
 
@@ -35,12 +37,12 @@ v1 is **vertical** (top-to-bottom bar, cards to the left/right), on all screen s
 Note: checked against real `cv.yml` data — only two-way overlaps occur (KIT postdoc/JKU PhD do not overlap; JKU PhD overlaps with the Deezer internship in 2024, then separately with Albatross AI from 2025), never three simultaneous jobs. The two-color 45° intertwining as specified is sufficient; no need to design for a three-way split. The diagonal-stripe treatment works the same whether the bar is drawn horizontal or vertical, so this isn't affected by the orientation decision above.
 
 ## Technical constraints
-This repo is a thin Jekyll starter (see `AGENTS.md`) — new `_layouts/`, `_includes/`, or `_sass/` files aren't allowed here; that's the `al_folio_core` gem's territory. The timeline must be built as a self-contained client-side widget (its own JS/CSS asset, loaded from a normal page under `_pages/`), not as new Liquid includes. `_config.yml` already has `al_charts` enabled with d3, Chart.js, Plotly, and Vega available as third-party libraries — pick one of these rather than pulling in a new charting dependency.
+This repo is a thin Jekyll starter (see `AGENTS.md`) — new `_layouts/`, `_includes/`, or `_sass/` files aren't allowed in the *upstream al-folio starter repo*. That restriction doesn't extend to a user's own site: `docs/ARCHITECTURE.md` and `docs/BOUNDARIES.md` both explicitly confirm local overrides under those three paths are legal here. This repo's copy of `test/style_contract.js` (copied in wholesale from upstream) initially gave a false positive on that — fixed (see `tasks/plan.md` Task 2.1). A local `_layouts/timeline_pub_entry.html` is how `jekyll-scholar`'s `{% bibliography %}` tag exposes custom bib fields (like `topic`, `first_author`) as data — confirmed working via a live spike test, not just by reading gem source. `_config.yml` already has `al_charts` enabled with d3, Chart.js, Plotly, and Vega available as third-party libraries — the Phase 1 mock ended up needing none of them (hand-rolled CSS + one SVG overlay for leader lines).
 
 ## Before starting
- - Provide a mock example of how the timeline would look, with fake timeline and fake papers
- - Guide me through the creation/association of topic tags to papers
- - Guide me through the creation/association of color codings to topic tags
+ - [x] Provide a mock example of how the timeline would look, with fake timeline and fake papers — done, approved
+ - [x] Guide me through the creation/association of topic tags to papers — done; final set: `particle-physics`, `recommender-systems`, `multimodal-learning`, `music-information-retrieval`
+ - [ ] Guide me through the creation/association of color codings to topic tags — topics are tagged in `_bibliography/papers.bib`; colors not yet assigned (`_data/timeline_colors.yml` not yet created)
 
 # Not doing (v1)
  - **Full due-diligence/dossier mode** (filterable table by venue/coauthor/keyword) — topic-tag filtering covers most of this need at much lower cost; revisit only if real visitors ask for more.
@@ -52,6 +54,6 @@ This repo is a thin Jekyll starter (see `AGENTS.md`) — new `_layouts/`, `_incl
  - **Horizontal layout on wide/desktop screens.** Once vertical v1 is solid, add a horizontal variant above a screen-width breakpoint, with vertical staying as the mobile fallback (see Orientation). Deferred because vertical alone gets a working, mobile-friendly timeline shipped fastest.
 
 # Open questions
- - Does the new `topic` field on bib entries need to be added to `filtered_bibtex_keywords` in `_config.yml` so it doesn't leak into the rendered citation text on `/publications/`? (Likely yes — check before shipping.)
- - Roughly how many distinct topic tags do we expect (5? 10?) — determines how many colors the palette needs and whether a legend fits on screen without crowding.
- - Awards/scholarships layer: do I have this data anywhere yet? (Not currently in `_data/cv.yml` — would need to be added first if this optional layer is in scope.)
+ - ~~Does the new `topic` field on bib entries need to be added to `filtered_bibtex_keywords`?~~ Resolved: yes, done (along with `first_author`, added for the same reason) — verified by diffing the built `/publications/` page before/after, zero visible change.
+ - ~~Roughly how many distinct topic tags do we expect?~~ Resolved: 4 (see Before Starting).
+ - Awards/scholarships layer: do I have this data anywhere yet? (Not currently in `_data/cv.yml` — would need to be added first if this optional layer is in scope.) Still open.

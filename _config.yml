@@ -408,6 +408,7 @@ filtered_bibtex_keywords:
     code,
     dimensions,
     eprint,
+    first_author,
     google_scholar_id,
     hal,
     html,
@@ -419,6 +420,7 @@ filtered_bibtex_keywords:
     selected,
     slides,
     supp,
+    topic,
     video,
     website,
   ]
