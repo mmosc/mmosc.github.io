@@ -18,7 +18,7 @@ cv:
       - institution: Johannes Kepler University Linz, Austria
         area: Computer Science
         degree: PhD
-        start_date: 2021-01
+        start_date: 2021-10
         end_date: present
         highlights:
           - Research on multimodal learning and recommender systems
@@ -36,7 +36,7 @@ cv:
     experience:
       - company: Albatross AI
         position: Applied Scientist (L5)
-        start_date: 2025-01
+        start_date: 2025-11
         end_date: present
         highlights:
           - Developing effective recommender systems for Albatross AI's customers
@@ -49,16 +49,22 @@ cv:
           - Analysis of user behavior patterns in music consumption
       - company: Johannes Kepler University Linz, Austria
         position: PhD Researcher
-        start_date: 2021-01
+        start_date: 2021-10
         end_date: present
         highlights:
           - Multimodal representation learning for recommender systems
           - Cold-start recommendation scenarios
           - Music information retrieval and emotion-based music recommendation
+      - company: ESK Karlsruhe, Germany
+        position: Maths and Physics High-School Teacher
+        start_date: 2020-09
+        end_date: 2021-10
+        highlights:
+          - Teaching mathematics and physics to high-school students
       - company: Karlsruhe Institute of Technology (KIT), Germany
         position: Postdoctoral Researcher
         start_date: 2019-01
-        end_date: 2021-01
+        end_date: 2020-09
         highlights:
           - Research in theoretical particle physics
           - Focus on lepton flavor universality and beyond Standard Model physics
