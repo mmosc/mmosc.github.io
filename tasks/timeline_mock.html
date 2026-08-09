@@ -151,14 +151,15 @@
         white-space: nowrap;
       }
 
-      .job-label {
-        position: absolute;
-        left: 50%;
-        transform: translateX(calc(-50% - 40px));
-        font-size: 0.7rem;
-        color: #555;
-        text-align: right;
-        width: 140px;
+      .legend-swatch {
+        display: inline-block;
+        width: 0.7rem;
+        height: 0.7rem;
+        border-radius: 3px;
+        flex: none;
+      }
+      #job-legend label {
+        cursor: default;
       }
     </style>
   </head>
@@ -182,13 +183,16 @@
       <fieldset id="topic-filters">
         <legend>Topics</legend>
       </fieldset>
+      <fieldset id="job-legend">
+        <legend>Jobs</legend>
+      </fieldset>
     </div>
 
     <div class="timeline-wrapper">
       <div class="timeline-container" id="timeline-container">
         <div class="timeline-track" id="timeline-track"></div>
         <svg class="leader-lines" id="leader-lines"></svg>
-        <!-- job labels, cards injected here by script -->
+        <!-- cards injected here by script -->
       </div>
     </div>
 
@@ -204,8 +208,11 @@
         const t = (isoDate) => new Date(isoDate).getTime();
 
         // --- Fake data -----------------------------------------------------
+        // Jobs are back-to-back with no gaps (matching the real cv.yml data
+        // shape — Marta's actual career has no unemployment gaps, only
+        // overlaps), so the bar renders continuously end to end.
         const jobs = [
-          { id: "physics-institute", label: "Physics Institute — Postdoc", color: "#9C36B5", start: t("2017-01-01"), end: t("2018-11-01") },
+          { id: "physics-institute", label: "Physics Institute — Postdoc", color: "#9C36B5", start: t("2017-01-01"), end: t("2019-01-01") },
           { id: "univ-nowhere", label: "University of Nowhere — PhD Researcher", color: "#4C6EF5", start: t("2019-01-01"), end: t("2022-01-01") },
           { id: "acme-labs", label: "Acme Research Labs — Research Intern", color: "#F76707", start: t("2021-06-01"), end: t("2021-12-01") },
           { id: "fictional-ai", label: "Fictional AI Corp — Applied Scientist", color: "#2F9E44", start: t("2022-01-01"), end: now },
@@ -249,15 +256,30 @@
         rangeStart.value = monthInput(minTime);
         rangeEnd.value = monthInput(maxTime);
 
-        Object.keys(TOPIC_COLORS).forEach((topicId) => {
+        Object.entries(TOPIC_COLORS).forEach(([topicId, color]) => {
           const label = document.createElement("label");
           const input = document.createElement("input");
           input.type = "checkbox";
           input.checked = true;
           input.dataset.topic = topicId;
+          const swatch = document.createElement("span");
+          swatch.className = "legend-swatch";
+          swatch.style.background = color;
           label.appendChild(input);
+          label.appendChild(swatch);
           label.appendChild(document.createTextNode(topicId.replace("topic-", "")));
           topicFieldset.appendChild(label);
+        });
+
+        const jobLegend = document.getElementById("job-legend");
+        jobs.forEach((job) => {
+          const label = document.createElement("label");
+          const swatch = document.createElement("span");
+          swatch.className = "legend-swatch";
+          swatch.style.background = job.color;
+          label.appendChild(swatch);
+          label.appendChild(document.createTextNode(job.label));
+          jobLegend.appendChild(label);
         });
 
         container.style.height = TOP_PADDING * 2 + TRACK_HEIGHT + "px";
@@ -284,16 +306,6 @@
               el.style.background = `repeating-linear-gradient(45deg, ${seg.colors[0]} 0 ${stripeSize}px, ${seg.colors[1]} ${stripeSize}px ${stripeSize * 2}px)`;
             }
             track.appendChild(el);
-          });
-
-          // job labels (left of the bar, one per job)
-          container.querySelectorAll(".job-label").forEach((n) => n.remove());
-          jobs.forEach((job) => {
-            const label = document.createElement("div");
-            label.className = "job-label";
-            label.style.top = pos(job.start) + "px";
-            label.textContent = job.label;
-            container.appendChild(label);
           });
         }
 
