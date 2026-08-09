@@ -38,7 +38,8 @@
   padding: 0;
   color: var(--global-text-color);
 }
-.timeline-controls label {
+.timeline-controls label,
+.timeline-job-legend-item {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
@@ -196,6 +197,11 @@
   font-size: 0.65rem;
   padding: 0.1rem 0.45rem;
   border-radius: 999px;
+  /* Overridden per-pill via inline style (assets/js/timeline.js) to
+     whichever of black/white clears WCAG AA 4.5:1 against that specific
+     topic color -- no single fixed color passes for all 4 topics in both
+     light and dark mode (see test/unit_timeline_mock_logic.js). This is
+     just a sane fallback if JS somehow doesn't set it. */
   color: #fff;
   white-space: nowrap;
 }
@@ -207,6 +213,6 @@
   border-radius: 3px;
   flex: none;
 }
-#timeline-job-legend label {
+.timeline-job-legend-item {
   cursor: default;
 }

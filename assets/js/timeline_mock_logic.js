@@ -137,6 +137,33 @@
     return Date.UTC(parseInt(year, 10), parseInt(month, 10) - 1, 1);
   }
 
+  // WCAG 2.x relative-luminance contrast ratio (same formula the dataviz
+  // skill's validate_palette.js uses for its own contrast checks).
+  function relativeLuminance(hex) {
+    const n = parseInt(hex.replace("#", ""), 16);
+    const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((c) => {
+      const s = c / 255;
+      return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  }
+
+  function contrastRatio(hex1, hex2) {
+    const l1 = relativeLuminance(hex1);
+    const l2 = relativeLuminance(hex2);
+    const [hi, lo] = l1 > l2 ? [l1, l2] : [l2, l1];
+    return (hi + 0.05) / (lo + 0.05);
+  }
+
+  // No single fixed text color (all-white or all-black) clears WCAG AA
+  // 4.5:1 against every real topic color in both light and dark mode (see
+  // test/unit_timeline_mock_logic.js's regression guard) -- picking
+  // whichever of pure black/white contrasts better against a given
+  // background does.
+  function pickContrastingTextColor(bgHex) {
+    return contrastRatio("#000000", bgHex) >= contrastRatio("#ffffff", bgHex) ? "#000000" : "#ffffff";
+  }
+
   const api = {
     dateToPosition,
     positionToDate,
@@ -149,6 +176,8 @@
     computeCompactPositions,
     interpolateOnAxis,
     interpolateAxisInverse,
+    contrastRatio,
+    pickContrastingTextColor,
     parseMonthYear,
     parseJobDate,
   };

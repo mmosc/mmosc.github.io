@@ -71,17 +71,30 @@
   // toggle re-colors the widget with zero JS re-render needed.
   const topicColors = parseTopicColorsIsland();
   const topicIds = Object.keys(topicColors);
+  // No single fixed text color (all-white or all-black) clears WCAG AA
+  // 4.5:1 against every real topic color in both light and dark mode --
+  // pickContrastingTextColor picks whichever of pure black/white contrasts
+  // better against each one, so a --topic-<id>-text pair is injected
+  // alongside --topic-<id> for anything that puts text directly on a topic
+  // color (currently just .timeline-topic-pill).
   (function injectTopicColorVars() {
     const lines = [":root {"];
-    topicIds.forEach((id) => lines.push(`  --topic-${id}: ${topicColors[id].light};`));
+    topicIds.forEach((id) => {
+      lines.push(`  --topic-${id}: ${topicColors[id].light};`);
+      lines.push(`  --topic-${id}-text: ${TimelineMockLogic.pickContrastingTextColor(topicColors[id].light)};`);
+    });
     lines.push('}', 'html[data-theme="dark"] {');
-    topicIds.forEach((id) => lines.push(`  --topic-${id}: ${topicColors[id].dark};`));
+    topicIds.forEach((id) => {
+      lines.push(`  --topic-${id}: ${topicColors[id].dark};`);
+      lines.push(`  --topic-${id}-text: ${TimelineMockLogic.pickContrastingTextColor(topicColors[id].dark)};`);
+    });
     lines.push("}");
     const styleEl = document.createElement("style");
     styleEl.textContent = lines.join("\n");
     document.head.appendChild(styleEl);
   })();
   const topicColorVar = (topicId) => `var(--topic-${topicId})`;
+  const topicTextColorVar = (topicId) => `var(--topic-${topicId}-text)`;
 
   const minTime = Math.min(...jobs.map((j) => j.start));
   const maxTime = Math.max(...jobs.map((j) => j.end), ...papers.map((p) => p.date));
@@ -145,13 +158,17 @@
 
   const jobLegend = document.getElementById("timeline-job-legend");
   jobs.forEach((job) => {
-    const label = document.createElement("label");
+    // Not a real form control (nothing to check/select) -- a plain span
+    // with role="listitem", not <label>, which implies control association.
+    const item = document.createElement("span");
+    item.className = "timeline-job-legend-item";
+    item.setAttribute("role", "listitem");
     const swatch = document.createElement("span");
     swatch.className = "timeline-legend-swatch";
     swatch.style.background = job.color;
-    label.appendChild(swatch);
-    label.appendChild(document.createTextNode(job.label));
-    jobLegend.appendChild(label);
+    item.appendChild(swatch);
+    item.appendChild(document.createTextNode(job.label));
+    jobLegend.appendChild(item);
   });
 
   track.style.top = TOP_PADDING + "px";
@@ -217,10 +234,23 @@
       card.className = "timeline-card " + placement.side;
       card.style.top = placement.top - cropOffset + "px";
       card.style.setProperty("--card-color", topicColorVar(paper.topics[0]));
+      card.setAttribute("role", "group");
+      const dateText = new Date(paper.date).toLocaleDateString(undefined, { year: "numeric", month: "short" });
+      card.setAttribute(
+        "aria-label",
+        [
+          paper.firstAuthor ? "First author." : null,
+          paper.approx ? `Approximately ${dateText}.` : `${dateText}.`,
+          `${paper.title}.`,
+          `${paper.venue}.`,
+          `Topics: ${paper.topics.map(topicLabel).join(", ")}.`,
+        ]
+          .filter(Boolean)
+          .join(" "),
+      );
 
       const dateEl = document.createElement("div");
       dateEl.className = "timeline-card-date";
-      const dateText = new Date(paper.date).toLocaleDateString(undefined, { year: "numeric", month: "short" });
       dateEl.innerHTML = paper.approx ? `<span class="timeline-approx">~${dateText}</span>` : dateText;
       card.appendChild(dateEl);
 
@@ -231,6 +261,7 @@
         const star = document.createElement("span");
         star.className = "timeline-first-author-star";
         star.title = "First author or shared first authorship";
+        star.setAttribute("aria-hidden", "true");
         star.textContent = "★ ";
         titleEl.appendChild(star);
       }
@@ -249,6 +280,7 @@
         const pill = document.createElement("span");
         pill.className = "timeline-topic-pill";
         pill.style.background = topicColorVar(tp);
+        pill.style.color = topicTextColorVar(tp);
         pill.textContent = topicLabel(tp);
         topicsEl.appendChild(pill);
       });

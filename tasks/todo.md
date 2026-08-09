@@ -42,7 +42,7 @@ Full detail, acceptance criteria, and rationale in [`plan.md`](plan.md). Source 
 
 ## Phase 4: Polish & ship
 - [x] 4.1 Nav entry + page chrome — `nav: true`, added a real page description; "timeline" confirmed last in nav (order 5), real click-through navigation verified
-- [ ] 4.2 Accessibility pass (keyboard, contrast, aria-labels)
+- [x] 4.2 Accessibility pass (keyboard, contrast, aria-labels) — found a real WCAG failure: white pill text failed 4.5:1 against 7 of 8 real topic-color/mode combinations; fixed with a computed per-color black/white text choice (`pickContrastingTextColor`), not a hardcoded guess
 - [ ] 4.3 Responsive smoke check at 375px / 768px / 1440px (vertical layout only)
 
 ## Checkpoint: Complete

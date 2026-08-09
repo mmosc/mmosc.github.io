@@ -12,9 +12,9 @@ nav_order: 5
     <fieldset>
       <legend>Time range (month granularity)</legend>
       <div class="timeline-range-inputs">
-        <input type="month" id="timeline-range-start" />
+        <input type="month" id="timeline-range-start" aria-label="Start month" />
         <span>to</span>
-        <input type="month" id="timeline-range-end" />
+        <input type="month" id="timeline-range-end" aria-label="End month" />
         <button type="button" id="timeline-range-reset">Reset</button>
       </div>
     </fieldset>
@@ -25,7 +25,10 @@ nav_order: 5
       <legend>Authorship</legend>
       <label><input type="checkbox" id="timeline-first-author-only" /> First author only</label>
     </fieldset>
-    <fieldset id="timeline-job-legend">
+    <!-- Not real form controls (nothing to check/select), so plain spans
+         rather than <label> -- a <label> with no associated input is a
+         semantic misuse that some screen readers announce oddly. -->
+    <fieldset id="timeline-job-legend" role="list" aria-label="Jobs, color-coded to the bar below">
       <legend>Jobs</legend>
     </fieldset>
     <fieldset id="timeline-scale-mode">

@@ -13,6 +13,8 @@ const {
   computeContentBounds,
   parseMonthYear,
   parseJobDate,
+  contrastRatio,
+  pickContrastingTextColor,
 } = require("../assets/js/timeline_mock_logic.js");
 
 // dateToPosition: maps a time value onto a track, clamped to [0, trackHeight]
@@ -527,6 +529,56 @@ assert.strictEqual(positionToDate(600, 0, 1000, 500), 1000, "position past the t
   assert.strictEqual(parseJobDate("present", now), now, '"present" resolves to the given current time');
   assert.strictEqual(parseJobDate("2021-10", now), Date.UTC(2021, 9, 1), '"YYYY-MM" resolves to the 1st of that month (month is 1-indexed in the string)');
   assert.strictEqual(parseJobDate("2019-01", now), Date.UTC(2019, 0, 1), "January (numeric \"01\") maps to month index 0");
+}
+
+// contrastRatio: WCAG 2.x relative-luminance contrast ratio between two hex
+// colors (same formula the dataviz skill's validate_palette.js uses), needed
+// for Task 4.2's "topic colors meet WCAG AA contrast where used for text"
+// acceptance criterion.
+{
+  assert.strictEqual(contrastRatio("#000000", "#ffffff"), 21, "black vs white is the maximum possible contrast, exactly 21:1");
+  assert.strictEqual(contrastRatio("#ffffff", "#ffffff"), 1, "a color against itself is the minimum possible contrast, exactly 1:1");
+  assert.strictEqual(contrastRatio("#000000", "#000000"), 1, "black against itself is also 1:1");
+  assert.strictEqual(contrastRatio("#000000", "#ffffff"), contrastRatio("#ffffff", "#000000"), "contrast is symmetric regardless of argument order");
+  // #767676 vs white is the commonly-cited "just barely passes WCAG AA" gray
+  const classicGray = contrastRatio("#767676", "#ffffff");
+  assert.ok(classicGray > 4.5 && classicGray < 4.6, `#767676 vs white should be ~4.54:1 (got ${classicGray})`);
+}
+
+// pickContrastingTextColor: returns whichever of pure black/white has higher
+// contrast against a given background -- used because none of the 4 real
+// topic colors (in either light or dark mode) pass WCAG AA 4.5:1 with a
+// single fixed text color (white fails 7 of 8 combinations; black fails the
+// other 1), but picking the better of the two per-color passes all 8.
+{
+  assert.strictEqual(pickContrastingTextColor("#ffffff"), "#000000", "black reads far better than white on a white background");
+  assert.strictEqual(pickContrastingTextColor("#000000"), "#ffffff", "white reads far better than black on a black background");
+  // multimodal-learning's light topic color: black passes AA (7.46:1), white fails (2.82:1)
+  assert.strictEqual(pickContrastingTextColor("#1baf7a"), "#000000");
+  // music-information-retrieval's light topic color: white passes AA (8.56:1), black fails (2.45:1)
+  assert.strictEqual(pickContrastingTextColor("#4a3aa7"), "#ffffff");
+}
+
+{
+  // regression guard: every real topic color (both light and dark values)
+  // must have a text color choice that actually clears WCAG AA (4.5:1)
+  const WCAG_AA_NORMAL_TEXT = 4.5;
+  const topicColors = {
+    "particle-physics": { light: "#2a78d6", dark: "#3987e5" },
+    "multimodal-learning": { light: "#1baf7a", dark: "#199e70" },
+    "recommender-systems": { light: "#eb6834", dark: "#d95926" },
+    "music-information-retrieval": { light: "#4a3aa7", dark: "#9085e9" },
+  };
+  Object.entries(topicColors).forEach(([topic, { light, dark }]) => {
+    [
+      ["light", light],
+      ["dark", dark],
+    ].forEach(([mode, hex]) => {
+      const textColor = pickContrastingTextColor(hex);
+      const ratio = contrastRatio(textColor, hex);
+      assert.ok(ratio >= WCAG_AA_NORMAL_TEXT, `${topic} (${mode}, ${hex}) with chosen text ${textColor} must clear WCAG AA 4.5:1, got ${ratio.toFixed(2)}`);
+    });
+  });
 }
 
 console.log("timeline mock logic: all assertions passed.");
