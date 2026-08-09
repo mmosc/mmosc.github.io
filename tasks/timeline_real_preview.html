@@ -184,9 +184,8 @@
       real Jekyll page) hasn't been built yet.
     </p>
     <p class="note warn">
-      <strong>Known gap:</strong> Task 2.4 resolved real months for 23 of 28 papers (4 via Crossref DOI lookup, 16
-      via conference dates, 3 already had one). The remaining 5 — the PhD thesis and 4 physics journal articles,
-      none with a conference to anchor to — default to June of their year, marked with <em>~</em> before the date.
+      <strong>Known gap:</strong> Task 2.4 resolved real months for 27 of 28 papers. Only <code>Blanke:2019aao</code>
+      remains on the June-default fallback, marked with <em>~</em> before its date.
     </p>
 
     <div class="controls">
@@ -267,13 +266,13 @@
           { id: "Moscati2023MultiObjectiveHyperOpt", title: "Multiobjective Hyperparameter Optimization of Recommender Systems", date: t("2023-09-01"), approx: false, topics: ["recommender-systems"], firstAuthor: true },
           { id: "onion", title: "Music4All-Onion — A Large-Scale Multi-Faceted Content-Centric Music Recommendation Dataset", date: t("2022-10-01"), approx: false, topics: ["music-information-retrieval", "recommender-systems"], firstAuthor: true },
           { id: "peintner:cars:2022", title: "Unsupervised Graph Embeddings for Session-based Recommendation with Item Features", date: t("2022-09-01"), approx: false, topics: ["recommender-systems"], firstAuthor: false },
-          { id: "Moscati:2019esr", title: "PhD Thesis: Lepton Flavour Non-Universality — From Effective Field Theory to Extended Gauge Models", date: t("2019-06-01"), approx: true, topics: ["particle-physics"], firstAuthor: true },
+          { id: "Moscati:2019esr", title: "PhD Thesis: Lepton Flavour Non-Universality — From Effective Field Theory to Extended Gauge Models", date: t("2019-10-01"), approx: false, topics: ["particle-physics"], firstAuthor: true },
           { id: "Moscati:2019unl", title: "New Physics in b→cτν: Impact of Polarisation Observables", date: t("2019-05-01"), approx: false, topics: ["particle-physics"], firstAuthor: true },
           { id: "Blanke:2019aao", title: "Interplay of R_D(*) and Zll in the Scalar Leptoquark Scenario", date: t("2019-06-01"), approx: true, topics: ["particle-physics"], firstAuthor: true },
-          { id: "Blanke:2019qrx", title: "Addendum: Impact of Polarization Observables on New Physics Explanations", date: t("2019-06-01"), approx: true, topics: ["particle-physics"], firstAuthor: true },
+          { id: "Blanke:2019qrx", title: "Addendum: Impact of Polarization Observables on New Physics Explanations", date: t("2019-08-01"), approx: false, topics: ["particle-physics"], firstAuthor: true },
           { id: "Moscati2026ICASSP_MSM", title: "Face-Voice Association with Inductive Bias for Maximum Class Separation", date: t("2026-05-01"), approx: false, topics: ["multimodal-learning"], firstAuthor: true },
-          { id: "Blanke:2018yud", title: "Impact of Polarization Observables on New Physics Explanations of the Anomaly", date: t("2019-06-01"), approx: true, topics: ["particle-physics"], firstAuthor: true },
-          { id: "Descotes-Genon:2017ptp", title: "Nonminimal 331 Model for Lepton Flavor Universality Violation", date: t("2018-06-01"), approx: true, topics: ["particle-physics"], firstAuthor: true },
+          { id: "Blanke:2018yud", title: "Impact of Polarization Observables on New Physics Explanations of the Anomaly", date: t("2019-01-01"), approx: false, topics: ["particle-physics"], firstAuthor: true },
+          { id: "Descotes-Genon:2017ptp", title: "Nonminimal 331 Model for Lepton Flavor Universality Violation", date: t("2018-12-01"), approx: false, topics: ["particle-physics"], firstAuthor: true },
         ];
 
         const minTime = Math.min(...jobs.map((j) => j.start));

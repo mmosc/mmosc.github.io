@@ -140,13 +140,13 @@ Goal: validate the visual design and core interactions cheaply, get sign-off bef
   - **4 via Crossref** (exact DOI-resolved publication dates): `Ganhor2025SiBraR_TORS` (Jul 2026), `Moscati2025CoBraR` (Sep 2025), `ganhoer_moscati2024sibrar` (Oct 2024), `Moscati2024emomrs` (Jun 2024).
   - **16 via conference dates** (looked up via `WebSearch`, one query per venue rather than per paper — many papers share a venue): SIGIR 2026 (Jul), ICASSP 2026 (May, covers 2 papers), ICIP 2026 (Sep), UMAP 2026 (Jun), CBMI 2025 (Oct), RecSys 2025 + its 2 co-located workshops (Sep — cross-checked against the CoBraR Crossref date, consistent), WSDM 2024 (Mar), RecSys 2024 doctoral symposium (Oct, matching the already-Crossref-dated main conference), ACM MM 2024 (Oct, of a 5-day Oct 28–Nov 1 span), RecSys 2023 + its co-located workshop (Sep), CIKM 2022 (Oct), RecSys 2022's co-located workshop (Sep), FPCP 2019 (May).
   - **3 already had a real month** from before this task (`Moscati2025UMAP_discoveryPattern`, `Peintner2025emotional_rec`, `Escobedo2024SBO`).
-  - **5 left on the explicit fallback**, `month_approximate = {true}`, default June: the PhD thesis and 4 physics journal articles (`Moscati:2019esr`, `Blanke:2019aao`, `Blanke:2019qrx`, `Blanke:2018yud`, `Descotes-Genon:2017ptp`) — none have a conference to anchor to, and Marta's instruction was scoped to "the ones you found" via conference lookup, not a request to keep researching journal issue dates.
+  - **5 initially left on the explicit fallback** (PhD thesis + 4 physics journal articles, none with a conference to anchor to). Marta then supplied real months for 4 of those 5 directly: `Moscati:2019esr` → October 2019, `Blanke:2019qrx` → August 2019, `Blanke:2018yud` → January 2019, `Descotes-Genon:2017ptp` → December 2018. `Blanke:2019aao` remains the only entry on `month_approximate = {true}` (June default) — not in her list, left as-is rather than guessed.
   **Acceptance criteria:**
   - [x] All 28 entries have a `month` field
-  - [x] Entries using the fallback are identifiable via `month_approximate = {true}` (5 of 28)
+  - [x] Entries using the fallback are identifiable via `month_approximate = {true}` (1 of 28, down from an initial 5)
   **Verification:**
   - [x] `grep -c "month = " _bibliography/papers.bib` → 28; brace-balance check → depth 0; no entry has two `month` lines (checked via awk)
-  - [x] Built before/after via `git stash`, diffed `_site/publications/index.html`: `month_approximate` appears zero times anywhere in output (correctly filtered). `month` itself **does** now show in 25 more citations than before (e.g. "Sep 2025", "Oct 2024") — this is a real, desired improvement (month is a standard displayed BibTeX field that simply had no data before), not a leak, and is the expected consequence of this task rather than something to guard against.
+  - [x] Built before/after via `git stash`, diffed `_site/publications/index.html`: `month_approximate` appears zero times anywhere in output (correctly filtered). `month` itself **does** now show in more citations than before (25 first pass, +4 more after Marta's follow-up corrections — e.g. "Sep 2025", "Oct 2024", "Oct 2019") — this is a real, desired improvement (month is a standard displayed BibTeX field that simply had no data before), not a leak, and is the expected consequence of this task rather than something to guard against.
   - [x] `node test/unit_timeline_mock_logic.js` and `node test/style_contract.js` both still pass
   - [x] `bundle exec jekyll build` succeeds
   **Dependencies:** None (ran in parallel with Task 2.2/2.3, as planned)
@@ -167,7 +167,7 @@ Goal: validate the visual design and core interactions cheaply, get sign-off bef
 ### Checkpoint: Real data ready
 - [x] `bundle exec jekyll build` succeeds
 - [x] All 28 entries have `topic` and `first_author`
-- [x] All 28 entries have `month` (23 real/sourced, 5 flagged `month_approximate`)
+- [x] All 28 entries have `month` (27 real/sourced, 1 flagged `month_approximate`)
 - [x] `/publications/` internal-only fields (`topic`, `first_author`, `month_approximate`) stay invisible; `month` itself now correctly displays where it didn't before — a real improvement, not a regression
 - [x] `npm run lint:style-contract` passes
 
