@@ -53,7 +53,7 @@ nav_order: 5
 </div>
 
 <!--
-  jekyll-scholar's {% bibliography %} tag always wraps its output in
+  jekyll-scholar's bibliography tag always wraps its output in
   <ol class="bibliography"><li>...</li>...</ol>, even with a custom -T
   template (confirmed in Task 3.1's spike test) — there is no way to get
   a bare JSON array out of it directly. So this island is a hidden list
@@ -61,6 +61,14 @@ nav_order: 5
   client-side as `Array.from(el.querySelectorAll("li")).map(li =>
   JSON.parse(li.textContent))`, exactly as Task 3.1's own verification
   script did against the built HTML.
+
+  IMPORTANT: never write a literal "{​% ... %​}"-style tag delimiter in
+  this file's prose (even inside an HTML comment or describing what a
+  tag does) — Liquid processes the whole file as a template before HTML
+  comment semantics apply, so it will execute. That mistake is exactly
+  what caused this comment's own text to render a second, unfiltered,
+  default-templated copy of the full bibliography as visible page
+  content below the widget — found and fixed the same session.
 -->
 <div id="timeline-papers-data" hidden>
 {% bibliography -f papers -q @* -T timeline_pub_entry %}
