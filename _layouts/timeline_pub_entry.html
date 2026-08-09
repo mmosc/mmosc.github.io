@@ -1,0 +1,11 @@
+{
+  "key": {{ entry.key | jsonify }},
+  "title": {{ entry.title | strip_html | jsonify }},
+  "venue": {{ entry.booktitle | default: entry.journal | default: entry.school | strip_html | jsonify }},
+  "year": {{ entry.year | jsonify }},
+  "month": {{ entry.month | jsonify }},
+  "month_approximate": {{ entry.month_approximate | default: "false" }},
+  "topics": {{ entry.topic | split: ", " | jsonify }},
+  "first_author": {{ entry.first_author }},
+  "url": {{ entry.url | default: "" | jsonify }}
+}

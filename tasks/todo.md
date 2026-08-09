@@ -30,7 +30,7 @@ Full detail, acceptance criteria, and rationale in [`plan.md`](plan.md). Source 
 - [x] `npm run lint:style-contract` passes
 
 ## Phase 3: Wire mock to real data
-- [ ] 3.1 `_layouts/timeline_pub_entry.html` JSON-emitting template + live JSON.parse check
+- [x] 3.1 `_layouts/timeline_pub_entry.html` JSON-emitting template + live JSON.parse check — found and fixed a real bug along the way: 16 bib entries had a stray `key = {value}` field causing duplicate/invalid HTML ids on the live `/publications/` page (fixed on `master`, merged into `timeline-planning`)
 - [ ] 3.2 `_pages/timeline.md` skeleton with two hidden data islands (papers, jobs)
 - [ ] 3.3 Point Phase-1 widget JS/CSS at real data
 
