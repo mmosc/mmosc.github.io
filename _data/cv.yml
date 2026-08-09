@@ -18,7 +18,7 @@ cv:
       - institution: Johannes Kepler University Linz, Austria
         area: Computer Science
         degree: PhD
-        start_date: 2021-01
+        start_date: 2021-10
         end_date: present
         highlights:
           - Research on multimodal learning and recommender systems
@@ -49,12 +49,18 @@ cv:
           - Analysis of user behavior patterns in music consumption
       - company: Johannes Kepler University Linz, Austria
         position: PhD Researcher
-        start_date: 2021-01
+        start_date: 2021-10
         end_date: present
         highlights:
           - Multimodal representation learning for recommender systems
           - Cold-start recommendation scenarios
           - Music information retrieval and emotion-based music recommendation
+      - company: ESK Karlsruhe, Germany
+        position: Maths and Physics High-School Teacher
+        start_date: 2020-09
+        end_date: 2021-10
+        highlights:
+          - Teaching mathematics and physics to high-school students
       - company: Karlsruhe Institute of Technology (KIT), Germany
         position: Postdoctoral Researcher
         start_date: 2019-01
