@@ -2,15 +2,10 @@
 layout: page
 permalink: /timeline/
 title: timeline
-description:
-nav: false
+description: An interactive career timeline — jobs and publications together, filterable by date and topic.
+nav: true
 nav_order: 5
 ---
-
-<!--
-  Task 3.2 (tasks/plan.md): page skeleton with the real-data "islands" the
-  widget reads from. nav stays false until Task 4.1 (nav + page chrome).
--->
 
 <div id="timeline-widget">
   <div class="timeline-controls">

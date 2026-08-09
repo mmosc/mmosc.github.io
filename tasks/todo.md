@@ -41,7 +41,7 @@ Full detail, acceptance criteria, and rationale in [`plan.md`](plan.md). Source 
 - [x] No regressions on `/publications/`, `/cv/`
 
 ## Phase 4: Polish & ship
-- [ ] 4.1 Nav entry + page chrome
+- [x] 4.1 Nav entry + page chrome — `nav: true`, added a real page description; "timeline" confirmed last in nav (order 5), real click-through navigation verified
 - [ ] 4.2 Accessibility pass (keyboard, contrast, aria-labels)
 - [ ] 4.3 Responsive smoke check at 375px / 768px / 1440px (vertical layout only)
 

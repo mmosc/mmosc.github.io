@@ -335,15 +335,18 @@ Goal: validate the visual design and core interactions cheaply, get sign-off bef
 
 ### Phase 4: Polish & ship
 
-- [ ] **Task 4.1: Nav + page chrome**
+- [x] **Task 4.1: Nav + page chrome**
   **Description:** Match the page title/description/nav styling conventions of the other pages (`_pages/cv.md`, `_pages/repositories.md`).
   **Acceptance criteria:**
-  - [ ] "timeline" appears in the nav in the right position, styled consistently with other nav items
+  - [x] "timeline" appears in the nav in the right position, styled consistently with other nav items
   **Verification:**
-  - [ ] Manual check across the site nav
+  - [x] Manual check across the site nav
   **Dependencies:** Checkpoint (real timeline works)
   **Files likely touched:** `_pages/timeline.md`
   **Estimated scope:** XS
+  **What actually happened:** Flipped `nav: false` → `true` (the only functional change — `nav_order: 5` was already set back in Task 3.2, deliberately left inert until this task). Existing pages weren't fully consistent on `description` — `cv.md` has a real one, `repositories.md`/`publications.md` leave it blank/absent — so added a short real description rather than copying the blank pattern, since a stranger landing here benefits from knowing what the page is before scrolling. Removed the Task 3.2/"nav stays false until Task 4.1" HTML comment, now stale.
+  **Verification:** rebuilt and confirmed `timeline` appears last in the nav link list (`about, publications, CV, repositories, timeline`, matching `nav_order` 1(implicit)/2/3/4/5); live Playwright check confirmed the nav link renders, is visible, and — critically — that *clicking it from the homepage* actually navigates to `/timeline/` (not just that the markup exists), plus h1/description render correctly and the widget itself still shows 22 cards with 0 console/page errors post-nav-change. `node test/unit_timeline_mock_logic.js` and `node test/style_contract.js` pass; `bundle exec jekyll build` succeeds.
+  **Files touched:** `_pages/timeline.md`
 
 - [ ] **Task 4.2: Accessibility pass**
   **Description:** Keyboard-operable filters (tab/enter/space, not mouse-only), sufficient color contrast for topic-colored text/fills, `aria-label`s on interactive controls and cards.
