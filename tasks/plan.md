@@ -109,6 +109,11 @@ Goal: validate the visual design and core interactions cheaply, get sign-off bef
   **Verification:** re-derived `computeJobSegments` output in Node after each date change — confirmed max 2 simultaneous colors at any point (matching the existing "never three simultaneous jobs" note in `timeline.md`), and confirmed KIT→ESK is a clean abut (zero-width gap, zero overlap) after the final correction. `node test/unit_timeline_mock_logic.js` and `node test/style_contract.js` pass; `bundle exec jekyll build` succeeds on both branches; `python3 -c "import yaml..."` validated `cv.yml` syntax on `master`. Opened the updated preview in the local browser for Marta to confirm.
   **Files touched:** `_data/cv.yml` (on `master`), `tasks/timeline_real_preview.html` (on `timeline-planning`)
 
+- [x] **Addendum: compact time is now the default bar scale** *(requested: "make the 'compact time view' the default")*
+  **What changed:** Moved the radio `checked` attribute from "Proportional to time" to "Compact (fit all papers)", and the initial `compactMode` state from `false` to `true`, so the page loads straight into compact mode; proportional stays available as the other option.
+  **Verification:** `node --check` on the extracted `<script>` block; `node test/unit_timeline_mock_logic.js` and `node test/style_contract.js` pass (no logic changed, just the default); `bundle exec jekyll build` succeeds. Opened the preview in the local browser for Marta to confirm it now loads compact by default.
+  **Files touched:** `tasks/timeline_real_preview.html`
+
 ### Checkpoint: Mock approved
 - [x] Review the mock live in-browser with Marta — done; surfaced two real issues (job labels overlapping the bar, a visual gap caused by an unrealistic fake-data gap), both fixed and re-reviewed
 - [x] Visual direction (colors, card style, leader lines, overlap striping) signed off — "looks good!"

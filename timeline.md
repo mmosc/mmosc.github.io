@@ -24,7 +24,7 @@ It should also allow selecting which topics should be included in the timeline, 
 
 A toggle to show only papers where I'm first author (or share first authorship, marked in the source `.bib` by an asterisk on multiple authors) should also be available, combined with the other filters as AND.
 
-A "bar scale" toggle switches between **proportional** (the default — bar length maps linearly to real elapsed time) and **compact** (papers positioned by chronological rank instead, so multi-year gaps between publications don't waste bar length; the bar is only ever as long as needed to list all papers). Compact mode's layout — the rank axis, packed card positions, and bar length — is always computed from the *full* paper set, never the currently filtered subset, so toggling a filter never repositions a card or resizes the bar out from under it.
+A "bar scale" toggle switches between **compact** (the default — papers positioned by chronological rank, so multi-year gaps between publications don't waste bar length; the bar is only ever as long as needed to list all papers) and **proportional** (bar length maps linearly to real elapsed time). Compact mode's layout — the rank axis, packed card positions, and bar length — is always computed from the *full* paper set, never the currently filtered subset, so toggling a filter never repositions a card or resizes the bar out from under it.
 
 Optionally, other things such as awards and scholarships, should be shown.
 

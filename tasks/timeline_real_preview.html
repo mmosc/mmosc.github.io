@@ -250,8 +250,8 @@
       </fieldset>
       <fieldset id="scale-mode">
         <legend>Bar scale</legend>
-        <label><input type="radio" name="scale-mode" value="proportional" checked /> Proportional to time</label>
-        <label><input type="radio" name="scale-mode" value="compact" /> Compact (fit all papers)</label>
+        <label><input type="radio" name="scale-mode" value="proportional" /> Proportional to time</label>
+        <label><input type="radio" name="scale-mode" value="compact" checked /> Compact (fit all papers)</label>
       </fieldset>
     </div>
 
@@ -367,7 +367,7 @@
             TOP_PADDING + compactAxisSpan,
           ) - TOP_PADDING;
 
-        let compactMode = false;
+        let compactMode = true;
 
         // --- DOM refs --------------------------------------------------------
         const container = document.getElementById("timeline-container");
