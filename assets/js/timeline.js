@@ -18,22 +18,12 @@
   const TOP_PADDING = 20;
   const BASELINE_TRACK_HEIGHT = 5600;
 
-  // Horizontal mode's own constants (tasks/plan.md Task 4). Card-legibility
-  // vs. no-horizontal-scroll turned out to conflict at vertical's card sizes
-  // (22 distinct paper dates need ~160px/card to stay legible in compact
-  // mode -> a ~3360px bar, far past any no-scroll budget) -- Marta chose to
-  // shrink cards drastically instead of allowing scroll (see Task 5: markers
-  // expand to full detail on hover/focus). These three numbers were checked
-  // against the real 28-paper dataset with a Node script running the
-  // unchanged packCards/computeCompactPositions/dateToPosition, not just
-  // estimated: they land the packed content (plus TOP_PADDING*2) at ~780-880px.
-  // Budget is the page's real ~900px content column (a first attempt assumed
-  // a wider 1200px wrapper would be available -- measured and found that
-  // override was inert, see timeline.css), the same width vertical mode
-  // already uses.
-  const CARD_MAIN_EXTENT_HORIZONTAL = 28;
-  const CARD_MIN_GAP_HORIZONTAL = 6;
-  const HORIZONTAL_BASELINE_TRACK_WIDTH = 760;
+  // Horizontal mode (Task 12): full window width, cards always sized to fit
+  // their own label in full (no truncation) -- the bar grows as wide as it
+  // needs to, same as vertical's own bar already does past its baseline.
+  const HORIZONTAL_GUTTER_PX = 32;
+  const HORIZONTAL_CARD_GAP = 8;
+  const HORIZONTAL_CARD_MIN = 32;
   const ORIENTATION_BREAKPOINT_PX = 992;
 
   // Declared here (rather than down with the other per-render state) because
@@ -49,20 +39,59 @@
   let orientation = "vertical";
   let selectedOrientation = "vertical";
 
-  // Orientation-generic accessors for "how much main-axis room does one
-  // card need for packing purposes" and "how long is the bar at baseline
-  // (proportional mode)". Hoisted function declarations, so it's fine that
-  // setupCompactLayout() (called immediately below, before the rest of this
-  // file's per-render state exists) calls these before they're textually
-  // defined further down.
+  // Hoisted function declarations -- safe to call from setupCompactLayout()
+  // below before `papers` exists textually further down, since they're only
+  // ever invoked after it's initialized.
+  function horizontalAvailableWidth() {
+    return Math.max(700, window.innerWidth - HORIZONTAL_GUTTER_PX * 2);
+  }
+  function measureLabelWidth(text) {
+    const probe = document.createElement("span");
+    probe.className = "timeline-card-marker-label";
+    probe.style.position = "absolute";
+    probe.style.visibility = "hidden";
+    probe.style.whiteSpace = "nowrap";
+    probe.textContent = text;
+    document.body.appendChild(probe);
+    const width = probe.getBoundingClientRect().width;
+    probe.remove();
+    return width;
+  }
+  // Each card sized to its own label (Task 12: "adaptive to the text
+  // length" -- a uniform worst-case width wasted space on the many short
+  // ones). Cached per paper id since the label set/font are fixed for the
+  // widget's lifetime.
+  let horizontalExtentCache = null;
+  function horizontalExtentsById() {
+    if (!horizontalExtentCache) {
+      horizontalExtentCache = new Map(
+        papers.map((p) => [p.id, Math.max(Math.ceil(measureLabelWidth(horizontalCardLabel(p))) + 14, HORIZONTAL_CARD_MIN)])
+      );
+    }
+    return horizontalExtentCache;
+  }
+  function paperMainExtent(paper) {
+    return orientation === "horizontal" ? horizontalExtentsById().get(paper.id) : CARD_HEIGHT;
+  }
+  // Average card width -- used only to pitch the compact-mode rank axis and
+  // the vertical resize's CARD_HEIGHT-equivalent; real packing/rendering
+  // always uses paperMainExtent()'s per-card value instead.
   function cardMainExtent() {
-    return orientation === "horizontal" ? CARD_MAIN_EXTENT_HORIZONTAL : CARD_HEIGHT;
+    if (orientation !== "horizontal") return CARD_HEIGHT;
+    const extents = [...horizontalExtentsById().values()];
+    return extents.reduce((a, b) => a + b, 0) / extents.length;
   }
   function cardMinGap() {
-    return orientation === "horizontal" ? CARD_MIN_GAP_HORIZONTAL : CARD_MIN_GAP;
+    return orientation === "horizontal" ? HORIZONTAL_CARD_GAP : CARD_MIN_GAP;
+  }
+  // Horizontal staggers a second row per side (Task 12: "reduce the space
+  // between cards") -- 4 independent lanes instead of 2 halves the
+  // horizontal room same-lane collisions need to push apart into.
+  function laneCount() {
+    return orientation === "horizontal" ? 4 : 2;
   }
   function baselineLength() {
-    return orientation === "horizontal" ? HORIZONTAL_BASELINE_TRACK_WIDTH : BASELINE_TRACK_HEIGHT;
+    return orientation === "horizontal" ? horizontalAvailableWidth() : BASELINE_TRACK_HEIGHT;
   }
 
   const now = Date.now();
@@ -151,6 +180,11 @@
   })();
   const topicColorVar = (topicId) => `var(--topic-${topicId})`;
   const topicTextColorVar = (topicId) => `var(--topic-${topicId}-text)`;
+  const venueAcronym = (venueShort) => (venueShort.includes(" @ ") ? venueShort.split(" @ ")[0] : venueShort.replace(/^(ACM|IEEE)\s+/, ""));
+  const horizontalCardLabel = (paper) =>
+    `${venueAcronym(paper.venueShort)}'${new Date(paper.date).toLocaleDateString(undefined, { year: "2-digit" })}`;
+  const TOPIC_COLOR_PRIORITY = ["recommender-systems", "multimodal-learning"];
+  const primaryTopic = (topics) => TOPIC_COLOR_PRIORITY.find((t) => topics.includes(t)) || topics[0];
 
   const minTime = Math.min(...jobs.map((j) => j.start));
   const maxTime = Math.max(...jobs.map((j) => j.end), ...papers.map((p) => p.date));
@@ -176,16 +210,19 @@
   function setupCompactLayout() {
     const cardExtent = cardMainExtent();
     const gap = cardMinGap();
-    const pitch = cardExtent + gap;
+    // 4 lanes need only ~1/(laneCount/2) as much axis length per rank step
+    // as 2 lanes did for the same collision safety margin.
+    const pitch = (cardExtent + gap) / (laneCount() / 2);
     compactAxis = TimelineMockLogic.computeCompactPositions(
       papers.map((p) => p.date),
       pitch
     );
     compactPos = (time) => TOP_PADDING + TimelineMockLogic.interpolateOnAxis(time, compactAxis);
     const compactPacked = TimelineMockLogic.packCards(
-      papers.map((p) => ({ id: p.id, idealPosition: compactPos(p.date) })),
+      papers.map((p) => ({ id: p.id, idealPosition: compactPos(p.date), mainExtent: paperMainExtent(p) })),
       cardExtent,
-      gap
+      gap,
+      laneCount()
     );
     compactPackedById = Object.fromEntries(compactPacked.map((p) => [p.id, p]));
   }
@@ -254,8 +291,10 @@
   // packCards's "left"/"right" lane labels (an alternation, not literally
   // "left of the page") are orientation-neutral -- this is the one place
   // they get translated into this orientation's CSS class name.
-  function laneClass(side) {
-    return orientation === "horizontal" ? (side === "left" ? "above" : "below") : side;
+  function laneClass(side, row) {
+    if (orientation !== "horizontal") return side;
+    const base = side === "left" ? "above" : "below";
+    return row ? base + "-far" : base;
   }
   // Maps (position along the time axis, position along the perpendicular
   // axis) to screen (x, y). Vertical puts time on y and the perpendicular
@@ -368,9 +407,9 @@
     visible.forEach((paper) => {
       const placement = packedById[paper.id];
       const card = document.createElement("div");
-      card.className = "timeline-card " + laneClass(placement.side);
+      card.className = "timeline-card " + laneClass(placement.side, placement.row);
       card.style[mainStyleProp()] = placement.top - cropOffset + "px";
-      card.style.setProperty("--card-color", topicColorVar(paper.topics[0]));
+      card.style.setProperty("--card-color", topicColorVar(primaryTopic(paper.topics)));
       card.setAttribute("role", "group");
       const dateText = new Date(paper.date).toLocaleDateString(undefined, { year: "numeric", month: "short" });
       card.setAttribute(
@@ -389,11 +428,11 @@
       let contentParent = card;
       if (orientation === "horizontal") {
         card.tabIndex = 0;
-        const yearShort = new Date(paper.date).toLocaleDateString(undefined, { year: "2-digit" });
+        card.style.width = paperMainExtent(paper) + "px";
         const markerLabel = document.createElement("span");
         markerLabel.className = "timeline-card-marker-label";
         markerLabel.setAttribute("aria-hidden", "true");
-        markerLabel.textContent = yearShort;
+        markerLabel.textContent = horizontalCardLabel(paper);
         card.appendChild(markerLabel);
 
         contentParent = document.createElement("div");
@@ -442,7 +481,7 @@
 
       const cardRect = card.getBoundingClientRect();
       const containerRect = container.getBoundingClientRect();
-      const cardMainMid = placement.top - cropOffset + cardMainExtent() / 2;
+      const cardMainMid = placement.top - cropOffset + paperMainExtent(paper) / 2;
       const barMain = posFn(paper.date) - cropOffset;
       // "left"/"right" here are packCards's lane alternation, not literally
       // page-left -- in horizontal mode "left" means "above" (see laneClass),
@@ -485,8 +524,8 @@
       packedById = compactPackedById;
       posFn = compactPos;
     } else {
-      const idealPositions = visible.map((p) => ({ id: p.id, idealPosition: pos(p.date) }));
-      const packed = TimelineMockLogic.packCards(idealPositions, cardMainExtent(), cardMinGap());
+      const idealPositions = visible.map((p) => ({ id: p.id, idealPosition: pos(p.date), mainExtent: paperMainExtent(p) }));
+      const packed = TimelineMockLogic.packCards(idealPositions, cardMainExtent(), cardMinGap(), laneCount());
       packedById = Object.fromEntries(packed.map((p) => [p.id, p]));
       posFn = pos;
     }
@@ -497,7 +536,7 @@
     const pairs = segments.map((seg) => [posFn(seg.start), posFn(seg.end)]);
     visible.forEach((p) => {
       const top = packedById[p.id].top;
-      pairs.push([top, top + cardMainExtent()]);
+      pairs.push([top, top + paperMainExtent(p)]);
     });
     const bounds = TimelineMockLogic.computeContentBounds(pairs);
     const contentTop = bounds ? bounds.top : TOP_PADDING;

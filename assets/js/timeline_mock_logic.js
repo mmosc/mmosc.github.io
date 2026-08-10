@@ -12,17 +12,20 @@
     return minTime + (clamped / trackHeight) * (maxTime - minTime);
   }
 
-  function packCards(cards, cardHeight, minGap) {
+  function packCards(cards, cardHeight, minGap, laneCount = 2) {
     const sorted = [...cards].sort((a, b) => a.idealPosition - b.idealPosition);
-    const cursors = { left: -Infinity, right: -Infinity };
+    const cursors = new Array(laneCount).fill(-Infinity);
     return sorted.map((card, i) => {
-      const side = i % 2 === 0 ? "left" : "right";
+      const lane = i % laneCount;
+      const side = lane % 2 === 0 ? "left" : "right";
+      const row = Math.floor(lane / 2);
+      const height = card.mainExtent != null ? card.mainExtent : cardHeight;
       let top = card.idealPosition;
-      if (top < cursors[side] + minGap) {
-        top = cursors[side] + minGap;
+      if (top < cursors[lane] + minGap) {
+        top = cursors[lane] + minGap;
       }
-      cursors[side] = top + cardHeight;
-      return { id: card.id, side, top };
+      cursors[lane] = top + height;
+      return { id: card.id, side, row, top };
     });
   }
 
@@ -70,7 +73,7 @@
         paper.date >= startMs &&
         paper.date <= endMs &&
         paper.topics.some((topic) => activeTopics.has(topic)) &&
-        (!firstAuthorOnly || paper.firstAuthor),
+        (!firstAuthorOnly || paper.firstAuthor)
     );
   }
 

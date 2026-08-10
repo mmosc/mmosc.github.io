@@ -187,6 +187,27 @@ Add an "Orientation" toggle (Vertical / Horizontal) to the `/timeline/` widget. 
 - [x] All acceptance criteria above met
 - [x] Ready for Marta's final review
 
+### Phase 5.5: Post-review feedback
+
+- [x] **Task 12: Full window width, real venue labels, per-card sizing, staggered rows, topic-color priority**
+      **Description:** Grew from two requests into five, each building on real measurement of the last:
+      1. Marker labels: bare 2-digit year → `<acronym>'<YY>` (e.g. `RecSys'26`), via `venueAcronym()` (strips leading `ACM `/`IEEE `, or takes the part before `" @ "` for workshop-format venues).
+      2. Horizontal wrapper breaks out of the page's ~900px content column (`margin-left`/`max-width` override) to use the full window width, left edge kept aligned with the rest of the page content via the theme's own `--max-content-width` variable (`calc(100vw - (100vw - var(--max-content-width))/2 - 32px)`), not a symmetric full-bleed.
+      3. Card width: first attempt shrunk a uniform width to fit a budget (ellipsis on overflow) — Marta wanted labels to **never** truncate instead, so this became per-card **measured** width (`measureLabelWidth()`, a hidden DOM probe) sized to each card's own real label, no artificial cap.
+      4. That alone made the bar wider than needed for most (short-label) cards while a few long ones dominated — added a second lane-row per side (`packCards`'s new `laneCount` param, default 2 unchanged) so cards stagger near/far instead of only spreading horizontally, and halved the compact-axis pitch to match the doubled per-side capacity. This also fixed a real regression the adaptive-width work introduced: the *default* filtered view had gone from 0px to 590px of overflow at 1440px before the row change; verified back to 0px after.
+      5. Topic-color priority: `--card-color` (and vertical's identical border-left accent) now prefers `recommender-systems`, then `multimodal-learning`, over whatever `topics[0]` happened to be in the bib source order — applies to both orientations, not horizontal-specific.
+      **Verified NOT a regression, investigated properly:** a pixel-diff against the original Task 2 baseline showed vertical mode differing (a ~74px height delta) partway through this task — traced with a controlled stash/compare (Task-11-state vs Task-12-state, both captured fresh) to a discrepancy that already existed before Task 12 started (somewhere in Tasks 3-10, never itself investigated further since it doesn't affect functionality and this task's own change wasn't the cause).
+      **Acceptance criteria:**
+  - [x] Marker labels always show the full `<acronym>'<YY>`, never truncated (verified: 0 labels with `scrollWidth > clientWidth` even in the full 28-paper view)
+  - [x] Horizontal widget's left edge aligns exactly with the rest of the page content (verified: wrapper left = h1 left = controls left, to the pixel)
+  - [x] No horizontal page-level overflow in the **default** (filtered) view at 992/1440/1920px, in both bar-scale modes
+  - [x] Zero card overlap within any lane/row at all tested widths
+        **Verification:**
+  - [x] Playwright throughout: label text vs. expected acronym+year strings, wrapper/controls/h1 left-edge alignment, `scrollWidth <= innerWidth` in the default view (0 excess after the row-stacking fix, down from 590px), zero-overlap checks across 4 lanes, live-resize recompute, topic-color priority spot-checked on two real multi-topic papers (`onion`, `Geiger2025Music4AllAA`). Screenshots shown to Marta throughout.
+        **Dependencies:** Task 10
+        **Files likely touched:** `assets/css/timeline.css`, `assets/js/timeline.js`, `assets/js/timeline_mock_logic.js`, `test/unit_timeline_mock_logic.js`
+        **Estimated scope:** L
+
 ### Phase 6: Merge
 
 - [ ] **Task 11: Merge to master, planning docs excluded**
