@@ -1,0 +1,31 @@
+# Todo: Horizontal-Mode Timeline View
+
+See `tasks/plan.md` for full descriptions, acceptance criteria, and verification steps.
+
+## Phase 1: Foundation
+- [ ] Task 1: Add the Orientation toggle control (inert)
+- [ ] Task 2: Refactor vertical rendering behind an axis abstraction (no visual change)
+- [ ] **Checkpoint:** unit tests + build pass, vertical mode confirmed unchanged, review with Marta
+
+## Phase 2: Horizontal bar (no cards yet)
+- [ ] Task 3: Horizontal track, striping, and hover
+- [ ] Task 4: Horizontal-specific baseline length and compact-axis pitch
+- [ ] **Checkpoint:** horizontal bar renders correctly at desktop width, review with Marta
+
+## Phase 3: Horizontal cards and leader lines
+- [ ] Task 5: Card placement above/below the horizontal bar
+- [ ] Task 6: Leader lines in horizontal mode
+- [ ] **Checkpoint:** horizontal mode functionally complete, all filters re-verified, review with Marta
+
+## Phase 4: Responsive integration
+- [ ] Task 7: Force vertical below a breakpoint (992px placeholder — confirm here)
+- [ ] Task 8: Resize-recompute for horizontal geometry
+- [ ] **Checkpoint:** responsive behavior confirmed, review with Marta
+
+## Phase 5: Accessibility and verification
+- [ ] Task 9: Accessibility pass on the new control
+- [ ] Task 10: Responsive smoke check across real breakpoints (375 / breakpoint boundary / 1440)
+- [ ] **Checkpoint:** feature complete, ready for final review
+
+## Phase 6: Merge
+- [ ] Task 11: Merge to master, planning docs excluded
