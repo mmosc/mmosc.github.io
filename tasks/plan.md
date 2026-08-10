@@ -141,20 +141,21 @@ Add an "Orientation" toggle (Vertical / Horizontal) to the `/timeline/` widget. 
         **Files likely touched:** `assets/js/timeline.js`, `assets/css/timeline.css`
         **Estimated scope:** S
 
-- [ ] **Task 8: Resize-recompute for horizontal geometry**
-      **Description:** Extend the existing debounced `resize` listener (currently recomputes `CARD_HEIGHT` and vertical compact layout for the narrow-viewport case) to also recompute horizontal's card-size/baseline constants and re-render, so a live window resize doesn't leave stale horizontal geometry — the exact bug class the vertical build already guards against for its own narrow-viewport case.
+- [x] **Task 8: Resize-recompute for horizontal geometry**
+      **Description:** Extend the existing debounced `resize` listener to also recompute horizontal's geometry and re-render, so a live window resize doesn't leave stale horizontal geometry.
+      **Turned out to need no new code, verified rather than assumed.** Unlike vertical's `CARD_HEIGHT`, horizontal's constants (`CARD_MAIN_EXTENT_HORIZONTAL`/`CARD_MIN_GAP_HORIZONTAL`/`HORIZONTAL_BASELINE_TRACK_WIDTH`) are fixed, not viewport-width-dependent — there's nothing for a resize to recompute. Checked empirically (not assumed) that `.timeline-wrapper` stays exactly 900px across the entire viable horizontal range (992px through 1920px tested) — the page's own container never gets narrower right at the breakpoint boundary, the specific risk this plan's own Risks table flagged. The pre-existing resize listener (already calls `setupCompactLayout()`+`render()` unconditionally) plus Task 7's `applyOrientationForViewport()` already cover everything that does change on resize.
       **Acceptance criteria:**
-  - [ ] Live-resizing the window while in horizontal mode keeps cards non-overlapping and leader lines attached (no stale geometry)
+  - [x] Live-resizing the window while in horizontal mode keeps cards non-overlapping and leader lines attached (no stale geometry)
         **Verification:**
-  - [ ] Manual: slow drag-resize from 1440px down to the Task 7 breakpoint and back, in horizontal mode
+  - [x] Playwright live resize (not a fresh page load per width): 1440px → 1024px → 1440px, 0 overlaps at every step, 0 leader-line attachment mismatches after the cycle
         **Dependencies:** Task 7
         **Files likely touched:** `assets/js/timeline.js`
         **Estimated scope:** S
 
 ### Checkpoint: Responsive integration
 
-- [ ] Orientation behaves correctly across the full responsive range with no stale geometry after resize
-- [ ] Review with Marta before the accessibility/verification pass
+- [x] Orientation behaves correctly across the full responsive range with no stale geometry after resize
+- [x] Review with Marta before the accessibility/verification pass
 
 ### Phase 5: Accessibility and verification
 
