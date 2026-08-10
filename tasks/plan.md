@@ -27,93 +27,102 @@ Add an "Orientation" toggle (Vertical / Horizontal) to the `/timeline/` widget. 
 
 ### Phase 1: Foundation (inert toggle + safe refactor)
 
-- [ ] **Task 1: Add the Orientation toggle control**
-  **Description:** Add a "Orientation" `<fieldset>` to `_pages/timeline.md`'s controls area, styled and structured exactly like the existing "Bar scale" radio group (`Vertical` / `Horizontal`, `Vertical` checked by default). Wire a `orientation` state variable into `assets/js/timeline.js` with a change listener that updates the variable and calls `render()` — but `render()` itself doesn't yet branch on it, so this is a no-op change to visible output.
-  **Acceptance criteria:**
-  - [ ] New fieldset renders in the controls area, matching the Bar-scale fieldset's markup/CSS pattern (legend, radio inputs, labels)
-  - [ ] Toggling it changes the underlying JS variable (verify via a temporary `console.log` or breakpoint) but produces zero visible change to the rendered page
-  - [ ] Every existing control (range inputs, topic checkboxes, first-author checkbox, bar-scale radios) still works exactly as before
-  **Verification:**
-  - [ ] `bundle exec jekyll build --baseurl /al-folio` succeeds
-  - [ ] Manual: load `/timeline/`, toggle Orientation back and forth, confirm no visual change and no console errors
-  **Dependencies:** None
-  **Files likely touched:** `_pages/timeline.md`, `assets/css/timeline.css`, `assets/js/timeline.js`
-  **Estimated scope:** S
+- [x] **Task 1: Add the Orientation toggle control**
+      **Description:** Add a "Orientation" `<fieldset>` to `_pages/timeline.md`'s controls area, styled and structured exactly like the existing "Bar scale" radio group (`Vertical` / `Horizontal`, `Vertical` checked by default). Wire a `orientation` state variable into `assets/js/timeline.js` with a change listener that updates the variable and calls `render()` — but `render()` itself doesn't yet branch on it, so this is a no-op change to visible output.
+      **Acceptance criteria:**
+  - [x] New fieldset renders in the controls area, matching the Bar-scale fieldset's markup/CSS pattern (legend, radio inputs, labels)
+  - [x] Toggling it changes the underlying JS variable (verify via a temporary `console.log` or breakpoint) but produces zero visible change to the rendered page
+  - [x] Every existing control (range inputs, topic checkboxes, first-author checkbox, bar-scale radios) still works exactly as before
+        **Verification:**
+  - [x] `bundle exec jekyll build --baseurl /al-folio` succeeds
+  - [x] Manual: load `/timeline/`, toggle Orientation back and forth, confirm no visual change and no console errors
+        **Dependencies:** None
+        **Files likely touched:** `_pages/timeline.md`, `assets/css/timeline.css`, `assets/js/timeline.js`
+        **Estimated scope:** S
 
-- [ ] **Task 2: Refactor vertical rendering behind an axis abstraction (no visual change)**
-  **Description:** The highest-risk task in this plan. Introduce a small per-orientation config (e.g., an object providing which CSS properties/coordinate functions to use for track segments, card placement, hover position, and leader-line endpoints) and route `renderTrack`, `renderCards`, and the leader-line/hover code through it — but only ever instantiate the *vertical* config for now. This is a pure refactor: vertical mode's rendered output must be pixel-identical before and after.
-  **Acceptance criteria:**
-  - [ ] Every current vertical-mode behavior (bar striping, card packing/placement, leader lines, hover indicator/tooltip, compact/proportional toggle, all filters) is byte-for-byte visually unchanged
-  - [ ] `timeline_mock_logic.js` is untouched by this task
-  **Verification:**
-  - [ ] `node test/unit_timeline_mock_logic.js` passes unchanged
-  - [ ] `bundle exec jekyll build --baseurl /al-folio` succeeds
-  - [ ] Manual: side-by-side comparison (screenshot or careful visual check) of `/timeline/` before and after this refactor at 375px, 762px, and 1440px — no detectable difference
-  **Dependencies:** Task 1
-  **Files likely touched:** `assets/js/timeline.js`
-  **Estimated scope:** M
+- [x] **Task 2: Refactor vertical rendering behind an axis abstraction (no visual change)**
+      **Description:** The highest-risk task in this plan. Introduce a small per-orientation config (e.g., an object providing which CSS properties/coordinate functions to use for track segments, card placement, hover position, and leader-line endpoints) and route `renderTrack`, `renderCards`, and the leader-line/hover code through it — but only ever instantiate the _vertical_ config for now. This is a pure refactor: vertical mode's rendered output must be pixel-identical before and after.
+      **Acceptance criteria:**
+  - [x] Every current vertical-mode behavior (bar striping, card packing/placement, leader lines, hover indicator/tooltip, compact/proportional toggle, all filters) is byte-for-byte visually unchanged
+  - [x] `timeline_mock_logic.js` is untouched by this task
+        **Verification:**
+  - [x] `node test/unit_timeline_mock_logic.js` passes unchanged
+  - [x] `bundle exec jekyll build --baseurl /al-folio` succeeds
+  - [x] Manual: side-by-side comparison (screenshot or careful visual check) of `/timeline/` before and after this refactor at 375px, 762px, and 1440px — no detectable difference. Done for real with Playwright + pixelmatch, not just eyeballed: 0 differing pixels at all three widths.
+        **Dependencies:** Task 1
+        **Files likely touched:** `assets/js/timeline.js`
+        **Estimated scope:** M
 
 ### Checkpoint: Foundation
-- [ ] `node test/unit_timeline_mock_logic.js` and `bundle exec jekyll build --baseurl /al-folio` both pass
-- [ ] Vertical mode is confirmed unchanged; Orientation toggle exists but is inert
-- [ ] Review with Marta before proceeding to horizontal rendering
+
+- [x] `node test/unit_timeline_mock_logic.js` and `bundle exec jekyll build --baseurl /al-folio` both pass
+- [x] Vertical mode is confirmed unchanged; Orientation toggle exists but is inert
+- [x] Review with Marta before proceeding to horizontal rendering
 
 ### Phase 2: Horizontal bar (no cards yet)
 
-- [ ] **Task 3: Horizontal track, striping, and hover**
-  **Description:** Add the horizontal CSS variants (track runs left-to-right at vertical-center, segments use `left`/`width` instead of `top`/`height`, hover-zone spans the bar's full width, hover indicator becomes a vertical marker, tooltip repositions above/below instead of beside). Wire `orientation === "horizontal"` through `renderTrack` and the hover `mousemove` handler (use `clientX` instead of `clientY`, invert axis lookups accordingly). Card rendering can be temporarily skipped/hidden for this task.
-  **Acceptance criteria:**
-  - [ ] Selecting Horizontal renders a left-to-right bar with correct job-color segments and correct 45° overlap striping
-  - [ ] Hovering along the horizontal bar shows the correct date in the tooltip, positioned sensibly relative to the cursor
-  - [ ] Switching back to Vertical restores the exact Task-2 behavior
-  **Verification:**
-  - [ ] `bundle exec jekyll build --baseurl /al-folio` succeeds
-  - [ ] Manual: at 1440px, verify bar orientation, striping at the one known overlap period, and hover tooltip accuracy against a couple of known dates
-  **Dependencies:** Task 2
-  **Files likely touched:** `assets/css/timeline.css`, `assets/js/timeline.js`
-  **Estimated scope:** M
+- [x] **Task 3: Horizontal track, striping, and hover**
+      **Description:** Add the horizontal CSS variants (track runs left-to-right at vertical-center, segments use `left`/`width` instead of `top`/`height`, hover-zone spans the bar's full width, hover indicator becomes a vertical marker, tooltip repositions above/below instead of beside). Wire `orientation === "horizontal"` through `renderTrack` and the hover `mousemove` handler (use `clientX` instead of `clientY`, invert axis lookups accordingly). Card rendering can be temporarily skipped/hidden for this task.
+      **Real bug caught by measurement, not reasoning:** `.timeline-track-segment` had no cross-axis fill rule for horizontal — height resolved to 0 (Playwright `boundingBox()` caught it directly). Fixed with a horizontal-specific `height: 100%` rule.
+      **Acceptance criteria:**
+  - [x] Selecting Horizontal renders a left-to-right bar with correct job-color segments and correct 45° overlap striping
+  - [x] Hovering along the horizontal bar shows the correct date in the tooltip, positioned sensibly relative to the cursor
+  - [x] Switching back to Vertical restores the exact Task-2 behavior
+        **Verification:**
+  - [x] `bundle exec jekyll build --baseurl /al-folio` succeeds
+  - [x] Manual: at 1440px, verify bar orientation, striping at the one known overlap period, and hover tooltip accuracy against a couple of known dates
+        **Dependencies:** Task 2
+        **Files likely touched:** `assets/css/timeline.css`, `assets/js/timeline.js`
+        **Estimated scope:** M
 
-- [ ] **Task 4: Horizontal-specific baseline length and compact-axis pitch**
-  **Description:** Give horizontal mode its own length constants (distinct from `BASELINE_TRACK_HEIGHT`) for both proportional and compact bar-scale modes, tuned against the real 5-job/28-paper dataset so the full bar fits within a representative desktop width (~1440px, inside the page's content column) without horizontal overflow/scrolling.
-  **Acceptance criteria:**
-  - [ ] At 1440px viewport width, horizontal mode's bar (both Proportional and Compact) renders with no horizontal overflow or scrollbar
-  - [ ] Switching bar-scale mode while horizontal re-renders correctly, same as vertical already does
-  **Verification:**
-  - [ ] Manual: resize to 1440px, cycle both bar-scale options in horizontal mode, confirm no overflow
-  - [ ] Node spot-check (as the original build did for its own scale addenda): compute `pos(maxTime)`/`compactPos` for the real dataset against the new constants and confirm they land within the intended pixel budget
-  **Dependencies:** Task 3
-  **Files likely touched:** `assets/js/timeline.js`
-  **Estimated scope:** S
+- [x] **Task 4: Horizontal-specific baseline length and compact-axis pitch**
+      **Description:** Give horizontal mode its own length constants (distinct from `BASELINE_TRACK_HEIGHT`) for both proportional and compact bar-scale modes, tuned against the real 5-job/28-paper dataset so the full bar fits within a representative desktop width (~1440px, inside the page's content column) without horizontal overflow/scrolling.
+      **Sizing conflict discovered and resolved with Marta:** the real dataset has 22 distinct paper dates. Keeping cards at a legible width (~150px, matching vertical) needs `pitch ≈ 160px` in compact mode → a ~3360px bar, far past any no-scroll budget; proportional mode has the same problem locally wherever papers cluster (7 papers in 2025 alone). Asked Marta to choose between (a) allowing horizontal scroll, (b) shrinking cards drastically to fit, or (c) grouping compact-mode by year instead of exact date. **Chosen: (b), shrink cards** — horizontal cards become small always-visible markers, with full title/venue/topics revealed on hover/focus instead of always shown. This changes Task 5's scope (see below) beyond the original "just port the vertical card sideways" plan.
+      **Second discovery, also caught by measurement:** an initial attempt widened `.timeline-wrapper`'s max-width to 1200px for horizontal, and initial constants (`CARD_MAIN_EXTENT_HORIZONTAL=36`, gap `8`, baseline `950`) were tuned against that 1200px budget. Measuring the actual rendered ancestor chain showed the 1200px override was inert — the page's own Bootstrap content column caps the wrapper at ~900-930px regardless, and the bar only "fit" at 1440px by bleeding unclipped into the column's side margins, not because it was genuinely contained (would have broken at other widths/margins). Removed the inert override and retuned against the real ~900px column instead.
+      **Constants actually shipped**, verified against the real dataset with a Node script running the unchanged `timeline_mock_logic.js` functions: `CARD_MAIN_EXTENT_HORIZONTAL = 28`, `CARD_MIN_GAP_HORIZONTAL = 6` (pitch 34), `HORIZONTAL_BASELINE_TRACK_WIDTH = 760`. Resulting required width (packed content + padding): compact mode ~782px, proportional mode ~877px — both under the real ~900px column width, confirmed by Playwright measuring `track width <= wrapper width` (not just "no page-level scrollbar," which the first attempt had falsely passed) at both 992px and 1440px viewports.
+      **Also fixed while verifying:** `renderCards` was skipping the container's own resize call in horizontal mode (bundled with the cards it was also skipping), leaving a *stale* inline height from whatever vertical had last rendered — the bar rendered correctly shaped but ~2000px down a nearly-empty page. Moved the container resize above the horizontal early-return so it always runs.
+      **Acceptance criteria:**
+  - [x] At 1440px viewport width, horizontal mode's bar (both Proportional and Compact) renders with no horizontal overflow or scrollbar
+  - [x] Switching bar-scale mode while horizontal re-renders correctly, same as vertical already does
+        **Verification:**
+  - [x] Manual: resized to 992px and 1440px, cycled both bar-scale options in horizontal mode with the full (unfiltered) date range showing all 28 papers (the worst case — the page's own default filtered view undercounts), confirmed the track genuinely fits inside its own wrapper box, not just "no page scrollbar." Screenshot shown to Marta.
+  - [x] Node spot-check against the real built dataset (not synthetic data): computed required width for both modes at the chosen constants, confirmed both land under the ~900px real column budget with margin
+        **Dependencies:** Task 3
+        **Files likely touched:** `assets/js/timeline.js`
+        **Estimated scope:** S
 
 ### Checkpoint: Horizontal bar
-- [ ] Horizontal bar (no cards) renders correctly at desktop width, both scale modes, hover works
-- [ ] Review with Marta before proceeding to card placement
+
+- [x] Horizontal bar (no cards) renders correctly at desktop width, both scale modes, hover works
+- [x] Review with Marta before proceeding to card placement
 
 ### Phase 3: Horizontal cards and leader lines
 
-- [ ] **Task 5: Card placement above/below the horizontal bar**
-  **Description:** Reuse `packCards` unchanged; map its `"left"`/`"right"` output to CSS classes `above`/`below` at render time when horizontal. Add `.timeline-card.above`/`.timeline-card.below` CSS (positioned via `bottom`/`top` offsets from the bar's vertical center, mirroring the existing `left`/`right` `calc()` pattern). Add new along-axis/cross-axis card size constants tuned for a narrower, taller card shape; verify real paper titles/venues stay legible and unclipped.
-  **Acceptance criteria:**
-  - [ ] Cards render above/below the bar with zero same-lane overlap (mirrors `packCards`'s existing collision guarantee)
-  - [ ] Title (2-line clamp), venue (1-line ellipsis + hover title), and topic pills all remain legible, not clipped, at the new card dimensions
-  **Verification:**
+- [ ] **Task 5: Card placement above/below the horizontal bar (compact marker + hover/focus-expand)**
+      **Description:** Reuse `packCards` unchanged; map its `"left"`/`"right"` output to CSS classes `above`/`below` at render time when horizontal, using Task 4's `CARD_MAIN_EXTENT_HORIZONTAL`/`CARD_MIN_GAP_HORIZONTAL` for packing. Per the sizing-conflict resolution in Task 4, the always-visible card is a small marker (~36px wide, ~24-28px tall — exact cross-axis height tuned here): date only (e.g. "Sep '22"), color-coded by topic like today's card border. On `:hover`/`:focus`, an absolutely-positioned overlay expands from the marker to show the same content as a vertical card (title, venue, topic pills, first-author star) at a normal legible width, elevated `z-index`, growing outward from the bar (away from it, not toward it, so it never covers the bar itself) so it doesn't collide with neighboring markers' own expanded state. Markers need `tabindex="0"` so the expand-on-focus path is keyboard-reachable, not just hover-only (keyboard operability is an existing requirement, not new scope). `aria-label` content stays exactly as today's (already text-based, not tied to visual size) so screen readers get full information regardless of the visual marker/expand split.
+      **Acceptance criteria:**
+  - [ ] Compact markers render above/below the bar with zero same-lane overlap (mirrors `packCards`'s existing collision guarantee)
+  - [ ] Hovering or focusing a marker reveals the full card content (title, venue, topics, first-author star), legible and unclipped, without shifting any other marker's position
+  - [ ] Keyboard-only navigation (Tab) can reach and expand every marker
+        **Verification:**
   - [ ] `node test/unit_timeline_mock_logic.js` passes unchanged (no logic touched, only new CSS constants/classes in `timeline.js`)
-  - [ ] Manual: at 1440px, visually confirm zero overlap across the real 28-paper dataset in both bar-scale modes, spot-check a few long titles/venues
-  **Dependencies:** Task 4
-  **Files likely touched:** `assets/css/timeline.css`, `assets/js/timeline.js`
-  **Estimated scope:** M
+  - [ ] Manual: at 1440px, visually confirm zero marker overlap across the real 28-paper dataset in both bar-scale modes; hover/focus a handful of markers (including ones near the track's start/end) and confirm the expanded card is fully legible and doesn't get clipped by the viewport or wrapper edge
+        **Dependencies:** Task 4
+        **Files likely touched:** `assets/css/timeline.css`, `assets/js/timeline.js`
+        **Estimated scope:** M
 
 - [ ] **Task 6: Leader lines in horizontal mode**
-  **Description:** Swap the SVG leader-line coordinate calculation: card's top/bottom edge (X, Y) to the bar's date-position (X, Y), instead of the vertical mode's left/right-edge-to-bar-Y calculation.
-  **Acceptance criteria:**
+      **Description:** Swap the SVG leader-line coordinate calculation: card's top/bottom edge (X, Y) to the bar's date-position (X, Y), instead of the vertical mode's left/right-edge-to-bar-Y calculation.
+      **Acceptance criteria:**
   - [ ] Every visible card has a dashed line connecting it to the correct point on the horizontal bar
-  **Verification:**
+        **Verification:**
   - [ ] Manual: spot-check 3-4 cards with known dates against where their leader line lands on the bar
-  **Dependencies:** Task 5
-  **Files likely touched:** `assets/js/timeline.js`
-  **Estimated scope:** S
+        **Dependencies:** Task 5
+        **Files likely touched:** `assets/js/timeline.js`
+        **Estimated scope:** S
 
 ### Checkpoint: Horizontal mode functionally complete
+
 - [ ] At desktop width: bar, cards, leader lines, hover, both scale modes all work in horizontal mode
 - [ ] All existing filters (date range, topic, first-author-only) still combine correctly (AND) in horizontal mode — explicitly re-verify here since this is the first point everything combines
 - [ ] Review with Marta before the responsive/accessibility passes
@@ -121,79 +130,81 @@ Add an "Orientation" toggle (Vertical / Horizontal) to the `/timeline/` widget. 
 ### Phase 4: Responsive integration
 
 - [ ] **Task 7: Force vertical below a breakpoint**
-  **Description:** Below the chosen width (992px placeholder, per Architecture Decisions — confirm/adjust here against how it actually looks at common in-between widths), hide/disable the Orientation toggle and force vertical rendering even if Horizontal was previously selected. Restore the user's last choice when the viewport widens back past the breakpoint.
-  **Acceptance criteria:**
+      **Description:** Below the chosen width (992px placeholder, per Architecture Decisions — confirm/adjust here against how it actually looks at common in-between widths), hide/disable the Orientation toggle and force vertical rendering even if Horizontal was previously selected. Restore the user's last choice when the viewport widens back past the breakpoint.
+      **Acceptance criteria:**
   - [ ] Resizing a horizontal-mode window below the breakpoint snaps to vertical and hides/disables the toggle
   - [ ] Widening back past the breakpoint restores horizontal without the user re-toggling
-  **Verification:**
+        **Verification:**
   - [ ] Manual: drag-resize across the breakpoint in both directions
-  **Dependencies:** Task 6
-  **Files likely touched:** `assets/js/timeline.js`, `assets/css/timeline.css`
-  **Estimated scope:** S
+        **Dependencies:** Task 6
+        **Files likely touched:** `assets/js/timeline.js`, `assets/css/timeline.css`
+        **Estimated scope:** S
 
 - [ ] **Task 8: Resize-recompute for horizontal geometry**
-  **Description:** Extend the existing debounced `resize` listener (currently recomputes `CARD_HEIGHT` and vertical compact layout for the narrow-viewport case) to also recompute horizontal's card-size/baseline constants and re-render, so a live window resize doesn't leave stale horizontal geometry — the exact bug class the vertical build already guards against for its own narrow-viewport case.
-  **Acceptance criteria:**
+      **Description:** Extend the existing debounced `resize` listener (currently recomputes `CARD_HEIGHT` and vertical compact layout for the narrow-viewport case) to also recompute horizontal's card-size/baseline constants and re-render, so a live window resize doesn't leave stale horizontal geometry — the exact bug class the vertical build already guards against for its own narrow-viewport case.
+      **Acceptance criteria:**
   - [ ] Live-resizing the window while in horizontal mode keeps cards non-overlapping and leader lines attached (no stale geometry)
-  **Verification:**
+        **Verification:**
   - [ ] Manual: slow drag-resize from 1440px down to the Task 7 breakpoint and back, in horizontal mode
-  **Dependencies:** Task 7
-  **Files likely touched:** `assets/js/timeline.js`
-  **Estimated scope:** S
+        **Dependencies:** Task 7
+        **Files likely touched:** `assets/js/timeline.js`
+        **Estimated scope:** S
 
 ### Checkpoint: Responsive integration
+
 - [ ] Orientation behaves correctly across the full responsive range with no stale geometry after resize
 - [ ] Review with Marta before the accessibility/verification pass
 
 ### Phase 5: Accessibility and verification
 
 - [ ] **Task 9: Accessibility pass on the new control**
-  **Description:** Confirm the Orientation `<fieldset>`/`<legend>` matches the Bar-scale pattern exactly (screen-reader announced, keyboard-operable via native radios). Confirm horizontal-mode cards keep identical `aria-label` content (already text-based, geometry-independent — should need no change, verify rather than assume). Confirm no new hardcoded (non-`--global-*`/non-topic-`var()`) color crept into the horizontal-specific CSS.
-  **Acceptance criteria:**
+      **Description:** Confirm the Orientation `<fieldset>`/`<legend>` matches the Bar-scale pattern exactly (screen-reader announced, keyboard-operable via native radios). Confirm horizontal-mode cards keep identical `aria-label` content (already text-based, geometry-independent — should need no change, verify rather than assume). Confirm no new hardcoded (non-`--global-*`/non-topic-`var()`) color crept into the horizontal-specific CSS.
+      **Acceptance criteria:**
   - [ ] Orientation toggle is keyboard-operable and screen-reader-announced, consistent with Bar-scale
   - [ ] Card `aria-label` content is identical in both orientations
   - [ ] No new non-token color introduced by horizontal-specific CSS
-  **Verification:**
+        **Verification:**
   - [ ] Manual: keyboard-only pass (Tab/Arrow keys) through the new control; spot-check a card's `aria-label` in both orientations
-  **Dependencies:** Task 8
-  **Files likely touched:** `assets/css/timeline.css` (review only, likely no changes)
-  **Estimated scope:** XS
+        **Dependencies:** Task 8
+        **Files likely touched:** `assets/css/timeline.css` (review only, likely no changes)
+        **Estimated scope:** XS
 
 - [ ] **Task 10: Responsive smoke check across real breakpoints**
-  **Description:** Mirror the vertical build's own Task 4.3 methodology — actually resize a real/emulated browser rather than reasoning about the CSS abstractly, since that task found three real bugs this way. Check 375px (forced vertical), the Task 7 breakpoint boundary from both sides, and 1440px (horizontal).
-  **Acceptance criteria:**
+      **Description:** Mirror the vertical build's own Task 4.3 methodology — actually resize a real/emulated browser rather than reasoning about the CSS abstractly, since that task found three real bugs this way. Check 375px (forced vertical), the Task 7 breakpoint boundary from both sides, and 1440px (horizontal).
+      **Acceptance criteria:**
   - [ ] No clipping, overlap, or overflow at any checked width
-  **Verification:**
+        **Verification:**
   - [ ] Manual smoke check, findings (if any) fixed before moving on
-  **Dependencies:** Task 9
-  **Files likely touched:** TBD (whatever the smoke check finds)
-  **Estimated scope:** S
+        **Dependencies:** Task 9
+        **Files likely touched:** TBD (whatever the smoke check finds)
+        **Estimated scope:** S
 
 ### Checkpoint: Feature complete
+
 - [ ] All acceptance criteria above met
 - [ ] Ready for Marta's final review
 
 ### Phase 6: Merge
 
 - [ ] **Task 11: Merge to master, planning docs excluded**
-  **Description:** Merge `timeline-horizontal` into `master`, mirroring the `timeline-planning` precedent — `tasks/plan.md` and `tasks/todo.md` stay off `master`, only the feature code merges.
-  **Acceptance criteria:**
+      **Description:** Merge `timeline-horizontal` into `master`, mirroring the `timeline-planning` precedent — `tasks/plan.md` and `tasks/todo.md` stay off `master`, only the feature code merges.
+      **Acceptance criteria:**
   - [ ] `master` gains the horizontal-mode feature; `tasks/` is not present in the merged history's tree
   - [ ] `bundle exec jekyll build --baseurl /al-folio` output has no `tasks/` under `_site/` (already guaranteed by the existing `_config.yml` exclude list, reconfirm rather than assume)
-  **Verification:**
+        **Verification:**
   - [ ] Post-merge: `git show <merge-commit> --stat` contains no `tasks/` entries
-  **Dependencies:** Task 10, Marta's sign-off
-  **Files likely touched:** none (merge only)
-  **Estimated scope:** XS
+        **Dependencies:** Task 10, Marta's sign-off
+        **Files likely touched:** none (merge only)
+        **Estimated scope:** XS
 
 ## Risks and Mitigations
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Task 2's axis-abstraction refactor subtly changes vertical mode's output | High | Isolated task, done before any horizontal code exists; explicit visual comparison at 3 widths before proceeding |
-| Horizontal baseline tuning looks fine at 1440px but overflows near the 992px boundary | Medium | Task 10's smoke check explicitly includes the boundary from both sides, not just 1440px |
-| Real paper titles/venues don't fit legibly in a narrower horizontal card | Medium | Tune card cross-axis extent empirically against the real 28-paper dataset (Task 5), same iterative approach the original build used for `CARD_HEIGHT` |
-| Scope creep into automated Playwright coverage | Low | Explicitly out of scope per Architecture Decisions; matches existing precedent for this widget |
+| Risk                                                                                  | Impact | Mitigation                                                                                                                                            |
+| ------------------------------------------------------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Task 2's axis-abstraction refactor subtly changes vertical mode's output              | High   | Isolated task, done before any horizontal code exists; explicit visual comparison at 3 widths before proceeding                                       |
+| Horizontal baseline tuning looks fine at 1440px but overflows near the 992px boundary | Medium | Task 10's smoke check explicitly includes the boundary from both sides, not just 1440px                                                               |
+| Real paper titles/venues don't fit legibly in a narrower horizontal card              | Medium | Tune card cross-axis extent empirically against the real 28-paper dataset (Task 5), same iterative approach the original build used for `CARD_HEIGHT` |
+| Scope creep into automated Playwright coverage                                        | Low    | Explicitly out of scope per Architecture Decisions; matches existing precedent for this widget                                                        |
 
 ## Open Questions
 

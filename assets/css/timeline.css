@@ -134,20 +134,22 @@
    specificity (#timeline-widget.timeline-horizontal ...) than the plain
    .timeline-track etc. rules above is what makes these overrides win instead
    of needing !important. */
-#timeline-widget.timeline-horizontal .timeline-wrapper {
-  /* Wider than vertical's 900px so a full-length horizontal bar has room to
-     read correctly (Task 3's own check, at 1440px). Task 4 tunes the actual
-     JS-computed bar length against this width so it fits without a
-     horizontal scrollbar -- this number may move there. */
-  max-width: 1200px;
-}
+/* No .timeline-wrapper max-width override for horizontal: an earlier attempt
+   set this to 1200px, but measuring it (Task 4) showed the page's own
+   Bootstrap content column caps .timeline-wrapper at ~900-930px regardless
+   -- the override was inert, and the bar only looked like it fit at 1440px
+   by accident of the column's side margins (no overflow:hidden anywhere in
+   the chain, so it was silently bleeding into that margin, not actually
+   contained). Task 4's constants below are tuned to the real ~900px column
+   width instead -- the same width vertical mode already uses, so no layout
+   change was needed here after all. */
 #timeline-widget.timeline-horizontal .timeline-container {
-  /* Placeholder: with no cards positioned yet (Task 5 skips card rendering
-     in horizontal mode for now, see renderCards), the container has no
-     normal-flow content to size itself from -- position: absolute children
-     don't contribute to a block's height. Just enough room to see the bar
-     and hover indicator without looking broken; Task 5 replaces this with
-     real space reserved for above/below card stacks. */
+  /* Sane floor only -- timeline.js's renderCards always sets an explicit
+     inline height now (a real bug, not a placeholder: it used to skip this
+     in horizontal mode, leaving whatever height vertical had last set
+     lingering as a stale inline style). This just guards the moment before
+     JS's first render, or the unlikely case effectiveTrackHeight computes
+     to something tiny. */
   min-height: 60px;
 }
 #timeline-widget.timeline-horizontal .timeline-track {

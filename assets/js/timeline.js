@@ -18,6 +18,47 @@
   const TOP_PADDING = 20;
   const BASELINE_TRACK_HEIGHT = 5600;
 
+  // Horizontal mode's own constants (tasks/plan.md Task 4). Card-legibility
+  // vs. no-horizontal-scroll turned out to conflict at vertical's card sizes
+  // (22 distinct paper dates need ~160px/card to stay legible in compact
+  // mode -> a ~3360px bar, far past any no-scroll budget) -- Marta chose to
+  // shrink cards drastically instead of allowing scroll (see Task 5: markers
+  // expand to full detail on hover/focus). These three numbers were checked
+  // against the real 28-paper dataset with a Node script running the
+  // unchanged packCards/computeCompactPositions/dateToPosition, not just
+  // estimated: they land the packed content (plus TOP_PADDING*2) at ~780-880px.
+  // Budget is the page's real ~900px content column (a first attempt assumed
+  // a wider 1200px wrapper would be available -- measured and found that
+  // override was inert, see timeline.css), the same width vertical mode
+  // already uses.
+  const CARD_MAIN_EXTENT_HORIZONTAL = 28;
+  const CARD_MIN_GAP_HORIZONTAL = 6;
+  const HORIZONTAL_BASELINE_TRACK_WIDTH = 760;
+
+  // Declared here (rather than down with the other per-render state) because
+  // setupCompactLayout() below calls cardMainExtent()/cardMinGap()/
+  // baselineLength() (which all read this) immediately at module load, well
+  // before the rest of that state block runs -- a `let` referenced before
+  // its declaration line executes throws, even from inside a function
+  // defined earlier, so this has to come first.
+  let orientation = "vertical";
+
+  // Orientation-generic accessors for "how much main-axis room does one
+  // card need for packing purposes" and "how long is the bar at baseline
+  // (proportional mode)". Hoisted function declarations, so it's fine that
+  // setupCompactLayout() (called immediately below, before the rest of this
+  // file's per-render state exists) calls these before they're textually
+  // defined further down.
+  function cardMainExtent() {
+    return orientation === "horizontal" ? CARD_MAIN_EXTENT_HORIZONTAL : CARD_HEIGHT;
+  }
+  function cardMinGap() {
+    return orientation === "horizontal" ? CARD_MIN_GAP_HORIZONTAL : CARD_MIN_GAP;
+  }
+  function baselineLength() {
+    return orientation === "horizontal" ? HORIZONTAL_BASELINE_TRACK_WIDTH : BASELINE_TRACK_HEIGHT;
+  }
+
   const now = Date.now();
 
   // --- Parse the three real-data islands ---------------------------------
@@ -114,19 +155,22 @@
   // tasks/timeline_real_preview.html's own comment for the fuller
   // rationale (same fix, ported unchanged).
   let effectiveTrackHeight = BASELINE_TRACK_HEIGHT;
-  const pos = (time) => TOP_PADDING + TimelineMockLogic.dateToPosition(time, minTime, maxTime, BASELINE_TRACK_HEIGHT);
+  const pos = (time) => TOP_PADDING + TimelineMockLogic.dateToPosition(time, minTime, maxTime, baselineLength());
 
   // --- "Compact time" mode -------------------------------------------------
-  // CARD_HEIGHT-dependent (PITCH folds it into the rank spacing itself), so
-  // this whole block needs to be re-run whenever CARD_HEIGHT changes --
-  // wrapped in a function rather than one-shot top-level consts, called
-  // once at startup and again on every resize (see the "resize" listener
-  // below), not just on filter changes -- compact mode's positions still
-  // stay filter-invariant, per Marta's original spec, since resizing isn't
-  // a filter.
+  // cardMainExtent()-dependent (PITCH folds it into the rank spacing
+  // itself), so this whole block needs to be re-run whenever that changes --
+  // wrapped in a function rather than one-shot top-level consts, called once
+  // at startup, again on every resize (see the "resize" listener below), and
+  // again whenever orientation changes (its own listener further down) --
+  // compact mode's positions still stay filter-invariant, per Marta's
+  // original spec, since neither resizing nor switching orientation is a
+  // filter.
   let compactAxis, compactPos, compactPackedById;
   function setupCompactLayout() {
-    const pitch = CARD_HEIGHT + CARD_MIN_GAP;
+    const cardExtent = cardMainExtent();
+    const gap = cardMinGap();
+    const pitch = cardExtent + gap;
     compactAxis = TimelineMockLogic.computeCompactPositions(
       papers.map((p) => p.date),
       pitch
@@ -134,8 +178,8 @@
     compactPos = (time) => TOP_PADDING + TimelineMockLogic.interpolateOnAxis(time, compactAxis);
     const compactPacked = TimelineMockLogic.packCards(
       papers.map((p) => ({ id: p.id, idealPosition: compactPos(p.date) })),
-      CARD_HEIGHT,
-      CARD_MIN_GAP
+      cardExtent,
+      gap
     );
     compactPackedById = Object.fromEntries(compactPacked.map((p) => [p.id, p]));
   }
@@ -143,14 +187,6 @@
 
   let compactMode = true;
   let cropOffset = 0;
-  // render() does branch on this (see the axis abstraction below), but no
-  // horizontal-specific CSS exists yet (Task 3+ of tasks/plan.md) -- so
-  // selecting Horizontal before then re-renders using horizontal's main-axis
-  // CSS properties against still-vertical-only layout rules, which won't
-  // look right. Vertical itself is unaffected either way (verified: this
-  // refactor reduces to byte-identical output when orientation stays
-  // "vertical", its default).
-  let orientation = "vertical";
 
   // --- DOM refs -------------------------------------------------------------
   const widget = document.getElementById("timeline-widget");
@@ -306,6 +342,19 @@
     container.querySelectorAll(".timeline-card").forEach((n) => n.remove());
     svg.innerHTML = "";
 
+    // Always resize the container to the already-correct effectiveTrackHeight
+    // regardless of orientation, even though card/leader-line rendering
+    // below is still vertical-only (Task 3 placeholder, removed in Task 5).
+    // This has to run unconditionally: skipping it in horizontal mode left a
+    // *stale* inline height from whatever vertical last rendered (e.g.
+    // 5718px) instead of just "no height at all" -- container.style.height
+    // is a persistent inline style (this element isn't recreated each
+    // render, unlike track-segment/card divs), so without this, horizontal
+    // mode inherited vertical's leftover height and the bar rendered ~2000px
+    // down the page instead of near the controls. Caught by an actual
+    // screenshot, not reasoning.
+    setMainSize(container, TOP_PADDING * 2 + effectiveTrackHeight + "px");
+
     // Task 3 placeholder, removed in Task 5: no .timeline-card.above/.below
     // CSS exists yet, so a card placed in horizontal mode right now would
     // render with a main-axis (left) position but no cross-axis (top/bottom)
@@ -318,11 +367,10 @@
 
     // Only the vertical branch is reachable right now -- the horizontal
     // early-return above means orientation is always "vertical" past this
-    // point. Task 5 removes that early return and reintroduces the
-    // horizontal case here: main-axis dimension = the JS-computed container
-    // size, cross-axis dimension = "100%" of whatever CSS gives the
-    // container on that axis (fixed height there, fixed max-width here).
-    setMainSize(container, TOP_PADDING * 2 + effectiveTrackHeight + "px");
+    // point. Task 5 reintroduces the horizontal case here: main-axis
+    // dimension = the JS-computed container size (already set above),
+    // cross-axis dimension = "100%" of whatever CSS gives the container on
+    // that axis (fixed height there, fixed max-width here).
     svg.setAttribute("width", "100%");
     svg.setAttribute("height", container.style.height);
 
@@ -388,7 +436,7 @@
 
       const cardRect = card.getBoundingClientRect();
       const containerRect = container.getBoundingClientRect();
-      const cardMainMid = placement.top - cropOffset + CARD_HEIGHT / 2;
+      const cardMainMid = placement.top - cropOffset + cardMainExtent() / 2;
       const barMain = posFn(paper.date) - cropOffset;
       // "left"/"right" here are packCards's lane alternation, not literally
       // page-left -- in horizontal mode "left" means "above" (see laneClass),
@@ -432,7 +480,7 @@
       posFn = compactPos;
     } else {
       const idealPositions = visible.map((p) => ({ id: p.id, idealPosition: pos(p.date) }));
-      const packed = TimelineMockLogic.packCards(idealPositions, CARD_HEIGHT, CARD_MIN_GAP);
+      const packed = TimelineMockLogic.packCards(idealPositions, cardMainExtent(), cardMinGap());
       packedById = Object.fromEntries(packed.map((p) => [p.id, p]));
       posFn = pos;
     }
@@ -443,7 +491,7 @@
     const pairs = segments.map((seg) => [posFn(seg.start), posFn(seg.end)]);
     visible.forEach((p) => {
       const top = packedById[p.id].top;
-      pairs.push([top, top + CARD_HEIGHT]);
+      pairs.push([top, top + cardMainExtent()]);
     });
     const bounds = TimelineMockLogic.computeContentBounds(pairs);
     const contentTop = bounds ? bounds.top : TOP_PADDING;
@@ -470,6 +518,11 @@
   orientationInputs.forEach((input) => {
     input.addEventListener("change", () => {
       orientation = document.querySelector('input[name="timeline-orientation-mode"]:checked').value;
+      // Compact mode's pitch depends on cardMainExtent()/cardMinGap(), which
+      // now read a different orientation -- without this, switching
+      // orientation would keep using the *previous* orientation's compact
+      // geometry until the next resize happened to trigger a recompute.
+      setupCompactLayout();
       render();
     });
   });

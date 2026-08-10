@@ -3,17 +3,17 @@
 See `tasks/plan.md` for full descriptions, acceptance criteria, and verification steps.
 
 ## Phase 1: Foundation
-- [ ] Task 1: Add the Orientation toggle control (inert)
-- [ ] Task 2: Refactor vertical rendering behind an axis abstraction (no visual change)
-- [ ] **Checkpoint:** unit tests + build pass, vertical mode confirmed unchanged, review with Marta
+- [x] Task 1: Add the Orientation toggle control (inert)
+- [x] Task 2: Refactor vertical rendering behind an axis abstraction (no visual change)
+- [x] **Checkpoint:** unit tests + build pass, vertical mode confirmed unchanged, review with Marta
 
 ## Phase 2: Horizontal bar (no cards yet)
-- [ ] Task 3: Horizontal track, striping, and hover
-- [ ] Task 4: Horizontal-specific baseline length and compact-axis pitch
-- [ ] **Checkpoint:** horizontal bar renders correctly at desktop width, review with Marta
+- [x] Task 3: Horizontal track, striping, and hover
+- [x] Task 4: Horizontal-specific baseline length and compact-axis pitch
+- [x] **Checkpoint:** horizontal bar renders correctly at desktop width, review with Marta
 
 ## Phase 3: Horizontal cards and leader lines
-- [ ] Task 5: Card placement above/below the horizontal bar
+- [ ] Task 5: Card placement (compact marker + hover/focus-expand)
 - [ ] Task 6: Leader lines in horizontal mode
 - [ ] **Checkpoint:** horizontal mode functionally complete, all filters re-verified, review with Marta
 
