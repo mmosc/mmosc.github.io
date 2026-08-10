@@ -39,13 +39,17 @@
   color: var(--global-text-color);
 }
 .timeline-controls label,
-.timeline-job-legend-item {
+.timeline-job-legend-item,
+.timeline-star-legend {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
   font-size: 0.85rem;
   margin-right: 0.75rem;
   color: var(--global-text-color);
+}
+.timeline-star-legend .timeline-first-author-star {
+  color: var(--global-highlight-color);
 }
 .timeline-range-inputs {
   display: flex;
@@ -123,6 +127,71 @@
   pointer-events: none;
   display: none;
   z-index: 10;
+}
+
+/* Horizontal orientation (tasks/plan.md Tasks 3-6): the bar runs
+   left-to-right instead of top-to-bottom, so every rule above that fixes the
+   bar's cross-axis position via `left: 50%`/`transform: translateX(-50%)`
+   needs the perpendicular version here (`top: 50%`/`translateY(-50%)`),
+   leaving the main-axis property (`left`/`width`, set inline by
+   timeline.js's setMainPosition/setMainSize) for JS to drive. Higher
+   specificity (#timeline-widget.timeline-horizontal ...) than the plain
+   .timeline-track etc. rules above is what makes these overrides win instead
+   of needing !important. */
+/* Left edge stays where the page content column already starts (no margin
+   change); width extends right toward the viewport edge instead of stopping
+   at the column's own right edge (Task 12). --max-content-width is the
+   theme's own content-column variable. 32px gutter must match
+   HORIZONTAL_GUTTER_PX in timeline.js. */
+#timeline-widget.timeline-horizontal .timeline-wrapper {
+  max-width: none;
+  width: calc(100vw - (100vw - var(--max-content-width, 900px)) / 2 - 32px);
+}
+#timeline-widget.timeline-horizontal .timeline-container {
+  /* Sane floor only -- timeline.js's renderCards always sets an explicit
+     inline height now (a real bug, not a placeholder: it used to skip this
+     in horizontal mode, leaving whatever height vertical had last set
+     lingering as a stale inline style). This just guards the moment before
+     JS's first render, or the unlikely case effectiveTrackHeight computes
+     to something tiny. */
+  min-height: 170px;
+}
+#timeline-widget.timeline-horizontal .timeline-track {
+  left: 0;
+  top: 50%;
+  width: auto;
+  height: 14px;
+  transform: translateY(-50%);
+}
+#timeline-widget.timeline-horizontal .timeline-track-segment {
+  /* left/width are still JS-driven inline (mainStyleProp/mainSizeProp), same
+     as vertical -- only the cross-axis fill needs a horizontal-specific
+     rule, since vertical's own .timeline-track-segment never sets a height
+     either (relies on JS's inline height there instead). Without this,
+     segments have no height at all in horizontal mode: `height: auto` on an
+     absolutely positioned, childless div resolves to 0 (caught by an actual
+     Playwright measurement, not just reasoning -- boundingBox() reported
+     height: 0 before this rule existed). */
+  top: 0;
+  height: 100%;
+}
+#timeline-widget.timeline-horizontal .timeline-track-hover-zone {
+  left: 0;
+  top: 50%;
+  width: auto;
+  height: 40px;
+  transform: translateY(-50%);
+}
+#timeline-widget.timeline-horizontal .timeline-hover-indicator {
+  left: auto;
+  top: 50%;
+  width: 2px;
+  height: 28px;
+}
+#timeline-widget.timeline-horizontal .timeline-hover-tooltip {
+  left: auto;
+  top: calc(50% + 22px);
+  transform: translateX(-50%);
 }
 
 .timeline-card {
@@ -212,6 +281,71 @@
   white-space: nowrap;
 }
 
+/* Horizontal card: small marker, full content in .timeline-card-detail on hover/focus. */
+#timeline-widget.timeline-horizontal .timeline-card {
+  /* width set inline by timeline.js (cardMainExtent(), live window width) */
+  height: 26px;
+  min-width: 0;
+  padding: 0 4px;
+  border: 2px solid var(--card-color, var(--global-theme-color));
+  border-radius: 4px;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+#timeline-widget.timeline-horizontal .timeline-card.above {
+  top: auto;
+  bottom: calc(50% + 15px);
+  right: auto;
+  text-align: center;
+}
+#timeline-widget.timeline-horizontal .timeline-card.below {
+  top: calc(50% + 15px);
+  text-align: center;
+}
+#timeline-widget.timeline-horizontal .timeline-card-marker-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--global-text-color);
+  line-height: 1;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#timeline-widget.timeline-horizontal .timeline-card-detail {
+  display: none;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  width: clamp(150px, 42vw, 320px);
+  box-sizing: border-box;
+  background: var(--global-card-bg-color);
+  border: 1px solid var(--global-divider-color);
+  border-left: 6px solid var(--card-color, var(--global-theme-color));
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  color: var(--global-text-color);
+  text-align: left;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+#timeline-widget.timeline-horizontal .timeline-card.above .timeline-card-detail {
+  bottom: 100%;
+  margin-bottom: 6px;
+}
+#timeline-widget.timeline-horizontal .timeline-card.below .timeline-card-detail {
+  top: 100%;
+  margin-top: 6px;
+}
+#timeline-widget.timeline-horizontal .timeline-card:hover .timeline-card-detail,
+#timeline-widget.timeline-horizontal .timeline-card:focus .timeline-card-detail,
+#timeline-widget.timeline-horizontal .timeline-card:focus-within .timeline-card-detail {
+  display: block;
+}
 .timeline-legend-swatch {
   display: inline-block;
   width: 0.7rem;
