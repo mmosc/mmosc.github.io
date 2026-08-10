@@ -111,21 +111,22 @@ Add an "Orientation" toggle (Vertical / Horizontal) to the `/timeline/` widget. 
         **Files likely touched:** `assets/css/timeline.css`, `assets/js/timeline.js`
         **Estimated scope:** M
 
-- [ ] **Task 6: Leader lines in horizontal mode**
+- [x] **Task 6: Leader lines in horizontal mode**
       **Description:** Swap the SVG leader-line coordinate calculation: card's top/bottom edge (X, Y) to the bar's date-position (X, Y), instead of the vertical mode's left/right-edge-to-bar-Y calculation.
+      **Turned out to need zero code changes.** Task 2's `axisPoint`/`cardCrossEdge` geometry was already written generically (deriving both branches at once was cheap once the vertical math was worked out) and Task 5 already exercises it just by removing the horizontal early-return. This task was pure verification.
       **Acceptance criteria:**
-  - [ ] Every visible card has a dashed line connecting it to the correct point on the horizontal bar
+  - [x] Every visible card has a dashed line connecting it to the correct point on the horizontal bar
         **Verification:**
-  - [ ] Manual: spot-check 3-4 cards with known dates against where their leader line lands on the bar
+  - [x] Playwright, not manual spot-check: compared every line's (x1,y1) endpoint against its own card's actual bounding-box center/edge for all 28 cards — 0 mismatches (>1px tolerance).
         **Dependencies:** Task 5
         **Files likely touched:** `assets/js/timeline.js`
         **Estimated scope:** S
 
 ### Checkpoint: Horizontal mode functionally complete
 
-- [ ] At desktop width: bar, cards, leader lines, hover, both scale modes all work in horizontal mode
-- [ ] All existing filters (date range, topic, first-author-only) still combine correctly (AND) in horizontal mode — explicitly re-verify here since this is the first point everything combines
-- [ ] Review with Marta before the responsive/accessibility passes
+- [x] At desktop width: bar, cards, leader lines, hover, both scale modes all work in horizontal mode
+- [x] All existing filters (date range, topic, first-author-only) still combine correctly (AND) in horizontal mode — verified with Playwright: 28 → 22 (topic) → 14 (+ first-author) → 11 (+ narrowed range) → 22 (Reset), matching expected AND narrowing at each step
+- [x] Review with Marta before the responsive/accessibility passes
 
 ### Phase 4: Responsive integration
 
