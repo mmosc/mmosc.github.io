@@ -36,8 +36,8 @@
   // `selectedOrientation` is the user's raw radio choice, preserved even
   // while a narrow viewport forces `orientation` to "vertical" (Task 7), so
   // widening back past the breakpoint can restore it.
-  let orientation = "vertical";
-  let selectedOrientation = "vertical";
+  let orientation = "horizontal";
+  let selectedOrientation = "horizontal";
 
   // Hoisted function declarations -- safe to call from setupCompactLayout()
   // below before `papers` exists textually further down, since they're only
@@ -602,5 +602,6 @@
   });
 
   applyOrientationForViewport();
+  setupCompactLayout();
   render();
 })();
