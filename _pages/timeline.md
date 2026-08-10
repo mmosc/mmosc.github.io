@@ -24,6 +24,7 @@ nav_order: 5
     <fieldset id="timeline-author-filter">
       <legend>Authorship</legend>
       <label><input type="checkbox" id="timeline-first-author-only" /> First author only</label>
+      <span class="timeline-star-legend"><span class="timeline-first-author-star" aria-hidden="true">★</span> = first author</span>
     </fieldset>
     <!-- Not real form controls (nothing to check/select), so plain spans
          rather than <label> -- a <label> with no associated input is a

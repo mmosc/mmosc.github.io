@@ -39,13 +39,17 @@
   color: var(--global-text-color);
 }
 .timeline-controls label,
-.timeline-job-legend-item {
+.timeline-job-legend-item,
+.timeline-star-legend {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
   font-size: 0.85rem;
   margin-right: 0.75rem;
   color: var(--global-text-color);
+}
+.timeline-star-legend .timeline-first-author-star {
+  color: var(--global-highlight-color);
 }
 .timeline-range-inputs {
   display: flex;
