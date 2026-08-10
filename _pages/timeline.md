@@ -36,6 +36,11 @@ nav_order: 5
       <label><input type="radio" name="timeline-scale-mode" value="proportional" /> Proportional to time</label>
       <label><input type="radio" name="timeline-scale-mode" value="compact" checked /> Compact (fit all papers)</label>
     </fieldset>
+    <fieldset id="timeline-orientation-mode">
+      <legend>Orientation</legend>
+      <label><input type="radio" name="timeline-orientation-mode" value="vertical" checked /> Vertical</label>
+      <label><input type="radio" name="timeline-orientation-mode" value="horizontal" /> Horizontal</label>
+    </fieldset>
   </div>
 
   <div class="timeline-wrapper">
