@@ -69,10 +69,70 @@ assert.strictEqual(dateToPosition(1050, 0, 1000, 500), 500, "time after range cl
       const prevBottom = placed[i - 1].top + cardHeight;
       assert.ok(
         placed[i].top >= prevBottom,
-        `clustered ${side} card ${placed[i].id} (top ${placed[i].top}) must not overlap previous card (bottom ${prevBottom})`,
+        `clustered ${side} card ${placed[i].id} (top ${placed[i].top}) must not overlap previous card (bottom ${prevBottom})`
       );
     }
   });
+}
+
+{
+  // per-card mainExtent overrides the uniform cardHeight for that card's own
+  // push distance (Task 12: horizontal cards are sized to their own label,
+  // not a uniform width) -- cards without mainExtent keep using the uniform
+  // param, so existing uniform-width callers are unaffected.
+  const cards = [
+    { id: "a", idealPosition: 0, mainExtent: 100 },
+    { id: "b", idealPosition: 5 },
+    { id: "c", idealPosition: 10, mainExtent: 100 },
+  ];
+  const cardHeight = 20;
+  const minGap = 5;
+  const result = packCards(cards, cardHeight, minGap);
+  const a = result.find((r) => r.id === "a");
+  const c = result.find((r) => r.id === "c");
+  assert.strictEqual(a.side, "left");
+  assert.strictEqual(c.side, "left");
+  assert.strictEqual(a.top, 0, "first card keeps its ideal position");
+  assert.strictEqual(
+    c.top,
+    a.top + 100 + minGap,
+    "second same-side card is pushed by the first card's own mainExtent (100), not the uniform cardHeight (20)"
+  );
+}
+
+{
+  // laneCount > 2 (Task 12: stagger cards into a second row per side to
+  // shrink the bar) round-robins across more independent cursors instead of
+  // just left/right -- default laneCount=2 is unchanged (existing callers
+  // unaffected), side = lane%2, row = floor(lane/2).
+  const cards = [
+    { id: "a", idealPosition: 0 },
+    { id: "b", idealPosition: 1 },
+    { id: "c", idealPosition: 2 },
+    { id: "d", idealPosition: 3 },
+    { id: "e", idealPosition: 100 },
+  ];
+  const result = packCards(cards, 20, 5, 4);
+  const bySide = { left: [], right: [] };
+  result.forEach((r) => bySide[r.side].push(r));
+  assert.deepStrictEqual(
+    result.slice(0, 4).map((r) => [r.side, r.row]),
+    [
+      ["left", 0],
+      ["right", 0],
+      ["left", 1],
+      ["right", 1],
+    ],
+    "4 lanes round-robin left-row0, right-row0, left-row1, right-row1"
+  );
+  assert.strictEqual(result[0].top, 0, "a keeps its ideal position (first in its lane)");
+  assert.strictEqual(
+    result[2].top,
+    2,
+    "c (left-row1) is independent of a (left-row0) despite both being on the left -- no push between different rows"
+  );
+  // e is far enough away (idealPosition 100) that no lane pushes it
+  assert.strictEqual(result[4].top, 100, "a card with no nearby same-lane neighbor keeps its ideal position regardless of laneCount");
 }
 
 // computeJobSegments: turns possibly-overlapping job intervals into non-overlapping
@@ -134,7 +194,7 @@ assert.strictEqual(dateToPosition(1050, 0, 1000, 500), 500, "time after range cl
   assert.deepStrictEqual(
     clipSegmentsToRange(segments, 100, 200),
     [{ start: 120, end: 180, colors: ["A"] }],
-    "a segment fully inside the range is unchanged",
+    "a segment fully inside the range is unchanged"
   );
 }
 
@@ -143,7 +203,7 @@ assert.strictEqual(dateToPosition(1050, 0, 1000, 500), 500, "time after range cl
   assert.deepStrictEqual(
     clipSegmentsToRange(segments, 100, 200),
     [{ start: 100, end: 150, colors: ["A"] }],
-    "a segment straddling the start boundary is truncated to it",
+    "a segment straddling the start boundary is truncated to it"
   );
 }
 
@@ -152,7 +212,7 @@ assert.strictEqual(dateToPosition(1050, 0, 1000, 500), 500, "time after range cl
   assert.deepStrictEqual(
     clipSegmentsToRange(segments, 100, 200),
     [{ start: 150, end: 200, colors: ["A"] }],
-    "a segment straddling the end boundary is truncated to it",
+    "a segment straddling the end boundary is truncated to it"
   );
 }
 
@@ -161,7 +221,7 @@ assert.strictEqual(dateToPosition(1050, 0, 1000, 500), 500, "time after range cl
   assert.deepStrictEqual(
     clipSegmentsToRange(segments, 100, 200),
     [{ start: 100, end: 200, colors: ["A"] }],
-    "a segment spanning the entire range is truncated to exactly the range",
+    "a segment spanning the entire range is truncated to exactly the range"
   );
 }
 
@@ -236,21 +296,21 @@ assert.strictEqual(dateToPosition(1050, 0, 1000, 500), 500, "time after range cl
   assert.deepStrictEqual(
     filterPapers(papers, { startMs: 0, endMs: 150, activeTopics: allTopics }).map((p) => p.id),
     ["p1", "p2", "p3", "p4"],
-    "full range and all topics returns every paper",
+    "full range and all topics returns every paper"
   );
 
   // Task 1.2: narrowing the date range excludes out-of-range papers, range bounds inclusive
   assert.deepStrictEqual(
     filterPapers(papers, { startMs: 25, endMs: 100, activeTopics: allTopics }).map((p) => p.id),
     ["p2", "p3"],
-    "narrowed range excludes papers outside [startMs, endMs], includes boundary matches",
+    "narrowed range excludes papers outside [startMs, endMs], includes boundary matches"
   );
 
   // Task 1.2: date range excluding everything returns empty, not an error
   assert.deepStrictEqual(
     filterPapers(papers, { startMs: 1000, endMs: 2000, activeTopics: allTopics }).map((p) => p.id),
     [],
-    "range outside all paper dates returns no papers",
+    "range outside all paper dates returns no papers"
   );
 
   // Task 1.2: widening back out restores everything, and the input array is untouched
@@ -260,35 +320,35 @@ assert.strictEqual(dateToPosition(1050, 0, 1000, 500), 500, "time after range cl
   assert.deepStrictEqual(
     filterPapers(papers, { startMs: 0, endMs: 150, activeTopics: allTopics }).map((p) => p.id),
     ["p1", "p2", "p3", "p4"],
-    "widening the range back out restores every paper (no lost state)",
+    "widening the range back out restores every paper (no lost state)"
   );
 
   // Task 1.3: topic filter hides papers matching none of the active topics
   assert.deepStrictEqual(
     filterPapers(papers, { startMs: 0, endMs: 150, activeTopics: new Set(["c"]) }).map((p) => p.id),
     ["p4"],
-    "deselecting topics hides papers that match none of the remaining active topics",
+    "deselecting topics hides papers that match none of the remaining active topics"
   );
 
   // Task 1.3: a paper with multiple topics passes if ANY of its topics is active
   assert.deepStrictEqual(
     filterPapers(papers, { startMs: 0, endMs: 150, activeTopics: new Set(["b"]) }).map((p) => p.id),
     ["p2", "p3"],
-    "multi-topic paper p2 passes because topic b is active, even though topic a is not",
+    "multi-topic paper p2 passes because topic b is active, even though topic a is not"
   );
 
   // Task 1.3: date range AND topic filter combine as AND, not OR
   assert.deepStrictEqual(
     filterPapers(papers, { startMs: 0, endMs: 60, activeTopics: new Set(["b"]) }).map((p) => p.id),
     ["p2"],
-    "p3 matches the topic filter but not the date range, so it must be excluded (AND, not OR)",
+    "p3 matches the topic filter but not the date range, so it must be excluded (AND, not OR)"
   );
 
   // deselecting every topic returns nothing, regardless of date range
   assert.deepStrictEqual(
     filterPapers(papers, { startMs: 0, endMs: 150, activeTopics: new Set() }).map((p) => p.id),
     [],
-    "no active topics returns no papers even with the full date range",
+    "no active topics returns no papers even with the full date range"
   );
 }
 
@@ -307,35 +367,35 @@ assert.strictEqual(dateToPosition(1050, 0, 1000, 500), 500, "time after range cl
   assert.deepStrictEqual(
     filterPapers(papers, { startMs: 0, endMs: 150, activeTopics: allTopics }).map((p) => p.id),
     ["p1", "p2", "p3", "p4"],
-    "omitting firstAuthorOnly doesn't filter by authorship (backward compatible)",
+    "omitting firstAuthorOnly doesn't filter by authorship (backward compatible)"
   );
 
   // firstAuthorOnly: false explicitly: same as omitted
   assert.deepStrictEqual(
     filterPapers(papers, { startMs: 0, endMs: 150, activeTopics: allTopics, firstAuthorOnly: false }).map((p) => p.id),
     ["p1", "p2", "p3", "p4"],
-    "firstAuthorOnly: false includes every paper regardless of authorship",
+    "firstAuthorOnly: false includes every paper regardless of authorship"
   );
 
   // firstAuthorOnly: true: only papers with firstAuthor: true pass
   assert.deepStrictEqual(
     filterPapers(papers, { startMs: 0, endMs: 150, activeTopics: allTopics, firstAuthorOnly: true }).map((p) => p.id),
     ["p1", "p3"],
-    "firstAuthorOnly: true hides papers where firstAuthor is false",
+    "firstAuthorOnly: true hides papers where firstAuthor is false"
   );
 
   // combines as AND with the date-range filter
   assert.deepStrictEqual(
     filterPapers(papers, { startMs: 0, endMs: 60, activeTopics: allTopics, firstAuthorOnly: true }).map((p) => p.id),
     ["p1"],
-    "p3 is first-author but outside the date range, so it must be excluded (AND, not OR)",
+    "p3 is first-author but outside the date range, so it must be excluded (AND, not OR)"
   );
 
   // combines as AND with the topic filter
   assert.deepStrictEqual(
     filterPapers(papers, { startMs: 0, endMs: 150, activeTopics: new Set(["c"]), firstAuthorOnly: true }).map((p) => p.id),
     [],
-    "p4 matches the topic filter but not firstAuthorOnly, so it must be excluded (AND, not OR)",
+    "p4 matches the topic filter but not firstAuthorOnly, so it must be excluded (AND, not OR)"
   );
 }
 
@@ -352,7 +412,7 @@ assert.strictEqual(dateToPosition(1050, 0, 1000, 500), 500, "time after range cl
   const packed = packCards(
     visible.map((p) => ({ id: p.id, idealPosition: p.date })),
     20,
-    5,
+    5
   );
   assert.strictEqual(packed.length, 4, "only the 4 in-range, in-topic papers get packed");
   const bySide = { left: [], right: [] };
@@ -466,7 +526,7 @@ assert.strictEqual(positionToDate(600, 0, 1000, 500), 1000, "position past the t
       { time: 200, position: 20 },
       { time: 300, position: 40 },
     ],
-    "distinct times get evenly-spaced ranks in ascending order; duplicates collapse to one axis point",
+    "distinct times get evenly-spaced ranks in ascending order; duplicates collapse to one axis point"
   );
 }
 
@@ -527,8 +587,12 @@ assert.strictEqual(positionToDate(600, 0, 1000, 500), 1000, "position past the t
 {
   const now = 1234567890;
   assert.strictEqual(parseJobDate("present", now), now, '"present" resolves to the given current time');
-  assert.strictEqual(parseJobDate("2021-10", now), Date.UTC(2021, 9, 1), '"YYYY-MM" resolves to the 1st of that month (month is 1-indexed in the string)');
-  assert.strictEqual(parseJobDate("2019-01", now), Date.UTC(2019, 0, 1), "January (numeric \"01\") maps to month index 0");
+  assert.strictEqual(
+    parseJobDate("2021-10", now),
+    Date.UTC(2021, 9, 1),
+    '"YYYY-MM" resolves to the 1st of that month (month is 1-indexed in the string)'
+  );
+  assert.strictEqual(parseJobDate("2019-01", now), Date.UTC(2019, 0, 1), 'January (numeric "01") maps to month index 0');
 }
 
 // contrastRatio: WCAG 2.x relative-luminance contrast ratio between two hex
@@ -576,7 +640,10 @@ assert.strictEqual(positionToDate(600, 0, 1000, 500), 1000, "position past the t
     ].forEach(([mode, hex]) => {
       const textColor = pickContrastingTextColor(hex);
       const ratio = contrastRatio(textColor, hex);
-      assert.ok(ratio >= WCAG_AA_NORMAL_TEXT, `${topic} (${mode}, ${hex}) with chosen text ${textColor} must clear WCAG AA 4.5:1, got ${ratio.toFixed(2)}`);
+      assert.ok(
+        ratio >= WCAG_AA_NORMAL_TEXT,
+        `${topic} (${mode}, ${hex}) with chosen text ${textColor} must clear WCAG AA 4.5:1, got ${ratio.toFixed(2)}`
+      );
     });
   });
 }

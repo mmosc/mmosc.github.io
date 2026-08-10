@@ -134,15 +134,15 @@
    specificity (#timeline-widget.timeline-horizontal ...) than the plain
    .timeline-track etc. rules above is what makes these overrides win instead
    of needing !important. */
-/* No .timeline-wrapper max-width override for horizontal: an earlier attempt
-   set this to 1200px, but measuring it (Task 4) showed the page's own
-   Bootstrap content column caps .timeline-wrapper at ~900-930px regardless
-   -- the override was inert, and the bar only looked like it fit at 1440px
-   by accident of the column's side margins (no overflow:hidden anywhere in
-   the chain, so it was silently bleeding into that margin, not actually
-   contained). Task 4's constants below are tuned to the real ~900px column
-   width instead -- the same width vertical mode already uses, so no layout
-   change was needed here after all. */
+/* Left edge stays where the page content column already starts (no margin
+   change); width extends right toward the viewport edge instead of stopping
+   at the column's own right edge (Task 12). --max-content-width is the
+   theme's own content-column variable. 32px gutter must match
+   HORIZONTAL_GUTTER_PX in timeline.js. */
+#timeline-widget.timeline-horizontal .timeline-wrapper {
+  max-width: none;
+  width: calc(100vw - (100vw - var(--max-content-width, 900px)) / 2 - 32px);
+}
 #timeline-widget.timeline-horizontal .timeline-container {
   /* Sane floor only -- timeline.js's renderCards always sets an explicit
      inline height now (a real bug, not a placeholder: it used to skip this
@@ -150,7 +150,7 @@
      lingering as a stale inline style). This just guards the moment before
      JS's first render, or the unlikely case effectiveTrackHeight computes
      to something tiny. */
-  min-height: 60px;
+  min-height: 170px;
 }
 #timeline-widget.timeline-horizontal .timeline-track {
   left: 0;
@@ -279,10 +279,10 @@
 
 /* Horizontal card: small marker, full content in .timeline-card-detail on hover/focus. */
 #timeline-widget.timeline-horizontal .timeline-card {
-  width: 28px;
-  height: 24px;
+  /* width set inline by timeline.js (cardMainExtent(), live window width) */
+  height: 26px;
   min-width: 0;
-  padding: 0;
+  padding: 0 4px;
   border: 2px solid var(--card-color, var(--global-theme-color));
   border-radius: 4px;
   box-shadow: none;
@@ -293,19 +293,33 @@
 }
 #timeline-widget.timeline-horizontal .timeline-card.above {
   top: auto;
-  bottom: calc(50% + 14px);
+  bottom: calc(50% + 15px);
   right: auto;
   text-align: center;
 }
 #timeline-widget.timeline-horizontal .timeline-card.below {
-  top: calc(50% + 14px);
+  top: calc(50% + 15px);
+  text-align: center;
+}
+#timeline-widget.timeline-horizontal .timeline-card.above-far {
+  top: auto;
+  bottom: calc(50% + 47px);
+  right: auto;
+  text-align: center;
+}
+#timeline-widget.timeline-horizontal .timeline-card.below-far {
+  top: calc(50% + 47px);
   text-align: center;
 }
 #timeline-widget.timeline-horizontal .timeline-card-marker-label {
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   font-weight: 600;
   color: var(--global-text-color);
   line-height: 1;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 #timeline-widget.timeline-horizontal .timeline-card-detail {
   display: none;
