@@ -19,8 +19,8 @@ See `tasks/plan.md` for full descriptions, acceptance criteria, and verification
 
 ## Phase 4: Responsive integration
 - [x] Task 7: Force vertical below a breakpoint (992px)
-- [ ] Task 8: Resize-recompute for horizontal geometry
-- [ ] **Checkpoint:** responsive behavior confirmed, review with Marta
+- [x] Task 8: Resize-recompute for horizontal geometry
+- [x] **Checkpoint:** responsive behavior confirmed, review with Marta
 
 ## Phase 5: Accessibility and verification
 - [ ] Task 9: Accessibility pass on the new control
