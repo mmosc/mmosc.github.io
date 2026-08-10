@@ -13,7 +13,7 @@ See `tasks/plan.md` for full descriptions, acceptance criteria, and verification
 - [x] **Checkpoint:** horizontal bar renders correctly at desktop width, review with Marta
 
 ## Phase 3: Horizontal cards and leader lines
-- [ ] Task 5: Card placement (compact marker + hover/focus-expand)
+- [x] Task 5: Card placement (compact marker + hover/focus-expand)
 - [ ] Task 6: Leader lines in horizontal mode
 - [ ] **Checkpoint:** horizontal mode functionally complete, all filters re-verified, review with Marta
 

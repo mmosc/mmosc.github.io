@@ -98,15 +98,15 @@ Add an "Orientation" toggle (Vertical / Horizontal) to the `/timeline/` widget. 
 
 ### Phase 3: Horizontal cards and leader lines
 
-- [ ] **Task 5: Card placement above/below the horizontal bar (compact marker + hover/focus-expand)**
-      **Description:** Reuse `packCards` unchanged; map its `"left"`/`"right"` output to CSS classes `above`/`below` at render time when horizontal, using Task 4's `CARD_MAIN_EXTENT_HORIZONTAL`/`CARD_MIN_GAP_HORIZONTAL` for packing. Per the sizing-conflict resolution in Task 4, the always-visible card is a small marker (~36px wide, ~24-28px tall — exact cross-axis height tuned here): date only (e.g. "Sep '22"), color-coded by topic like today's card border. On `:hover`/`:focus`, an absolutely-positioned overlay expands from the marker to show the same content as a vertical card (title, venue, topic pills, first-author star) at a normal legible width, elevated `z-index`, growing outward from the bar (away from it, not toward it, so it never covers the bar itself) so it doesn't collide with neighboring markers' own expanded state. Markers need `tabindex="0"` so the expand-on-focus path is keyboard-reachable, not just hover-only (keyboard operability is an existing requirement, not new scope). `aria-label` content stays exactly as today's (already text-based, not tied to visual size) so screen readers get full information regardless of the visual marker/expand split.
+- [x] **Task 5: Card placement above/below the horizontal bar (compact marker + hover/focus-expand)**
+      **Description:** Reuse `packCards` unchanged; map its `"left"`/`"right"` output to CSS classes `above`/`below` at render time when horizontal, using Task 4's `CARD_MAIN_EXTENT_HORIZONTAL`/`CARD_MIN_GAP_HORIZONTAL` for packing. Per the sizing-conflict resolution in Task 4, the always-visible card is a small marker (28x24px, 2-digit year), color-coded by topic like today's card border. On `:hover`/`:focus`, an absolutely-positioned `.timeline-card-detail` overlay expands from the marker to show the same content as a vertical card (title, venue, topic pills, first-author star) at a normal legible width, elevated `z-index`, growing outward from the bar. Markers get `tabindex="0"` (horizontal only) so the expand-on-focus path is keyboard-reachable. `aria-label` content is unchanged.
       **Acceptance criteria:**
-  - [ ] Compact markers render above/below the bar with zero same-lane overlap (mirrors `packCards`'s existing collision guarantee)
-  - [ ] Hovering or focusing a marker reveals the full card content (title, venue, topics, first-author star), legible and unclipped, without shifting any other marker's position
-  - [ ] Keyboard-only navigation (Tab) can reach and expand every marker
+  - [x] Compact markers render above/below the bar with zero same-lane overlap (mirrors `packCards`'s existing collision guarantee)
+  - [x] Hovering or focusing a marker reveals the full card content (title, venue, topics, first-author star), legible and unclipped, without shifting any other marker's position
+  - [x] Keyboard-only navigation (Tab) can reach and expand every marker
         **Verification:**
-  - [ ] `node test/unit_timeline_mock_logic.js` passes unchanged (no logic touched, only new CSS constants/classes in `timeline.js`)
-  - [ ] Manual: at 1440px, visually confirm zero marker overlap across the real 28-paper dataset in both bar-scale modes; hover/focus a handful of markers (including ones near the track's start/end) and confirm the expanded card is fully legible and doesn't get clipped by the viewport or wrapper edge
+  - [x] `node test/unit_timeline_mock_logic.js` passes unchanged (no logic touched, only new CSS constants/classes in `timeline.js`)
+  - [x] Manual (Playwright): all 28 markers rendered (14 above / 14 below), 0 overlapping pairs in either lane, confirmed programmatically from real bounding boxes, not eyeballed. Hovered the true leftmost/rightmost markers (by actual x position, not DOM order) — both detail overlays stay within the 1440px viewport, no clipping. Keyboard focus (no mouse) also reveals the detail. Screenshots shown to Marta.
         **Dependencies:** Task 4
         **Files likely touched:** `assets/css/timeline.css`, `assets/js/timeline.js`
         **Estimated scope:** M
