@@ -1,233 +1,148 @@
-# Implementation Plan: Horizontal-Mode Timeline View
+# Implementation Plan: papers.bib Sync Script
 
-Source spec: the original `timeline.md` (lived on `timeline-planning`, intentionally excluded from `master` — see that branch's copy for full background) named a horizontal layout under "Deferred, not rejected," and its later "Follow-ups" section restated it as a wanted next step. This plan scopes that follow-up: an analogous horizontal view of the existing `/timeline/` page, with every current feature preserved.
+Branch: `bib-sync` (branched off `master` 2026-08-10, after `timeline-horizontal` merged). Plan and todo live only on this branch, same convention as `timeline-horizontal`/`timeline-distribution-charts` — excluded from the Jekyll build via `_config.yml`'s `exclude:` list (not excluded from git history).
 
-Decisions below were confirmed with Marta before writing this task list (see conversation):
+Decisions below were confirmed with Marta before writing this task list:
 
-- **Manual toggle, any viewport width** (not an automatic breakpoint switch) — a new "Orientation" control, same pattern as the existing "Bar scale" radio group.
-- **Horizontal is the default** (changed after Task 12 review — originally shipped as Vertical-default in Task 1). Below the 992px breakpoint it's still forced to Vertical regardless of this default, per Task 7. Fixed a latent bug this surfaced: the bootstrap sequence called `applyOrientationForViewport()` (which can correct `orientation` for a narrow initial viewport) without re-running `setupCompactLayout()` afterward, unlike the resize/orientation-change listeners — harmless while the default was Vertical (both paths always resolved to Vertical), but would have computed compact-mode layout with Horizontal's geometry on any narrow-viewport initial load once Horizontal became the default. Added the missing `setupCompactLayout()` call; verified a 600px-wide fresh load now renders correct, non-overlapping Vertical layout.
-- **Horizontal gets its own, shorter baseline length** (not a reuse of the vertical `BASELINE_TRACK_HEIGHT`, rotated) — tuned so the full bar fits a representative desktop width without horizontal scrolling.
-- **Vertical is forced below a breakpoint** — the Orientation toggle is unavailable on narrow viewports, consistent with the original spec's stated reason vertical shipped first ("vertical becomes horizontal's mobile fallback").
-- **This plan and its task list live only on the `timeline-horizontal` branch**, excluded from `master` at merge time — mirrors the `timeline-planning` precedent (`_config.yml`'s `exclude:` list already carries `tasks/` and `timeline.md` forward from that build, so no new exclude-list change is needed here).
+- **Scope is `_bibliography/papers.bib` sync only.** `tasks/Awards_and_Tasks.md` and `tasks/PhD_papers.md` (scholarships, co-organized events, invited talks, PC/reviewer roles, "PhD-related" paper flagging) are explicitly out of scope for this project — nothing in the codebase currently reads them, and they stay that way.
+- **Trigger: manual `bin/` script**, run by Marta after editing `papers.bib`, no CI auto-commit and no CI check job. Matches `bin/update_scholar_citations.py`'s manual-invocation half (this repo already schedules that one via CI too, but Marta only wants the manual path here).
+- **On anything it can't safely resolve, the script fails loudly and writes nothing** — not even the parts it was confident about. Verified this is really what's wanted: "never guesses or half-applies a change." So the script computes the *entire* set of intended edits and unresolved items up front; if anything is unresolved, it prints a report and exits non-zero without touching any file; only a fully-clean run writes changes.
+- **The timeline itself needs no new code.** `/timeline/` already re-renders straight from `papers.bib` on every Jekyll build (`{% bibliography -f papers -q @* -T timeline_pub_entry %}` in `_pages/timeline.md`) — there's no stale intermediate file to regenerate. The actual gaps this script closes are three specific things that currently require a human to remember to update by hand: `_pages/publications.md`'s hardcoded `years:` front matter, `preview` image wiring, and the per-entry custom-field schema (`topic`, `venue_short`, `first_author`, `month`, `bibtex_show`, `selected`) that both pages depend on but jekyll-scholar never enforces.
+- **New dependency: `bibtexparser`**, added to `requirements.txt` (currently unpinned entries — `nbconvert`, `pyyaml`, `rendercv[full]`, `scholarly` — so added the same way). Python was chosen over Ruby to match this repo's existing maintenance-script convention (`bin/update_scholar_citations.py`, `bin/generate_star_history.py`), even though `bibtex-ruby` is already available transitively via `jekyll-scholar` — consistency with the existing `bin/` scripts won out over avoiding one new pip dependency.
+- **Topic colors are validated, never auto-picked.** `_data/timeline_colors.yml`'s existing palette was chosen deliberately for CVD/contrast safety (see its own header comment and `scripts/validate_palette.js`). A new `topic` value in `papers.bib` with no matching key in that file is always a blocking failure, never an auto-fix.
+- **Discovered live during planning:** three new bib entries (`Moscati2026SwapRec`, `AndrésFerraro2026MuRS`, `JustinHangoebl2026SPRIG`) were added to `papers.bib` mid-session, each missing all six required custom fields, alongside three new preview images (`SwapRec.png`, `MuRS.jpg`, `SPRIG.png`) that aren't wired to any entry yet. These are real, present-tense instances of exactly the gap this script targets — Phase 3 uses them as the first real test case instead of a synthetic one.
 
 ## Overview
 
-Add an "Orientation" toggle (Vertical / Horizontal) to the `/timeline/` widget. Horizontal mode rotates the whole widget 90°: the jobs bar runs left-to-right instead of top-to-bottom, publication cards sit above/below the bar instead of left/right, and every existing interaction (date-range filter, topic filter, first-author-only filter, proportional/compact bar-scale toggle, hover-to-see-date, dashed leader lines, dark-mode-reactive topic/job colors, keyboard operability) keeps working identically in both orientations. No data model changes, no new Liquid tags/layouts/data files — this is CSS + `assets/js/timeline.js` DOM-wiring work only.
+Build `bin/sync_bib.py`: a manually-run Python script that treats `_bibliography/papers.bib` as the source of truth and (1) keeps `_pages/publications.md`'s `years:` front matter derived rather than hand-maintained, (2) auto-wires unambiguous `preview` image matches from `assets/img/publication_preview/`, and (3) validates that every entry carries the custom-field schema the timeline and publications page actually depend on. Any ambiguity anywhere aborts the whole run with a report; only a fully-resolved run edits files.
 
 ## Architecture Decisions
 
-- **The pure layout logic needs no changes.** `assets/js/timeline_mock_logic.js`'s `packCards`, `computeCompactPositions`, `dateToPosition`/`positionToDate`, `interpolateOnAxis`/`interpolateAxisInverse`, `computeJobSegments`, `clipSegmentsToRange`, and `filterPapers` all operate on abstract 1D "position" numbers and two alternating lane labels (`"left"`/`"right"`) — they don't know or care whether that position maps to a vertical `top` or a horizontal `left` pixel offset. This directly contradicts the original spec's stated worry that "horizontal needs real collision/packing logic" — it doesn't; that logic was already generic. `test/unit_timeline_mock_logic.js` needs no new cases unless a genuinely new pure computation shows up during implementation (e.g., a cross-axis sizing formula worth unit-testing on its own).
-- **Lane relabeling happens only at the DOM/CSS layer.** `packCards`'s `"left"`/`"right"` output gets mapped to CSS classes `above`/`below` at render time when `orientation === "horizontal"`, rather than teaching the pure function new vocabulary. Keeps the tested module untouched and the mapping trivially inspectable in `timeline.js`.
-- **All new work is CSS + `timeline.js` DOM wiring**: track/segment positioning, leader-line SVG coordinates, hover mouse-axis (`clientX` vs `clientY`), container sizing (which dimension is JS-driven vs CSS-fixed swaps between orientations), and new orientation-specific constants (baseline length, card along-axis/cross-axis extents). Nothing here needs a new `_layouts/`, `_includes/`, `_sass/`, or `_data/` file — stays within this repo's existing ownership per `AGENTS.md`.
-- **No new automated visual-regression coverage.** The vertical build's own responsive verification (its Task 4.3) was a manual smoke check, not Playwright — the widget isn't in `test/visual/` today. Horizontal mode's verification mirrors that: manual checks at named breakpoints, not new `.spec.js` files. Revisit only if a real regression slips through undetected.
-- **Breakpoint for forcing vertical: proposed 992px** (Bootstrap's `lg`, since al-folio is Bootstrap-based). This is a placeholder, not a hard requirement — Task 7 is where this gets confirmed/adjusted against how the horizontal layout actually looks at common in-between widths (1024px laptops, iPad landscape at 1024px, etc.).
-- **Orientation choice does not persist across page loads** (resets to the default, now Horizontal, each visit), matching the existing bar-scale toggle's behavior (also non-persistent). Flagged in Open Questions in case Marta wants `localStorage` persistence later — small addition, deliberately not built now.
-- **Show, don't just report, at every visualizable checkpoint** (added mid-build, per Marta's explicit instruction): whenever a task produces something that can be seen (a rendered bar, a card layout, a full page at a breakpoint), share an actual screenshot with Marta before moving on — not only pass/fail text or measured numbers. Applies for the rest of this plan's execution, not just the phase checkpoints already listed below.
+- **Atomic, two-pass design.** Pass 1 (read-only): parse `papers.bib`, compute the target `years:` list, compute preview-image matches, validate required fields and topic colors, and build one in-memory report of `{safe_edits: [...], blocking_issues: [...]}`. Pass 2: if `blocking_issues` is non-empty, print the report and `sys.exit(1)` without writing anything; otherwise apply `safe_edits` and `sys.exit(0)`.
+- **Preview-matching heuristic** (only considered for entries with no `preview` field already, against image files not already referenced by any entry's `preview`):
+  - Normalize both the bib entry key and its title to a lowercase alphanumeric-only string; do the same to each candidate filename's stem.
+  - A filename is a *candidate* for an entry if its normalized stem is a substring of the normalized key or title, or shares an alphanumeric token of length ≥ 4 with either.
+  - Exactly one candidate → safe edit (`preview = {filename}` inserted into that bib entry). Zero candidates → not an error, entry is simply left without a preview (many legitimate entries have none). Two or more candidates for one entry, or one filename matching two or more entries → blocking issue, no edit for that entry/filename.
+  - This is deliberately conservative and known to be imperfect across naming eras (e.g. `2024_10_fame.png` vs. the newer `FAME2026.png` bare-name convention) — that inconsistency is exactly why ambiguous cases must fail loudly rather than guess.
+- **Required custom-field schema**, derived from the fact that all 25 pre-existing entries set every one of these fields with zero exceptions: `bibtex_show`, `selected`, `month`, `topic`, `venue_short`, `first_author`. `preview` is intentionally excluded from this flat check (handled by the matching logic above, since absence is often legitimate). Fields that are genuinely situational across existing entries (`doi`, `url`, `pages`, `location`, `publisher`, `address`) are not checked.
+- **`years:` sync is a pure front-matter edit.** Parse only the YAML front matter block of `_pages/publications.md` (between the two `---` lines), replace the `years:` value with the sorted-descending unique set of `year` values across all bib entries, and leave the rest of the file byte-identical. No change if already in sync (true today — current front matter already covers every year present).
+- **No new files beyond `bin/sync_bib.py`.** No `_layouts/`, `_includes/`, `_sass/`, or `_data/` changes — stays within this repo's ownership per `AGENTS.md`; nothing here belongs in a gem.
 
 ## Task List
 
-### Phase 1: Foundation (inert toggle + safe refactor)
+### Phase 1: Foundation
 
-- [x] **Task 1: Add the Orientation toggle control**
-      **Description:** Add a "Orientation" `<fieldset>` to `_pages/timeline.md`'s controls area, styled and structured exactly like the existing "Bar scale" radio group (`Vertical` / `Horizontal`, `Vertical` checked by default). Wire a `orientation` state variable into `assets/js/timeline.js` with a change listener that updates the variable and calls `render()` — but `render()` itself doesn't yet branch on it, so this is a no-op change to visible output.
+- [ ] **Task 1: Script skeleton + `years:` front-matter sync**
+      **Description:** Create `bin/sync_bib.py`. Parse `_bibliography/papers.bib` with `bibtexparser`, compute the sorted-descending unique set of `year` values, parse `_pages/publications.md`'s front matter, and rewrite its `years:` list if it differs (byte-identical file otherwise). Add `bibtexparser` to `requirements.txt`. This is the smallest end-to-end vertical slice: real input, real output, nothing else wired in yet.
       **Acceptance criteria:**
-  - [x] New fieldset renders in the controls area, matching the Bar-scale fieldset's markup/CSS pattern (legend, radio inputs, labels)
-  - [x] Toggling it changes the underlying JS variable (verify via a temporary `console.log` or breakpoint) but produces zero visible change to the rendered page
-  - [x] Every existing control (range inputs, topic checkboxes, first-author checkbox, bar-scale radios) still works exactly as before
-        **Verification:**
-  - [x] `bundle exec jekyll build --baseurl /al-folio` succeeds
-  - [x] Manual: load `/timeline/`, toggle Orientation back and forth, confirm no visual change and no console errors
-        **Dependencies:** None
-        **Files likely touched:** `_pages/timeline.md`, `assets/css/timeline.css`, `assets/js/timeline.js`
-        **Estimated scope:** S
+      - [ ] Running the script against the current repo makes no change (years are already in sync) and exits 0
+      - [ ] Temporarily adding an out-of-range `year` to a scratch copy of `papers.bib` and re-running updates `years:` correctly, in the same descending order/format as today
+      - [ ] Every other line of `_pages/publications.md` is untouched (diff shows only the `years:` line)
+      **Verification:**
+      - [ ] `python3 bin/sync_bib.py` runs clean against current repo state
+      - [ ] Manual: scratch-copy test above, inspect the diff
+      **Dependencies:** None
+      **Files likely touched:** `bin/sync_bib.py`, `requirements.txt`
+      **Estimated scope:** S
 
-- [x] **Task 2: Refactor vertical rendering behind an axis abstraction (no visual change)**
-      **Description:** The highest-risk task in this plan. Introduce a small per-orientation config (e.g., an object providing which CSS properties/coordinate functions to use for track segments, card placement, hover position, and leader-line endpoints) and route `renderTrack`, `renderCards`, and the leader-line/hover code through it — but only ever instantiate the _vertical_ config for now. This is a pure refactor: vertical mode's rendered output must be pixel-identical before and after.
+- [ ] **Task 2: Preview-image matching + auto-fill**
+      **Description:** Implement the normalization/candidate-matching heuristic described above against `assets/img/publication_preview/`. Wire it into the same pass-1/pass-2 report structure from Task 1 (unambiguous matches become safe edits to `papers.bib`; ambiguous ones become blocking issues; zero-candidate entries are silently fine).
       **Acceptance criteria:**
-  - [x] Every current vertical-mode behavior (bar striping, card packing/placement, leader lines, hover indicator/tooltip, compact/proportional toggle, all filters) is byte-for-byte visually unchanged
-  - [x] `timeline_mock_logic.js` is untouched by this task
-        **Verification:**
-  - [x] `node test/unit_timeline_mock_logic.js` passes unchanged
-  - [x] `bundle exec jekyll build --baseurl /al-folio` succeeds
-  - [x] Manual: side-by-side comparison (screenshot or careful visual check) of `/timeline/` before and after this refactor at 375px, 762px, and 1440px — no detectable difference. Done for real with Playwright + pixelmatch, not just eyeballed: 0 differing pixels at all three widths.
-        **Dependencies:** Task 1
-        **Files likely touched:** `assets/js/timeline.js`
-        **Estimated scope:** M
+      - [ ] Against current repo state, the three unmatched images (`SwapRec.png`, `MuRS.jpg`, `SPRIG.png`) are each identified as a single unambiguous candidate for the correspondingly-named bib entry
+      - [ ] A synthetic two-candidate case (two filenames both matching one entry) is correctly reported as blocking, with no edit applied
+      - [ ] Entries that already have `preview` set are never reconsidered; entries with genuinely no candidate image are left alone, not reported as an error
+      **Verification:**
+      - [ ] Unit-style check (small script or REPL session) against the normalization/matching function with the real current filenames as fixtures
+      - [ ] Full run against current repo prints the 3 SwapRec/MuRS/SPRIG matches in its report (still won't apply yet — Task 4's required-field check will still block this run)
+      **Dependencies:** Task 1
+      **Files likely touched:** `bin/sync_bib.py`
+      **Estimated scope:** M
 
 ### Checkpoint: Foundation
+- [ ] Script runs end-to-end against real repo data, `years:` sync verified, preview-matching verified on real + synthetic cases, review with Marta before continuing
 
-- [x] `node test/unit_timeline_mock_logic.js` and `bundle exec jekyll build --baseurl /al-folio` both pass
-- [x] Vertical mode is confirmed unchanged; Orientation toggle exists but is inert
-- [x] Review with Marta before proceeding to horizontal rendering
+### Phase 2: Validation
 
-### Phase 2: Horizontal bar (no cards yet)
-
-- [x] **Task 3: Horizontal track, striping, and hover**
-      **Description:** Add the horizontal CSS variants (track runs left-to-right at vertical-center, segments use `left`/`width` instead of `top`/`height`, hover-zone spans the bar's full width, hover indicator becomes a vertical marker, tooltip repositions above/below instead of beside). Wire `orientation === "horizontal"` through `renderTrack` and the hover `mousemove` handler (use `clientX` instead of `clientY`, invert axis lookups accordingly). Card rendering can be temporarily skipped/hidden for this task.
-      **Real bug caught by measurement, not reasoning:** `.timeline-track-segment` had no cross-axis fill rule for horizontal — height resolved to 0 (Playwright `boundingBox()` caught it directly). Fixed with a horizontal-specific `height: 100%` rule.
+- [ ] **Task 3: Topic-color validation**
+      **Description:** Collect every distinct `topic` value across all `papers.bib` entries (comma-split, matching `timeline_pub_entry.html`'s own `entry.topic | split: ", "`) and compare against the keys of `_data/timeline_colors.yml`. Any topic with no matching key is a blocking issue (never auto-added).
       **Acceptance criteria:**
-  - [x] Selecting Horizontal renders a left-to-right bar with correct job-color segments and correct 45° overlap striping
-  - [x] Hovering along the horizontal bar shows the correct date in the tooltip, positioned sensibly relative to the cursor
-  - [x] Switching back to Vertical restores the exact Task-2 behavior
-        **Verification:**
-  - [x] `bundle exec jekyll build --baseurl /al-folio` succeeds
-  - [x] Manual: at 1440px, verify bar orientation, striping at the one known overlap period, and hover tooltip accuracy against a couple of known dates
-        **Dependencies:** Task 2
-        **Files likely touched:** `assets/css/timeline.css`, `assets/js/timeline.js`
-        **Estimated scope:** M
+      - [ ] Against current repo state, all four existing topics (`particle-physics`, `multimodal-learning`, `recommender-systems`, `music-information-retrieval`) validate clean
+      - [ ] A synthetic new topic value is correctly reported as a blocking issue naming the missing topic
+      **Verification:**
+      - [ ] Full run against current repo includes this check with no false positive
+      **Dependencies:** Task 1
+      **Files likely touched:** `bin/sync_bib.py`
+      **Estimated scope:** S
 
-- [x] **Task 4: Horizontal-specific baseline length and compact-axis pitch**
-      **Description:** Give horizontal mode its own length constants (distinct from `BASELINE_TRACK_HEIGHT`) for both proportional and compact bar-scale modes, tuned against the real 5-job/28-paper dataset so the full bar fits within a representative desktop width (~1440px, inside the page's content column) without horizontal overflow/scrolling.
-      **Sizing conflict discovered and resolved with Marta:** the real dataset has 22 distinct paper dates. Keeping cards at a legible width (~150px, matching vertical) needs `pitch ≈ 160px` in compact mode → a ~3360px bar, far past any no-scroll budget; proportional mode has the same problem locally wherever papers cluster (7 papers in 2025 alone). Asked Marta to choose between (a) allowing horizontal scroll, (b) shrinking cards drastically to fit, or (c) grouping compact-mode by year instead of exact date. **Chosen: (b), shrink cards** — horizontal cards become small always-visible markers, with full title/venue/topics revealed on hover/focus instead of always shown. This changes Task 5's scope (see below) beyond the original "just port the vertical card sideways" plan.
-      **Second discovery, also caught by measurement:** an initial attempt widened `.timeline-wrapper`'s max-width to 1200px for horizontal, and initial constants (`CARD_MAIN_EXTENT_HORIZONTAL=36`, gap `8`, baseline `950`) were tuned against that 1200px budget. Measuring the actual rendered ancestor chain showed the 1200px override was inert — the page's own Bootstrap content column caps the wrapper at ~900-930px regardless, and the bar only "fit" at 1440px by bleeding unclipped into the column's side margins, not because it was genuinely contained (would have broken at other widths/margins). Removed the inert override and retuned against the real ~900px column instead.
-      **Constants actually shipped**, verified against the real dataset with a Node script running the unchanged `timeline_mock_logic.js` functions: `CARD_MAIN_EXTENT_HORIZONTAL = 28`, `CARD_MIN_GAP_HORIZONTAL = 6` (pitch 34), `HORIZONTAL_BASELINE_TRACK_WIDTH = 760`. Resulting required width (packed content + padding): compact mode ~782px, proportional mode ~877px — both under the real ~900px column width, confirmed by Playwright measuring `track width <= wrapper width` (not just "no page-level scrollbar," which the first attempt had falsely passed) at both 992px and 1440px viewports.
-      **Also fixed while verifying:** `renderCards` was skipping the container's own resize call in horizontal mode (bundled with the cards it was also skipping), leaving a _stale_ inline height from whatever vertical had last rendered — the bar rendered correctly shaped but ~2000px down a nearly-empty page. Moved the container resize above the horizontal early-return so it always runs.
+- [ ] **Task 4: Required custom-field validation**
+      **Description:** For every entry, check presence of `bibtex_show`, `selected`, `month`, `topic`, `venue_short`, `first_author`. Any entry missing any of these is a blocking issue, reported with the bib key and the specific missing field names (no guessed values, ever — these are content decisions).
       **Acceptance criteria:**
-  - [x] At 1440px viewport width, horizontal mode's bar (both Proportional and Compact) renders with no horizontal overflow or scrollbar
-  - [x] Switching bar-scale mode while horizontal re-renders correctly, same as vertical already does
-        **Verification:**
-  - [x] Manual: resized to 992px and 1440px, cycled both bar-scale options in horizontal mode with the full (unfiltered) date range showing all 28 papers (the worst case — the page's own default filtered view undercounts), confirmed the track genuinely fits inside its own wrapper box, not just "no page scrollbar." Screenshot shown to Marta.
-  - [x] Node spot-check against the real built dataset (not synthetic data): computed required width for both modes at the chosen constants, confirmed both land under the ~900px real column budget with margin
-        **Dependencies:** Task 3
-        **Files likely touched:** `assets/js/timeline.js`
-        **Estimated scope:** S
+      - [ ] Against current repo state, the report lists exactly `Moscati2026SwapRec`, `AndrésFerraro2026MuRS`, and `JustinHangoebl2026SPRIG`, each with its specific missing fields (`AndrésFerraro2026MuRS` already has `month`, so that one field isn't listed for it)
+      - [ ] All 25 pre-existing entries validate clean
+      **Verification:**
+      - [ ] Full run against current repo: report matches the above exactly, exit code 1, zero files modified (confirm via `git diff` before/after)
+      **Dependencies:** Task 1
+      **Files likely touched:** `bin/sync_bib.py`
+      **Estimated scope:** S
 
-### Checkpoint: Horizontal bar
+### Checkpoint: Validation
+- [ ] Full run against real repo state produces the exact expected report (3 entries, specific missing fields, 3 preview matches computed-but-not-applied), exit code 1, no files touched — review report output with Marta before proceeding
 
-- [x] Horizontal bar (no cards) renders correctly at desktop width, both scale modes, hover works
-- [x] Review with Marta before proceeding to card placement
+### Phase 3: Close the real gap the script found
 
-### Phase 3: Horizontal cards and leader lines
-
-- [x] **Task 5: Card placement above/below the horizontal bar (compact marker + hover/focus-expand)**
-      **Description:** Reuse `packCards` unchanged; map its `"left"`/`"right"` output to CSS classes `above`/`below` at render time when horizontal, using Task 4's `CARD_MAIN_EXTENT_HORIZONTAL`/`CARD_MIN_GAP_HORIZONTAL` for packing. Per the sizing-conflict resolution in Task 4, the always-visible card is a small marker (28x24px, 2-digit year), color-coded by topic like today's card border. On `:hover`/`:focus`, an absolutely-positioned `.timeline-card-detail` overlay expands from the marker to show the same content as a vertical card (title, venue, topic pills, first-author star) at a normal legible width, elevated `z-index`, growing outward from the bar. Markers get `tabindex="0"` (horizontal only) so the expand-on-focus path is keyboard-reachable. `aria-label` content is unchanged.
+- [ ] **Task 5: Fill missing required fields on the 3 new 2026 entries**
+      **Description:** Hand-edit `_bibliography/papers.bib` to add the missing fields to `Moscati2026SwapRec`, `AndrésFerraro2026MuRS`, and `JustinHangoebl2026SPRIG`, following the exact schema convention of every sibling entry. Proposed values (confirm with Marta, especially the flagged one):
+      - `Moscati2026SwapRec`: `first_author = true`, `month = September`, `topic = recommender-systems`, `venue_short = DaQuaMRec @ ACM RecSys` (matches `Moscati2025SiBraR_workshop`'s convention), `bibtex_show = true`, `selected = false`
+      - `AndrésFerraro2026MuRS`: `first_author = false` (Andrés Ferraro is listed first), `topic = music-information-retrieval, recommender-systems` (confirmed by Marta), `venue_short = MuRS @ ACM RecSys` (matches `moscati2025multimodal_music_retrieval`'s convention), `bibtex_show = true`, `selected = false` (`month` already present)
+      - `JustinHangoebl2026SPRIG`: `first_author = false` (Justin Hangoebl is listed first), `topic = recommender-systems`, `venue_short = ACM CIKM` (matches `onion`'s convention), `bibtex_show = true`, `selected = false`, `month = November` (confirmed by Marta)
       **Acceptance criteria:**
-  - [x] Compact markers render above/below the bar with zero same-lane overlap (mirrors `packCards`'s existing collision guarantee)
-  - [x] Hovering or focusing a marker reveals the full card content (title, venue, topics, first-author star), legible and unclipped, without shifting any other marker's position
-  - [x] Keyboard-only navigation (Tab) can reach and expand every marker
-        **Verification:**
-  - [x] `node test/unit_timeline_mock_logic.js` passes unchanged (no logic touched, only new CSS constants/classes in `timeline.js`)
-  - [x] Manual (Playwright): all 28 markers rendered (14 above / 14 below), 0 overlapping pairs in either lane, confirmed programmatically from real bounding boxes, not eyeballed. Hovered the true leftmost/rightmost markers (by actual x position, not DOM order) — both detail overlays stay within the 1440px viewport, no clipping. Keyboard focus (no mouse) also reveals the detail. Screenshots shown to Marta.
-        **Dependencies:** Task 4
-        **Files likely touched:** `assets/css/timeline.css`, `assets/js/timeline.js`
-        **Estimated scope:** M
+      - [ ] All three entries carry all six required fields
+      - [ ] Values match sibling-entry conventions (spot-check against `Moscati2025SiBraR_workshop`, `moscati2025multimodal_music_retrieval`, `onion`)
+      **Verification:**
+      - [ ] Manual diff review of `papers.bib`
+      **Dependencies:** None (can happen in parallel with Phase 1/2, but needs Marta's confirmation on values above, especially the SPRIG month)
+      **Files likely touched:** `_bibliography/papers.bib`
+      **Estimated scope:** XS
 
-- [x] **Task 6: Leader lines in horizontal mode**
-      **Description:** Swap the SVG leader-line coordinate calculation: card's top/bottom edge (X, Y) to the bar's date-position (X, Y), instead of the vertical mode's left/right-edge-to-bar-Y calculation.
-      **Turned out to need zero code changes.** Task 2's `axisPoint`/`cardCrossEdge` geometry was already written generically (deriving both branches at once was cheap once the vertical math was worked out) and Task 5 already exercises it just by removing the horizontal early-return. This task was pure verification.
+- [ ] **Task 6: Clean run + rendered-page verification**
+      **Description:** Re-run `bin/sync_bib.py` — it should now find zero blocking issues, auto-fill `preview` on the three entries, and exit 0. Then build the site and visually confirm both pages render the three new entries correctly.
       **Acceptance criteria:**
-  - [x] Every visible card has a dashed line connecting it to the correct point on the horizontal bar
-        **Verification:**
-  - [x] Playwright, not manual spot-check: compared every line's (x1,y1) endpoint against its own card's actual bounding-box center/edge for all 28 cards — 0 mismatches (>1px tolerance).
-        **Dependencies:** Task 5
-        **Files likely touched:** `assets/js/timeline.js`
-        **Estimated scope:** S
-
-### Checkpoint: Horizontal mode functionally complete
-
-- [x] At desktop width: bar, cards, leader lines, hover, both scale modes all work in horizontal mode
-- [x] All existing filters (date range, topic, first-author-only) still combine correctly (AND) in horizontal mode — verified with Playwright: 28 → 22 (topic) → 14 (+ first-author) → 11 (+ narrowed range) → 22 (Reset), matching expected AND narrowing at each step
-- [x] Review with Marta before the responsive/accessibility passes
-
-### Phase 4: Responsive integration
-
-- [x] **Task 7: Force vertical below a breakpoint**
-      **Description:** Below 992px (kept the Architecture Decisions placeholder as-is), hide the Orientation fieldset and force vertical rendering even if Horizontal was previously selected. Restore the user's last choice when the viewport widens back past the breakpoint. Implemented via a `selectedOrientation` (raw radio choice) separate from `orientation` (effective, breakpoint-forced value) and one `applyOrientationForViewport()` helper called on load, on orientation change, and on resize.
-      **Acceptance criteria:**
-  - [x] Resizing a horizontal-mode window below the breakpoint snaps to vertical and hides the toggle
-  - [x] Widening back past the breakpoint restores horizontal without the user re-toggling
-        **Verification:**
-  - [x] Playwright: loaded at 768px directly (hidden, forced vertical); selected Horizontal at 1440px, resized to 768px (hidden, forced vertical, radio still reads "horizontal" underneath), resized back to 1440px (toggle reappears, horizontal restored automatically); boundary-checked 991px vs 992px directly. Screenshot of the hidden toggle at 768px shown to Marta.
-        **Dependencies:** Task 6
-        **Files likely touched:** `assets/js/timeline.js`, `assets/css/timeline.css`
-        **Estimated scope:** S
-
-- [x] **Task 8: Resize-recompute for horizontal geometry**
-      **Description:** Extend the existing debounced `resize` listener to also recompute horizontal's geometry and re-render, so a live window resize doesn't leave stale horizontal geometry.
-      **Turned out to need no new code, verified rather than assumed.** Unlike vertical's `CARD_HEIGHT`, horizontal's constants (`CARD_MAIN_EXTENT_HORIZONTAL`/`CARD_MIN_GAP_HORIZONTAL`/`HORIZONTAL_BASELINE_TRACK_WIDTH`) are fixed, not viewport-width-dependent — there's nothing for a resize to recompute. Checked empirically (not assumed) that `.timeline-wrapper` stays exactly 900px across the entire viable horizontal range (992px through 1920px tested) — the page's own container never gets narrower right at the breakpoint boundary, the specific risk this plan's own Risks table flagged. The pre-existing resize listener (already calls `setupCompactLayout()`+`render()` unconditionally) plus Task 7's `applyOrientationForViewport()` already cover everything that does change on resize.
-      **Acceptance criteria:**
-  - [x] Live-resizing the window while in horizontal mode keeps cards non-overlapping and leader lines attached (no stale geometry)
-        **Verification:**
-  - [x] Playwright live resize (not a fresh page load per width): 1440px → 1024px → 1440px, 0 overlaps at every step, 0 leader-line attachment mismatches after the cycle
-        **Dependencies:** Task 7
-        **Files likely touched:** `assets/js/timeline.js`
-        **Estimated scope:** S
-
-### Checkpoint: Responsive integration
-
-- [x] Orientation behaves correctly across the full responsive range with no stale geometry after resize
-- [x] Review with Marta before the accessibility/verification pass
-
-### Phase 5: Accessibility and verification
-
-- [x] **Task 9: Accessibility pass on the new control**
-      **Description:** Confirm the Orientation `<fieldset>`/`<legend>` matches the Bar-scale pattern exactly (screen-reader announced, keyboard-operable via native radios). Confirm horizontal-mode cards keep identical `aria-label` content. Confirm no new hardcoded (non-`--global-*`/non-topic-`var()`) color crept into the horizontal-specific CSS.
-      **Acceptance criteria:**
-  - [x] Orientation toggle is keyboard-operable and screen-reader-announced, consistent with Bar-scale
-  - [x] Card `aria-label` content is identical in both orientations
-  - [x] No new non-token color introduced by horizontal-specific CSS
-        **Verification:**
-  - [x] Markup diffed against Bar-scale's fieldset/legend/label structure — identical pattern. `grep` for hex/rgb in `timeline.css` found exactly one hit, pre-existing (`.timeline-topic-pill`'s documented JS-overridden fallback, not new, not horizontal-specific). Playwright: the 22 `aria-label` strings collected in vertical mode and in horizontal mode are the exact same set (sorted-array equality, not eyeballed); Tab from the Orientation radio lands on the first horizontal card marker; all 22 horizontal markers have `tabIndex === 0`, all vertical cards stay at the default `-1` (unchanged, not newly tabbable).
-        **Dependencies:** Task 8
-        **Files likely touched:** `assets/css/timeline.css` (review only, likely no changes)
-        **Estimated scope:** XS
-
-- [x] **Task 10: Responsive smoke check across real breakpoints**
-      **Description:** Mirror the vertical build's own Task 4.3 methodology — actually resize a real/emulated browser rather than reasoning about the CSS abstractly. Check 375px (forced vertical), the Task 7 breakpoint boundary from both sides, and 1440px (horizontal).
-      **Unlike the original Task 4.3, this pass found zero new bugs** — the three real bugs this feature did have (`.timeline-track-segment` height:0, the inert 1200px wrapper override, the stale container height) were already caught and fixed during Tasks 3-4's own Playwright verification, not deferred to a final pass.
-      **Acceptance criteria:**
-  - [x] No clipping, overlap, or overflow at any checked width
-        **Verification:**
-  - [x] Playwright across 375/600/762/850/991/992/1024/1440px: `document.documentElement.scrollWidth <= viewportWidth` at every one (checked programmatically, not eyeballed) plus a full-page screenshot at each. Also checked dark mode at 375px (vertical) and 1440px (horizontal, with a card hover-expanded) — theme-reactive colors work correctly for the new marker/detail elements, no contrast or rendering issues. Screenshots shown to Marta throughout.
-        **Dependencies:** Task 9
-        **Files likely touched:** none (verification found nothing to fix)
-        **Estimated scope:** S
+      - [ ] `python3 bin/sync_bib.py` exits 0, and `git diff` shows exactly the three `preview = {...}` insertions in `papers.bib` (plus no-op on `years:`, already in sync)
+      - [ ] `/publications/` shows all three entries under the 2026 heading with their thumbnail images
+      - [ ] `/timeline/` shows all three as cards, correctly colored/filterable by topic, first-author star present/absent as expected
+      **Verification:**
+      - [ ] `bundle exec jekyll build --baseurl /al-folio` succeeds
+      - [ ] Manual: load `/publications/` and `/timeline/` on the dev server, confirm the three entries render correctly
+      **Dependencies:** Tasks 2, 4, 5
+      **Files likely touched:** `_bibliography/papers.bib` (script-applied)
+      **Estimated scope:** S
 
 ### Checkpoint: Feature complete
+- [ ] Script is idempotent and clean against real repo state, both pages verified rendering correctly, review with Marta
 
-- [x] All acceptance criteria above met
-- [x] Ready for Marta's final review
+### Phase 4: Docs
 
-### Phase 5.5: Post-review feedback
-
-- [x] **Task 12: Full window width, real venue labels, per-card sizing, staggered rows, topic-color priority**
-      **Description:** Grew from two requests into five, each building on real measurement of the last: 1. Marker labels: bare 2-digit year → `<acronym>'<YY>` (e.g. `RecSys'26`), via `venueAcronym()` (strips leading `ACM `/`IEEE `, or takes the part before `" @ "` for workshop-format venues). 2. Horizontal wrapper breaks out of the page's ~900px content column (`margin-left`/`max-width` override) to use the full window width, left edge kept aligned with the rest of the page content via the theme's own `--max-content-width` variable (`calc(100vw - (100vw - var(--max-content-width))/2 - 32px)`), not a symmetric full-bleed. 3. Card width: first attempt shrunk a uniform width to fit a budget (ellipsis on overflow) — Marta wanted labels to **never** truncate instead, so this became per-card **measured** width (`measureLabelWidth()`, a hidden DOM probe) sized to each card's own real label, no artificial cap. 4. That alone made the bar wider than needed for most (short-label) cards while a few long ones dominated — added a second lane-row per side (`packCards`'s new `laneCount` param, default 2 unchanged) so cards stagger near/far instead of only spreading horizontally, and halved the compact-axis pitch to match the doubled per-side capacity. This also fixed a real regression the adaptive-width work introduced: the _default_ filtered view had gone from 0px to 590px of overflow at 1440px before the row change; verified back to 0px after. 5. Topic-color priority: `--card-color` (and vertical's identical border-left accent) now prefers `recommender-systems`, then `multimodal-learning`, over whatever `topics[0]` happened to be in the bib source order — applies to both orientations, not horizontal-specific.
-      **Verified NOT a regression, investigated properly:** a pixel-diff against the original Task 2 baseline showed vertical mode differing (a ~74px height delta) partway through this task — traced with a controlled stash/compare (Task-11-state vs Task-12-state, both captured fresh) to a discrepancy that already existed before Task 12 started (somewhere in Tasks 3-10, never itself investigated further since it doesn't affect functionality and this task's own change wasn't the cause).
+- [ ] **Task 7: Document the script**
+      **Description:** Add a one-line entry for `bin/sync_bib.py` to `CLAUDE.md`'s "Daily dev loop" or "Optional toolchains" section (matching how `bin/update_scholar_citations.py` is documented there), including the new `bibtexparser` requirement.
       **Acceptance criteria:**
-  - [x] Marker labels always show the full `<acronym>'<YY>`, never truncated (verified: 0 labels with `scrollWidth > clientWidth` even in the full 28-paper view)
-  - [x] Horizontal widget's left edge aligns exactly with the rest of the page content (verified: wrapper left = h1 left = controls left, to the pixel)
-  - [x] No horizontal page-level overflow in the **default** (filtered) view at 992/1440/1920px, in both bar-scale modes
-  - [x] Zero card overlap within any lane/row at all tested widths
-        **Verification:**
-  - [x] Playwright throughout: label text vs. expected acronym+year strings, wrapper/controls/h1 left-edge alignment, `scrollWidth <= innerWidth` in the default view (0 excess after the row-stacking fix, down from 590px), zero-overlap checks across 4 lanes, live-resize recompute, topic-color priority spot-checked on two real multi-topic papers (`onion`, `Geiger2025Music4AllAA`). Screenshots shown to Marta throughout.
-        **Dependencies:** Task 10
-        **Files likely touched:** `assets/css/timeline.css`, `assets/js/timeline.js`, `assets/js/timeline_mock_logic.js`, `test/unit_timeline_mock_logic.js`
-        **Estimated scope:** L
+      - [ ] `CLAUDE.md` mentions the script, its manual-invocation model, and that it requires `requirements.txt` installed
+      **Verification:**
+      - [ ] `npm run lint:prettier` still passes
+      **Dependencies:** Task 6
+      **Files likely touched:** `CLAUDE.md`
+      **Estimated scope:** XS
 
-### Phase 6: Merge
-
-- [ ] **Task 11: Merge to master, planning docs excluded**
-      **Description:** Merge `timeline-horizontal` into `master`, mirroring the `timeline-planning` precedent — `tasks/plan.md` and `tasks/todo.md` stay off `master`, only the feature code merges.
-      **Acceptance criteria:**
-  - [ ] `master` gains the horizontal-mode feature; `tasks/` is not present in the merged history's tree
-  - [ ] `bundle exec jekyll build --baseurl /al-folio` output has no `tasks/` under `_site/` (already guaranteed by the existing `_config.yml` exclude list, reconfirm rather than assume)
-        **Verification:**
-  - [ ] Post-merge: `git show <merge-commit> --stat` contains no `tasks/` entries
-        **Dependencies:** Task 10, Marta's sign-off
-        **Files likely touched:** none (merge only)
-        **Estimated scope:** XS
+### Checkpoint: Complete
+- [ ] All acceptance criteria met, ready for review — **do not merge to master without asking Marta first**, same as the still-unmerged `timeline-distribution-charts` branch
 
 ## Risks and Mitigations
 
-| Risk                                                                                  | Impact | Mitigation                                                                                                                                            |
-| ------------------------------------------------------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Task 2's axis-abstraction refactor subtly changes vertical mode's output              | High   | Isolated task, done before any horizontal code exists; explicit visual comparison at 3 widths before proceeding                                       |
-| Horizontal baseline tuning looks fine at 1440px but overflows near the 992px boundary | Medium | Task 10's smoke check explicitly includes the boundary from both sides, not just 1440px                                                               |
-| Real paper titles/venues don't fit legibly in a narrower horizontal card              | Medium | Tune card cross-axis extent empirically against the real 28-paper dataset (Task 5), same iterative approach the original build used for `CARD_HEIGHT` |
-| Scope creep into automated Playwright coverage                                        | Low    | Explicitly out of scope per Architecture Decisions; matches existing precedent for this widget                                                        |
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| Preview-filename conventions are inconsistent across eras (`2024_10_fame.png` vs. `FAME2026.png` vs. bare `bevfusion.png`), so the matching heuristic will eventually hit a real false-positive or false-negative | Medium | Conservative substring/token heuristic + "fail loudly, change nothing" policy means a bad match blocks the run instead of silently attaching the wrong image |
+| `bibtexparser`'s round-trip writing might reformat entries more than intended (whitespace, field order) when inserting a `preview` field | Medium | Prefer a targeted text insertion (find the entry's closing brace, insert one line) over a full re-serialize of the bib file, so untouched entries are byte-identical; verify via `git diff` showing only the intended single-line additions |
+| Required-field schema (6 fields) might be too strict for some future legitimate entry type (e.g., a dataset release with no natural `month`) | Low | Schema is derived from 100% real convention across 25 entries, not invented; revisit only if a real entry needs an exception |
 
 ## Open Questions
 
-- Is 992px the right "force vertical" breakpoint? Proposed as a starting point in Architecture Decisions; Task 7 is where this gets confirmed against how the layout actually looks at in-between widths (1024px laptops, tablet landscape, etc.).
-- Should Orientation choice persist across page loads (`localStorage`)? Currently planned as non-persistent, matching the existing Bar-scale toggle. Flag for a follow-up if wanted.
-- (Carried over, unrelated to this plan) Awards/scholarships layer from the original spec — still open, not touched here.
+None outstanding — both flagged items (SPRIG's month, MuRS's topic) were confirmed by Marta during planning; final values are recorded in Task 5.

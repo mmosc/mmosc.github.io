@@ -1,37 +1,26 @@
-# Todo: Horizontal-Mode Timeline View
+# Todo: papers.bib Sync Script
 
 See `tasks/plan.md` for full descriptions, acceptance criteria, and verification steps.
 
 ## Phase 1: Foundation
 
-- [x] Task 1: Add the Orientation toggle control (inert)
-- [x] Task 2: Refactor vertical rendering behind an axis abstraction (no visual change)
-- [x] **Checkpoint:** unit tests + build pass, vertical mode confirmed unchanged, review with Marta
+- [ ] Task 1: Script skeleton + `years:` front-matter sync
+- [ ] Task 2: Preview-image matching + auto-fill
+- [ ] **Checkpoint:** script runs end-to-end against real repo data, review with Marta
 
-## Phase 2: Horizontal bar (no cards yet)
+## Phase 2: Validation
 
-- [x] Task 3: Horizontal track, striping, and hover
-- [x] Task 4: Horizontal-specific baseline length and compact-axis pitch
-- [x] **Checkpoint:** horizontal bar renders correctly at desktop width, review with Marta
+- [ ] Task 3: Topic-color validation
+- [ ] Task 4: Required custom-field validation
+- [ ] **Checkpoint:** full run produces exact expected report, exit code 1, no files touched, review with Marta
 
-## Phase 3: Horizontal cards and leader lines
+## Phase 3: Close the real gap the script found
 
-- [x] Task 5: Card placement (compact marker + hover/focus-expand)
-- [x] Task 6: Leader lines in horizontal mode
-- [x] **Checkpoint:** horizontal mode functionally complete, all filters re-verified, review with Marta
+- [ ] Task 5: Fill missing required fields on the 3 new 2026 entries (values confirmed with Marta, see plan)
+- [ ] Task 6: Clean run + rendered-page verification
+- [ ] **Checkpoint:** feature complete, both pages verified rendering correctly, review with Marta
 
-## Phase 4: Responsive integration
+## Phase 4: Docs
 
-- [x] Task 7: Force vertical below a breakpoint (992px)
-- [x] Task 8: Resize-recompute for horizontal geometry
-- [x] **Checkpoint:** responsive behavior confirmed, review with Marta
-
-## Phase 5: Accessibility and verification
-
-- [x] Task 9: Accessibility pass on the new control
-- [x] Task 10: Responsive smoke check across real breakpoints (375 / breakpoint boundary / 1440)
-- [x] **Checkpoint:** feature complete, ready for final review
-
-## Phase 6: Merge
-
-- [ ] Task 11: Merge to master, planning docs excluded
+- [ ] Task 7: Document the script in CLAUDE.md
+- [ ] **Checkpoint:** complete, ready for review — do not merge without asking Marta first
