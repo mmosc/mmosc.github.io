@@ -14,8 +14,8 @@ See `tasks/plan.md` for full descriptions, acceptance criteria, and verification
 
 ## Phase 3: Horizontal cards and leader lines
 - [x] Task 5: Card placement (compact marker + hover/focus-expand)
-- [ ] Task 6: Leader lines in horizontal mode
-- [ ] **Checkpoint:** horizontal mode functionally complete, all filters re-verified, review with Marta
+- [x] Task 6: Leader lines in horizontal mode
+- [x] **Checkpoint:** horizontal mode functionally complete, all filters re-verified, review with Marta
 
 ## Phase 4: Responsive integration
 - [ ] Task 7: Force vertical below a breakpoint (992px placeholder — confirm here)
