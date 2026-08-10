@@ -140,6 +140,11 @@
 
   let compactMode = true;
   let cropOffset = 0;
+  // Inert for now (Task 1 of tasks/plan.md): render() doesn't branch on this
+  // yet. Wired up ahead of the actual horizontal rendering work so the
+  // control itself, its markup, and its event wiring can be verified in
+  // isolation before any rendering logic depends on it.
+  let orientation = "vertical";
 
   // --- DOM refs -------------------------------------------------------------
   const container = document.getElementById("timeline-container");
@@ -154,6 +159,7 @@
   const rangeEnd = document.getElementById("timeline-range-end");
   const rangeReset = document.getElementById("timeline-range-reset");
   const scaleModeInputs = document.querySelectorAll('input[name="timeline-scale-mode"]');
+  const orientationInputs = document.querySelectorAll('input[name="timeline-orientation-mode"]');
 
   const monthInput = (time) => new Date(time).toISOString().slice(0, 7);
   rangeStart.value = monthInput(DEFAULT_RANGE_START);
@@ -369,6 +375,12 @@
   scaleModeInputs.forEach((input) => {
     input.addEventListener("change", () => {
       compactMode = document.querySelector('input[name="timeline-scale-mode"]:checked').value === "compact";
+      render();
+    });
+  });
+  orientationInputs.forEach((input) => {
+    input.addEventListener("change", () => {
+      orientation = document.querySelector('input[name="timeline-orientation-mode"]:checked').value;
       render();
     });
   });
