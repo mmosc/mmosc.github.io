@@ -130,13 +130,13 @@ Add an "Orientation" toggle (Vertical / Horizontal) to the `/timeline/` widget. 
 
 ### Phase 4: Responsive integration
 
-- [ ] **Task 7: Force vertical below a breakpoint**
-      **Description:** Below the chosen width (992px placeholder, per Architecture Decisions — confirm/adjust here against how it actually looks at common in-between widths), hide/disable the Orientation toggle and force vertical rendering even if Horizontal was previously selected. Restore the user's last choice when the viewport widens back past the breakpoint.
+- [x] **Task 7: Force vertical below a breakpoint**
+      **Description:** Below 992px (kept the Architecture Decisions placeholder as-is), hide the Orientation fieldset and force vertical rendering even if Horizontal was previously selected. Restore the user's last choice when the viewport widens back past the breakpoint. Implemented via a `selectedOrientation` (raw radio choice) separate from `orientation` (effective, breakpoint-forced value) and one `applyOrientationForViewport()` helper called on load, on orientation change, and on resize.
       **Acceptance criteria:**
-  - [ ] Resizing a horizontal-mode window below the breakpoint snaps to vertical and hides/disables the toggle
-  - [ ] Widening back past the breakpoint restores horizontal without the user re-toggling
+  - [x] Resizing a horizontal-mode window below the breakpoint snaps to vertical and hides the toggle
+  - [x] Widening back past the breakpoint restores horizontal without the user re-toggling
         **Verification:**
-  - [ ] Manual: drag-resize across the breakpoint in both directions
+  - [x] Playwright: loaded at 768px directly (hidden, forced vertical); selected Horizontal at 1440px, resized to 768px (hidden, forced vertical, radio still reads "horizontal" underneath), resized back to 1440px (toggle reappears, horizontal restored automatically); boundary-checked 991px vs 992px directly. Screenshot of the hidden toggle at 768px shown to Marta.
         **Dependencies:** Task 6
         **Files likely touched:** `assets/js/timeline.js`, `assets/css/timeline.css`
         **Estimated scope:** S
