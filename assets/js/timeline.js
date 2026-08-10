@@ -354,7 +354,7 @@
     const realPosition = offset + cropOffset;
     const date = compactMode
       ? TimelineMockLogic.interpolateAxisInverse(realPosition, compactAxis)
-      : TimelineMockLogic.positionToDate(realPosition, minTime, maxTime, BASELINE_TRACK_HEIGHT);
+      : TimelineMockLogic.positionToDate(realPosition, minTime, maxTime, baselineLength());
     setMainPosition(hoverIndicator, TOP_PADDING + offset + "px");
     setMainPosition(hoverTooltip, TOP_PADDING + offset + "px");
     hoverIndicator.style.display = hoverTooltip.style.display = "block";
