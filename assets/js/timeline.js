@@ -342,37 +342,15 @@
     container.querySelectorAll(".timeline-card").forEach((n) => n.remove());
     svg.innerHTML = "";
 
-    // Always resize the container to the already-correct effectiveTrackHeight
-    // regardless of orientation, even though card/leader-line rendering
-    // below is still vertical-only (Task 3 placeholder, removed in Task 5).
-    // This has to run unconditionally: skipping it in horizontal mode left a
-    // *stale* inline height from whatever vertical last rendered (e.g.
-    // 5718px) instead of just "no height at all" -- container.style.height
-    // is a persistent inline style (this element isn't recreated each
-    // render, unlike track-segment/card divs), so without this, horizontal
-    // mode inherited vertical's leftover height and the bar rendered ~2000px
-    // down the page instead of near the controls. Caught by an actual
-    // screenshot, not reasoning.
     setMainSize(container, TOP_PADDING * 2 + effectiveTrackHeight + "px");
 
-    // Task 3 placeholder, removed in Task 5: no .timeline-card.above/.below
-    // CSS exists yet, so a card placed in horizontal mode right now would
-    // render with a main-axis (left) position but no cross-axis (top/bottom)
-    // rule to anchor it, stacking every card at the container's top edge.
-    // Skipping card/leader-line rendering entirely in horizontal mode until
-    // Task 5 adds that CSS is cleaner than showing a known-broken layout.
     if (orientation === "horizontal") {
-      return;
+      svg.setAttribute("width", container.style.width);
+      svg.setAttribute("height", "100%");
+    } else {
+      svg.setAttribute("width", "100%");
+      svg.setAttribute("height", container.style.height);
     }
-
-    // Only the vertical branch is reachable right now -- the horizontal
-    // early-return above means orientation is always "vertical" past this
-    // point. Task 5 reintroduces the horizontal case here: main-axis
-    // dimension = the JS-computed container size (already set above),
-    // cross-axis dimension = "100%" of whatever CSS gives the container on
-    // that axis (fixed height there, fixed max-width here).
-    svg.setAttribute("width", "100%");
-    svg.setAttribute("height", container.style.height);
 
     visible.forEach((paper) => {
       const placement = packedById[paper.id];
@@ -395,10 +373,25 @@
           .join(" ")
       );
 
+      let contentParent = card;
+      if (orientation === "horizontal") {
+        card.tabIndex = 0;
+        const yearShort = new Date(paper.date).toLocaleDateString(undefined, { year: "2-digit" });
+        const markerLabel = document.createElement("span");
+        markerLabel.className = "timeline-card-marker-label";
+        markerLabel.setAttribute("aria-hidden", "true");
+        markerLabel.textContent = yearShort;
+        card.appendChild(markerLabel);
+
+        contentParent = document.createElement("div");
+        contentParent.className = "timeline-card-detail";
+        card.appendChild(contentParent);
+      }
+
       const dateEl = document.createElement("div");
       dateEl.className = "timeline-card-date";
       dateEl.innerHTML = paper.approx ? `<span class="timeline-approx">~${dateText}</span>` : dateText;
-      card.appendChild(dateEl);
+      contentParent.appendChild(dateEl);
 
       const titleEl = document.createElement("div");
       titleEl.className = "timeline-card-title";
@@ -412,13 +405,13 @@
         titleEl.appendChild(star);
       }
       titleEl.appendChild(document.createTextNode(paper.title));
-      card.appendChild(titleEl);
+      contentParent.appendChild(titleEl);
 
       const venueEl = document.createElement("div");
       venueEl.className = "timeline-card-venue";
       venueEl.textContent = paper.venueShort;
       venueEl.title = paper.venue;
-      card.appendChild(venueEl);
+      contentParent.appendChild(venueEl);
 
       const topicsEl = document.createElement("div");
       topicsEl.className = "timeline-card-topics";
@@ -430,7 +423,7 @@
         pill.textContent = topicLabel(tp);
         topicsEl.appendChild(pill);
       });
-      card.appendChild(topicsEl);
+      contentParent.appendChild(topicsEl);
 
       container.appendChild(card);
 
