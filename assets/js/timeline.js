@@ -92,7 +92,7 @@
       lines.push(`  --topic-${id}: ${topicColors[id].light};`);
       lines.push(`  --topic-${id}-text: ${TimelineMockLogic.pickContrastingTextColor(topicColors[id].light)};`);
     });
-    lines.push('}', 'html[data-theme="dark"] {');
+    lines.push("}", 'html[data-theme="dark"] {');
     topicIds.forEach((id) => {
       lines.push(`  --topic-${id}: ${topicColors[id].dark};`);
       lines.push(`  --topic-${id}-text: ${TimelineMockLogic.pickContrastingTextColor(topicColors[id].dark)};`);
@@ -127,12 +127,15 @@
   let compactAxis, compactPos, compactPackedById;
   function setupCompactLayout() {
     const pitch = CARD_HEIGHT + CARD_MIN_GAP;
-    compactAxis = TimelineMockLogic.computeCompactPositions(papers.map((p) => p.date), pitch);
+    compactAxis = TimelineMockLogic.computeCompactPositions(
+      papers.map((p) => p.date),
+      pitch
+    );
     compactPos = (time) => TOP_PADDING + TimelineMockLogic.interpolateOnAxis(time, compactAxis);
     const compactPacked = TimelineMockLogic.packCards(
       papers.map((p) => ({ id: p.id, idealPosition: compactPos(p.date) })),
       CARD_HEIGHT,
-      CARD_MIN_GAP,
+      CARD_MIN_GAP
     );
     compactPackedById = Object.fromEntries(compactPacked.map((p) => [p.id, p]));
   }
@@ -140,13 +143,17 @@
 
   let compactMode = true;
   let cropOffset = 0;
-  // Inert for now (Task 1 of tasks/plan.md): render() doesn't branch on this
-  // yet. Wired up ahead of the actual horizontal rendering work so the
-  // control itself, its markup, and its event wiring can be verified in
-  // isolation before any rendering logic depends on it.
+  // render() does branch on this (see the axis abstraction below), but no
+  // horizontal-specific CSS exists yet (Task 3+ of tasks/plan.md) -- so
+  // selecting Horizontal before then re-renders using horizontal's main-axis
+  // CSS properties against still-vertical-only layout rules, which won't
+  // look right. Vertical itself is unaffected either way (verified: this
+  // refactor reduces to byte-identical output when orientation stays
+  // "vertical", its default).
   let orientation = "vertical";
 
   // --- DOM refs -------------------------------------------------------------
+  const widget = document.getElementById("timeline-widget");
   const container = document.getElementById("timeline-container");
   const track = document.getElementById("timeline-track");
   const svg = document.getElementById("timeline-leader-lines");
@@ -161,11 +168,63 @@
   const scaleModeInputs = document.querySelectorAll('input[name="timeline-scale-mode"]');
   const orientationInputs = document.querySelectorAll('input[name="timeline-orientation-mode"]');
 
+  // --- Orientation axis abstraction (tasks/plan.md Task 2) -------------------
+  // Vertical: the bar runs top-to-bottom (the "main" axis is CSS `top`/
+  // `height`), cards sit left/right of it (the "cross" axis is `left`/
+  // `right`/`width`, driven entirely by CSS, never inline styles). Horizontal
+  // flips this: the bar runs left-to-right (main axis is `left`/`width`),
+  // cards sit above/below (cross axis is `top`/`bottom`/`height`, again
+  // CSS-only). Every rendering function below reads its axis properties from
+  // these helpers instead of hardcoding `top`/`height`/`left`/`right`, so one
+  // render path serves both orientations -- mirrors why packCards etc. in
+  // timeline_mock_logic.js never needed to change (see plan's Architecture
+  // Decisions): the main-axis "position" is just a number, orientation only
+  // decides which CSS property that number is written to.
+  function mainStyleProp() {
+    return orientation === "horizontal" ? "left" : "top";
+  }
+  function mainSizeProp() {
+    return orientation === "horizontal" ? "width" : "height";
+  }
+  // Elements whose main-axis inline style persists across renders (track,
+  // hover zone/indicator/tooltip -- unlike track-segment and card divs, which
+  // are destroyed and recreated every render) must have the *other* axis's
+  // inline value cleared when switching orientation. Otherwise a leftover
+  // inline `top` from a previous vertical render would out-rank a new
+  // `.timeline-horizontal` CSS rule trying to set `top: 50%` for cross-axis
+  // centering -- inline styles always beat class selectors regardless of
+  // specificity.
+  function setMainPosition(el, valuePx) {
+    el.style[mainStyleProp()] = valuePx;
+    el.style[orientation === "horizontal" ? "top" : "left"] = "";
+  }
+  function setMainSize(el, valuePx) {
+    el.style[mainSizeProp()] = valuePx;
+    el.style[orientation === "horizontal" ? "height" : "width"] = "";
+  }
+  // packCards's "left"/"right" lane labels (an alternation, not literally
+  // "left of the page") are orientation-neutral -- this is the one place
+  // they get translated into this orientation's CSS class name.
+  function laneClass(side) {
+    return orientation === "horizontal" ? (side === "left" ? "above" : "below") : side;
+  }
+  // Maps (position along the time axis, position along the perpendicular
+  // axis) to screen (x, y). Vertical puts time on y and the perpendicular
+  // axis on x; horizontal swaps them. Used only by the leader-line SVG
+  // coordinates, the one place both axes' raw pixel values are needed at once.
+  function axisPoint(mainCoord, crossCoord) {
+    return orientation === "horizontal" ? { x: mainCoord, y: crossCoord } : { x: crossCoord, y: mainCoord };
+  }
+
   const monthInput = (time) => new Date(time).toISOString().slice(0, 7);
   rangeStart.value = monthInput(DEFAULT_RANGE_START);
   rangeEnd.value = monthInput(maxTime);
 
-  const topicLabel = (topicId) => topicId.split("-").map((word) => word[0].toUpperCase() + word.slice(1)).join(" ");
+  const topicLabel = (topicId) =>
+    topicId
+      .split("-")
+      .map((word) => word[0].toUpperCase() + word.slice(1))
+      .join(" ");
 
   topicIds.forEach((topicId) => {
     const label = document.createElement("label");
@@ -197,20 +256,19 @@
     jobLegend.appendChild(item);
   });
 
-  track.style.top = TOP_PADDING + "px";
-  hoverZone.style.top = TOP_PADDING + "px";
-
   function formatDate(time) {
     return new Date(time).toLocaleDateString(undefined, { year: "numeric", month: "short" });
   }
 
   hoverZone.addEventListener("mousemove", (e) => {
-    const y = e.clientY - hoverZone.getBoundingClientRect().top;
-    const realPosition = y + cropOffset;
+    const rect = hoverZone.getBoundingClientRect();
+    const offset = orientation === "horizontal" ? e.clientX - rect.left : e.clientY - rect.top;
+    const realPosition = offset + cropOffset;
     const date = compactMode
       ? TimelineMockLogic.interpolateAxisInverse(realPosition, compactAxis)
       : TimelineMockLogic.positionToDate(realPosition, minTime, maxTime, BASELINE_TRACK_HEIGHT);
-    hoverIndicator.style.top = hoverTooltip.style.top = TOP_PADDING + y + "px";
+    setMainPosition(hoverIndicator, TOP_PADDING + offset + "px");
+    setMainPosition(hoverTooltip, TOP_PADDING + offset + "px");
     hoverIndicator.style.display = hoverTooltip.style.display = "block";
     hoverTooltip.textContent = formatDate(date);
   });
@@ -223,10 +281,10 @@
     segments.forEach((seg) => {
       const el = document.createElement("div");
       el.className = "timeline-track-segment";
-      const top = posFn(seg.start) - cropOffset;
-      const height = Math.max(posFn(seg.end) - posFn(seg.start), 1);
-      el.style.top = top + "px";
-      el.style.height = height + "px";
+      const start = posFn(seg.start) - cropOffset;
+      const size = Math.max(posFn(seg.end) - posFn(seg.start), 1);
+      el.style[mainStyleProp()] = start + "px";
+      el.style[mainSizeProp()] = size + "px";
       if (seg.colors.length === 1) {
         el.style.background = seg.colors[0];
       } else {
@@ -240,25 +298,33 @@
   function activeFilters() {
     const startMs = rangeStart.value ? new Date(rangeStart.value + "-01").getTime() : minTime;
     const endMs = rangeEnd.value ? new Date(rangeEnd.value + "-01").getTime() : maxTime;
-    const activeTopics = new Set(
-      Array.from(topicFieldset.querySelectorAll("input[type=checkbox]:checked")).map((i) => i.dataset.topic),
-    );
+    const activeTopics = new Set(Array.from(topicFieldset.querySelectorAll("input[type=checkbox]:checked")).map((i) => i.dataset.topic));
     return { startMs, endMs, activeTopics, firstAuthorOnly: firstAuthorOnly.checked };
   }
 
   function renderCards(visible, packedById, posFn) {
     container.querySelectorAll(".timeline-card").forEach((n) => n.remove());
 
-    container.style.height = TOP_PADDING * 2 + effectiveTrackHeight + "px";
+    setMainSize(container, TOP_PADDING * 2 + effectiveTrackHeight + "px");
     svg.innerHTML = "";
-    svg.setAttribute("width", "100%");
-    svg.setAttribute("height", container.style.height);
+    // The SVG must cover the whole 2D widget regardless of orientation: its
+    // main-axis dimension matches the JS-computed container size above, and
+    // its cross-axis dimension is "100%" of whatever CSS gives the container
+    // on that axis (fixed max-width in vertical, a fixed height in
+    // horizontal -- see Task 3/5's CSS).
+    if (orientation === "horizontal") {
+      svg.setAttribute("width", container.style.width);
+      svg.setAttribute("height", "100%");
+    } else {
+      svg.setAttribute("width", "100%");
+      svg.setAttribute("height", container.style.height);
+    }
 
     visible.forEach((paper) => {
       const placement = packedById[paper.id];
       const card = document.createElement("div");
-      card.className = "timeline-card " + placement.side;
-      card.style.top = placement.top - cropOffset + "px";
+      card.className = "timeline-card " + laneClass(placement.side);
+      card.style[mainStyleProp()] = placement.top - cropOffset + "px";
       card.style.setProperty("--card-color", topicColorVar(paper.topics[0]));
       card.setAttribute("role", "group");
       const dateText = new Date(paper.date).toLocaleDateString(undefined, { year: "numeric", month: "short" });
@@ -272,7 +338,7 @@
           `Topics: ${paper.topics.map(topicLabel).join(", ")}.`,
         ]
           .filter(Boolean)
-          .join(" "),
+          .join(" ")
       );
 
       const dateEl = document.createElement("div");
@@ -316,21 +382,40 @@
 
       const cardRect = card.getBoundingClientRect();
       const containerRect = container.getBoundingClientRect();
-      const cardMidY = placement.top - cropOffset + CARD_HEIGHT / 2;
-      const barY = posFn(paper.date) - cropOffset;
-      const barX = containerRect.width / 2;
-      const cardEdgeX = placement.side === "left" ? cardRect.right - containerRect.left : cardRect.left - containerRect.left;
+      const cardMainMid = placement.top - cropOffset + CARD_HEIGHT / 2;
+      const barMain = posFn(paper.date) - cropOffset;
+      // "left"/"right" here are packCards's lane alternation, not literally
+      // page-left -- in horizontal mode "left" means "above" (see laneClass),
+      // and the card's edge facing the bar is its bottom edge, not its right.
+      const nearLane = placement.side === "left";
+      const cardCrossEdge =
+        orientation === "horizontal"
+          ? nearLane
+            ? cardRect.bottom - containerRect.top
+            : cardRect.top - containerRect.top
+          : nearLane
+            ? cardRect.right - containerRect.left
+            : cardRect.left - containerRect.left;
+      const crossCenter = orientation === "horizontal" ? containerRect.height / 2 : containerRect.width / 2;
+      const barCross = crossCenter + (nearLane ? -7 : 7);
+
+      const cardPoint = axisPoint(cardMainMid, cardCrossEdge);
+      const barPoint = axisPoint(barMain, barCross);
 
       const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-      line.setAttribute("x1", cardEdgeX);
-      line.setAttribute("y1", cardMidY);
-      line.setAttribute("x2", barX + (placement.side === "left" ? -7 : 7));
-      line.setAttribute("y2", barY);
+      line.setAttribute("x1", cardPoint.x);
+      line.setAttribute("y1", cardPoint.y);
+      line.setAttribute("x2", barPoint.x);
+      line.setAttribute("y2", barPoint.y);
       svg.appendChild(line);
     });
   }
 
   function render() {
+    widget.classList.toggle("timeline-horizontal", orientation === "horizontal");
+    setMainPosition(track, TOP_PADDING + "px");
+    setMainPosition(hoverZone, TOP_PADDING + "px");
+
     const filters = activeFilters();
     const visible = TimelineMockLogic.filterPapers(papers, filters);
 
@@ -346,9 +431,7 @@
       posFn = pos;
     }
 
-    const allSegments = TimelineMockLogic.computeJobSegments(
-      jobs.map((j) => ({ id: j.id, color: j.color, startTime: j.start, endTime: j.end })),
-    );
+    const allSegments = TimelineMockLogic.computeJobSegments(jobs.map((j) => ({ id: j.id, color: j.color, startTime: j.start, endTime: j.end })));
     const segments = TimelineMockLogic.clipSegmentsToRange(allSegments, filters.startMs, filters.endMs);
 
     const pairs = segments.map((seg) => [posFn(seg.start), posFn(seg.end)]);
@@ -362,8 +445,8 @@
     cropOffset = contentTop - TOP_PADDING;
     effectiveTrackHeight = Math.max(contentBottom - contentTop, 0);
 
-    track.style.height = effectiveTrackHeight + "px";
-    hoverZone.style.height = effectiveTrackHeight + "px";
+    setMainSize(track, effectiveTrackHeight + "px");
+    setMainSize(hoverZone, effectiveTrackHeight + "px");
 
     renderTrack(segments, posFn);
     renderCards(visible, packedById, posFn);
