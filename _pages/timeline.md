@@ -38,8 +38,8 @@ nav_order: 5
     </fieldset>
     <fieldset id="timeline-orientation-mode">
       <legend>Orientation</legend>
-      <label><input type="radio" name="timeline-orientation-mode" value="vertical" checked /> Vertical</label>
-      <label><input type="radio" name="timeline-orientation-mode" value="horizontal" /> Horizontal</label>
+      <label><input type="radio" name="timeline-orientation-mode" value="vertical" /> Vertical</label>
+      <label><input type="radio" name="timeline-orientation-mode" value="horizontal" checked /> Horizontal</label>
     </fieldset>
   </div>
 
