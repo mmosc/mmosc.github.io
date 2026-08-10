@@ -18,7 +18,7 @@ See `tasks/plan.md` for full descriptions, acceptance criteria, and verification
 - [x] **Checkpoint:** horizontal mode functionally complete, all filters re-verified, review with Marta
 
 ## Phase 4: Responsive integration
-- [ ] Task 7: Force vertical below a breakpoint (992px placeholder — confirm here)
+- [x] Task 7: Force vertical below a breakpoint (992px)
 - [ ] Task 8: Resize-recompute for horizontal geometry
 - [ ] **Checkpoint:** responsive behavior confirmed, review with Marta
 

@@ -34,6 +34,7 @@
   const CARD_MAIN_EXTENT_HORIZONTAL = 28;
   const CARD_MIN_GAP_HORIZONTAL = 6;
   const HORIZONTAL_BASELINE_TRACK_WIDTH = 760;
+  const ORIENTATION_BREAKPOINT_PX = 992;
 
   // Declared here (rather than down with the other per-render state) because
   // setupCompactLayout() below calls cardMainExtent()/cardMinGap()/
@@ -41,7 +42,12 @@
   // before the rest of that state block runs -- a `let` referenced before
   // its declaration line executes throws, even from inside a function
   // defined earlier, so this has to come first.
+  // `orientation` is the effective value everything renders with;
+  // `selectedOrientation` is the user's raw radio choice, preserved even
+  // while a narrow viewport forces `orientation` to "vertical" (Task 7), so
+  // widening back past the breakpoint can restore it.
   let orientation = "vertical";
+  let selectedOrientation = "vertical";
 
   // Orientation-generic accessors for "how much main-axis room does one
   // card need for packing purposes" and "how long is the bar at baseline
@@ -203,6 +209,13 @@
   const rangeReset = document.getElementById("timeline-range-reset");
   const scaleModeInputs = document.querySelectorAll('input[name="timeline-scale-mode"]');
   const orientationInputs = document.querySelectorAll('input[name="timeline-orientation-mode"]');
+  const orientationFieldset = document.getElementById("timeline-orientation-mode");
+
+  function applyOrientationForViewport() {
+    const forced = window.innerWidth < ORIENTATION_BREAKPOINT_PX;
+    orientationFieldset.style.display = forced ? "none" : "";
+    orientation = forced ? "vertical" : selectedOrientation;
+  }
 
   // --- Orientation axis abstraction (tasks/plan.md Task 2) -------------------
   // Vertical: the bar runs top-to-bottom (the "main" axis is CSS `top`/
@@ -510,7 +523,8 @@
   });
   orientationInputs.forEach((input) => {
     input.addEventListener("change", () => {
-      orientation = document.querySelector('input[name="timeline-orientation-mode"]:checked').value;
+      selectedOrientation = document.querySelector('input[name="timeline-orientation-mode"]:checked').value;
+      applyOrientationForViewport();
       // Compact mode's pitch depends on cardMainExtent()/cardMinGap(), which
       // now read a different orientation -- without this, switching
       // orientation would keep using the *previous* orientation's compact
@@ -542,10 +556,12 @@
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
       CARD_HEIGHT = window.innerWidth < NARROW_VIEWPORT_BREAKPOINT_PX ? 140 : 112;
+      applyOrientationForViewport();
       setupCompactLayout();
       render();
     }, 150);
   });
 
+  applyOrientationForViewport();
   render();
 })();
