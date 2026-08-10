@@ -23,7 +23,7 @@ See `tasks/plan.md` for full descriptions, acceptance criteria, and verification
 - [x] **Checkpoint:** responsive behavior confirmed, review with Marta
 
 ## Phase 5: Accessibility and verification
-- [ ] Task 9: Accessibility pass on the new control
+- [x] Task 9: Accessibility pass on the new control
 - [ ] Task 10: Responsive smoke check across real breakpoints (375 / breakpoint boundary / 1440)
 - [ ] **Checkpoint:** feature complete, ready for final review
 

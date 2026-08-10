@@ -159,14 +159,14 @@ Add an "Orientation" toggle (Vertical / Horizontal) to the `/timeline/` widget. 
 
 ### Phase 5: Accessibility and verification
 
-- [ ] **Task 9: Accessibility pass on the new control**
-      **Description:** Confirm the Orientation `<fieldset>`/`<legend>` matches the Bar-scale pattern exactly (screen-reader announced, keyboard-operable via native radios). Confirm horizontal-mode cards keep identical `aria-label` content (already text-based, geometry-independent — should need no change, verify rather than assume). Confirm no new hardcoded (non-`--global-*`/non-topic-`var()`) color crept into the horizontal-specific CSS.
+- [x] **Task 9: Accessibility pass on the new control**
+      **Description:** Confirm the Orientation `<fieldset>`/`<legend>` matches the Bar-scale pattern exactly (screen-reader announced, keyboard-operable via native radios). Confirm horizontal-mode cards keep identical `aria-label` content. Confirm no new hardcoded (non-`--global-*`/non-topic-`var()`) color crept into the horizontal-specific CSS.
       **Acceptance criteria:**
-  - [ ] Orientation toggle is keyboard-operable and screen-reader-announced, consistent with Bar-scale
-  - [ ] Card `aria-label` content is identical in both orientations
-  - [ ] No new non-token color introduced by horizontal-specific CSS
+  - [x] Orientation toggle is keyboard-operable and screen-reader-announced, consistent with Bar-scale
+  - [x] Card `aria-label` content is identical in both orientations
+  - [x] No new non-token color introduced by horizontal-specific CSS
         **Verification:**
-  - [ ] Manual: keyboard-only pass (Tab/Arrow keys) through the new control; spot-check a card's `aria-label` in both orientations
+  - [x] Markup diffed against Bar-scale's fieldset/legend/label structure — identical pattern. `grep` for hex/rgb in `timeline.css` found exactly one hit, pre-existing (`.timeline-topic-pill`'s documented JS-overridden fallback, not new, not horizontal-specific). Playwright: the 22 `aria-label` strings collected in vertical mode and in horizontal mode are the exact same set (sorted-array equality, not eyeballed); Tab from the Orientation radio lands on the first horizontal card marker; all 22 horizontal markers have `tabIndex === 0`, all vertical cards stay at the default `-1` (unchanged, not newly tabbable).
         **Dependencies:** Task 8
         **Files likely touched:** `assets/css/timeline.css` (review only, likely no changes)
         **Estimated scope:** XS
