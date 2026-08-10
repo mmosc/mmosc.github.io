@@ -24,8 +24,8 @@ See `tasks/plan.md` for full descriptions, acceptance criteria, and verification
 
 ## Phase 5: Accessibility and verification
 - [x] Task 9: Accessibility pass on the new control
-- [ ] Task 10: Responsive smoke check across real breakpoints (375 / breakpoint boundary / 1440)
-- [ ] **Checkpoint:** feature complete, ready for final review
+- [x] Task 10: Responsive smoke check across real breakpoints (375 / breakpoint boundary / 1440)
+- [x] **Checkpoint:** feature complete, ready for final review
 
 ## Phase 6: Merge
 - [ ] Task 11: Merge to master, planning docs excluded

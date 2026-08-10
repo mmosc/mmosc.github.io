@@ -171,20 +171,21 @@ Add an "Orientation" toggle (Vertical / Horizontal) to the `/timeline/` widget. 
         **Files likely touched:** `assets/css/timeline.css` (review only, likely no changes)
         **Estimated scope:** XS
 
-- [ ] **Task 10: Responsive smoke check across real breakpoints**
-      **Description:** Mirror the vertical build's own Task 4.3 methodology — actually resize a real/emulated browser rather than reasoning about the CSS abstractly, since that task found three real bugs this way. Check 375px (forced vertical), the Task 7 breakpoint boundary from both sides, and 1440px (horizontal).
+- [x] **Task 10: Responsive smoke check across real breakpoints**
+      **Description:** Mirror the vertical build's own Task 4.3 methodology — actually resize a real/emulated browser rather than reasoning about the CSS abstractly. Check 375px (forced vertical), the Task 7 breakpoint boundary from both sides, and 1440px (horizontal).
+      **Unlike the original Task 4.3, this pass found zero new bugs** — the three real bugs this feature did have (`.timeline-track-segment` height:0, the inert 1200px wrapper override, the stale container height) were already caught and fixed during Tasks 3-4's own Playwright verification, not deferred to a final pass.
       **Acceptance criteria:**
-  - [ ] No clipping, overlap, or overflow at any checked width
+  - [x] No clipping, overlap, or overflow at any checked width
         **Verification:**
-  - [ ] Manual smoke check, findings (if any) fixed before moving on
+  - [x] Playwright across 375/600/762/850/991/992/1024/1440px: `document.documentElement.scrollWidth <= viewportWidth` at every one (checked programmatically, not eyeballed) plus a full-page screenshot at each. Also checked dark mode at 375px (vertical) and 1440px (horizontal, with a card hover-expanded) — theme-reactive colors work correctly for the new marker/detail elements, no contrast or rendering issues. Screenshots shown to Marta throughout.
         **Dependencies:** Task 9
-        **Files likely touched:** TBD (whatever the smoke check finds)
+        **Files likely touched:** none (verification found nothing to fix)
         **Estimated scope:** S
 
 ### Checkpoint: Feature complete
 
-- [ ] All acceptance criteria above met
-- [ ] Ready for Marta's final review
+- [x] All acceptance criteria above met
+- [x] Ready for Marta's final review
 
 ### Phase 6: Merge
 
