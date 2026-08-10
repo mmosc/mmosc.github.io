@@ -125,6 +125,69 @@
   z-index: 10;
 }
 
+/* Horizontal orientation (tasks/plan.md Tasks 3-6): the bar runs
+   left-to-right instead of top-to-bottom, so every rule above that fixes the
+   bar's cross-axis position via `left: 50%`/`transform: translateX(-50%)`
+   needs the perpendicular version here (`top: 50%`/`translateY(-50%)`),
+   leaving the main-axis property (`left`/`width`, set inline by
+   timeline.js's setMainPosition/setMainSize) for JS to drive. Higher
+   specificity (#timeline-widget.timeline-horizontal ...) than the plain
+   .timeline-track etc. rules above is what makes these overrides win instead
+   of needing !important. */
+#timeline-widget.timeline-horizontal .timeline-wrapper {
+  /* Wider than vertical's 900px so a full-length horizontal bar has room to
+     read correctly (Task 3's own check, at 1440px). Task 4 tunes the actual
+     JS-computed bar length against this width so it fits without a
+     horizontal scrollbar -- this number may move there. */
+  max-width: 1200px;
+}
+#timeline-widget.timeline-horizontal .timeline-container {
+  /* Placeholder: with no cards positioned yet (Task 5 skips card rendering
+     in horizontal mode for now, see renderCards), the container has no
+     normal-flow content to size itself from -- position: absolute children
+     don't contribute to a block's height. Just enough room to see the bar
+     and hover indicator without looking broken; Task 5 replaces this with
+     real space reserved for above/below card stacks. */
+  min-height: 60px;
+}
+#timeline-widget.timeline-horizontal .timeline-track {
+  left: 0;
+  top: 50%;
+  width: auto;
+  height: 14px;
+  transform: translateY(-50%);
+}
+#timeline-widget.timeline-horizontal .timeline-track-segment {
+  /* left/width are still JS-driven inline (mainStyleProp/mainSizeProp), same
+     as vertical -- only the cross-axis fill needs a horizontal-specific
+     rule, since vertical's own .timeline-track-segment never sets a height
+     either (relies on JS's inline height there instead). Without this,
+     segments have no height at all in horizontal mode: `height: auto` on an
+     absolutely positioned, childless div resolves to 0 (caught by an actual
+     Playwright measurement, not just reasoning -- boundingBox() reported
+     height: 0 before this rule existed). */
+  top: 0;
+  height: 100%;
+}
+#timeline-widget.timeline-horizontal .timeline-track-hover-zone {
+  left: 0;
+  top: 50%;
+  width: auto;
+  height: 40px;
+  transform: translateY(-50%);
+}
+#timeline-widget.timeline-horizontal .timeline-hover-indicator {
+  left: auto;
+  top: 50%;
+  width: 2px;
+  height: 28px;
+}
+#timeline-widget.timeline-horizontal .timeline-hover-tooltip {
+  left: auto;
+  top: calc(50% + 22px);
+  transform: translateX(-50%);
+}
+
 .timeline-card {
   position: absolute;
   /* Fixed 320px overflowed the viewport below ~760px wide (Task 4.3's

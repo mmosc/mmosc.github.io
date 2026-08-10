@@ -304,21 +304,27 @@
 
   function renderCards(visible, packedById, posFn) {
     container.querySelectorAll(".timeline-card").forEach((n) => n.remove());
-
-    setMainSize(container, TOP_PADDING * 2 + effectiveTrackHeight + "px");
     svg.innerHTML = "";
-    // The SVG must cover the whole 2D widget regardless of orientation: its
-    // main-axis dimension matches the JS-computed container size above, and
-    // its cross-axis dimension is "100%" of whatever CSS gives the container
-    // on that axis (fixed max-width in vertical, a fixed height in
-    // horizontal -- see Task 3/5's CSS).
+
+    // Task 3 placeholder, removed in Task 5: no .timeline-card.above/.below
+    // CSS exists yet, so a card placed in horizontal mode right now would
+    // render with a main-axis (left) position but no cross-axis (top/bottom)
+    // rule to anchor it, stacking every card at the container's top edge.
+    // Skipping card/leader-line rendering entirely in horizontal mode until
+    // Task 5 adds that CSS is cleaner than showing a known-broken layout.
     if (orientation === "horizontal") {
-      svg.setAttribute("width", container.style.width);
-      svg.setAttribute("height", "100%");
-    } else {
-      svg.setAttribute("width", "100%");
-      svg.setAttribute("height", container.style.height);
+      return;
     }
+
+    // Only the vertical branch is reachable right now -- the horizontal
+    // early-return above means orientation is always "vertical" past this
+    // point. Task 5 removes that early return and reintroduces the
+    // horizontal case here: main-axis dimension = the JS-computed container
+    // size, cross-axis dimension = "100%" of whatever CSS gives the
+    // container on that axis (fixed height there, fixed max-width here).
+    setMainSize(container, TOP_PADDING * 2 + effectiveTrackHeight + "px");
+    svg.setAttribute("width", "100%");
+    svg.setAttribute("height", container.style.height);
 
     visible.forEach((paper) => {
       const placement = packedById[paper.id];

@@ -21,6 +21,7 @@ Add an "Orientation" toggle (Vertical / Horizontal) to the `/timeline/` widget. 
 - **No new automated visual-regression coverage.** The vertical build's own responsive verification (its Task 4.3) was a manual smoke check, not Playwright — the widget isn't in `test/visual/` today. Horizontal mode's verification mirrors that: manual checks at named breakpoints, not new `.spec.js` files. Revisit only if a real regression slips through undetected.
 - **Breakpoint for forcing vertical: proposed 992px** (Bootstrap's `lg`, since al-folio is Bootstrap-based). This is a placeholder, not a hard requirement — Task 7 is where this gets confirmed/adjusted against how the horizontal layout actually looks at common in-between widths (1024px laptops, iPad landscape at 1024px, etc.).
 - **Orientation choice does not persist across page loads** (resets to vertical default each visit), matching the existing bar-scale toggle's behavior (also non-persistent). Flagged in Open Questions in case Marta wants `localStorage` persistence later — small addition, deliberately not built now.
+- **Show, don't just report, at every visualizable checkpoint** (added mid-build, per Marta's explicit instruction): whenever a task produces something that can be seen (a rendered bar, a card layout, a full page at a breakpoint), share an actual screenshot with Marta before moving on — not only pass/fail text or measured numbers. Applies for the rest of this plan's execution, not just the phase checkpoints already listed below.
 
 ## Task List
 
