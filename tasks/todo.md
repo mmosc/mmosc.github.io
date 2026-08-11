@@ -4,7 +4,7 @@ See `tasks/plan.md` for full descriptions, acceptance criteria, and verification
 
 ## Phase 1: Foundation
 
-- [ ] Task 1: Script skeleton + `years:` front-matter sync
+- [x] Task 1: Script skeleton + `years:` front-matter sync
 - [ ] Task 2: Preview-image matching + auto-fill
 - [ ] **Checkpoint:** script runs end-to-end against real repo data, review with Marta
 

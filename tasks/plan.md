@@ -32,18 +32,19 @@ Build `bin/sync_bib.py`: a manually-run Python script that treats `_bibliography
 
 ### Phase 1: Foundation
 
-- [ ] **Task 1: Script skeleton + `years:` front-matter sync**
+- [x] **Task 1: Script skeleton + `years:` front-matter sync**
       **Description:** Create `bin/sync_bib.py`. Parse `_bibliography/papers.bib` with `bibtexparser`, compute the sorted-descending unique set of `year` values, parse `_pages/publications.md`'s front matter, and rewrite its `years:` list if it differs (byte-identical file otherwise). Add `bibtexparser` to `requirements.txt`. This is the smallest end-to-end vertical slice: real input, real output, nothing else wired in yet.
       **Acceptance criteria:**
-      - [ ] Running the script against the current repo makes no change (years are already in sync) and exits 0
-      - [ ] Temporarily adding an out-of-range `year` to a scratch copy of `papers.bib` and re-running updates `years:` correctly, in the same descending order/format as today
-      - [ ] Every other line of `_pages/publications.md` is untouched (diff shows only the `years:` line)
+      - [x] Running the script against the current repo makes no change (years are already in sync) and exits 0
+      - [x] Temporarily adding an out-of-range `year` to a scratch copy of `papers.bib` and re-running updates `years:` correctly, in the same descending order/format as today
+      - [x] Every other line of `_pages/publications.md` is untouched (diff shows only the `years:` line)
       **Verification:**
-      - [ ] `python3 bin/sync_bib.py` runs clean against current repo state
-      - [ ] Manual: scratch-copy test above, inspect the diff
+      - [x] `python3 bin/sync_bib.py` runs clean against current repo state
+      - [x] Manual: scratch-copy test above, inspect the diff
       **Dependencies:** None
       **Files likely touched:** `bin/sync_bib.py`, `requirements.txt`
       **Estimated scope:** S
+      **Notes:** Also added `test/unit_sync_bib.py` (stdlib `unittest`, no new devDependency) covering the pure `target_years`/`sync_years_front_matter_text` functions — real TDD RED→GREEN, not just the manual scratch check. Found and fixed a real bug during scratch testing: `load_entries`/`check_years_front_matter`'s path parameters defaulted to the module-level `BIB_PATH`/`PUBLICATIONS_PATH` *at definition time*, so reassigning those globals later (as tests need to) was silently ignored — switched to `None`-default + resolve-at-call-time.
 
 - [ ] **Task 2: Preview-image matching + auto-fill**
       **Description:** Implement the normalization/candidate-matching heuristic described above against `assets/img/publication_preview/`. Wire it into the same pass-1/pass-2 report structure from Task 1 (unambiguous matches become safe edits to `papers.bib`; ambiguous ones become blocking issues; zero-candidate entries are silently fine).
