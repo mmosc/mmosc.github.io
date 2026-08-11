@@ -67,7 +67,10 @@
       horizontalExtentCache = new Map(
         papers.map((p) => [
           p.id,
-          Math.max(Math.ceil(measureLabelWidth((p.firstAuthor ? "★ " : "") + horizontalCardLabel(p))) + 14, HORIZONTAL_CARD_MIN),
+          Math.max(
+            Math.ceil(measureLabelWidth((p.firstAuthor ? "★ " : "") + (p.phdRelevant ? "🎓 " : "") + horizontalCardLabel(p))) + 14,
+            HORIZONTAL_CARD_MIN
+          ),
         ])
       );
     }
@@ -120,6 +123,7 @@
     approx: p.month_approximate,
     topics: p.topics,
     firstAuthor: p.first_author,
+    phdRelevant: p.phd_relevant,
   }));
 
   // Job color and legend label have no source field in _data/cv.yml
@@ -244,6 +248,7 @@
   const hoverTooltip = document.getElementById("timeline-hover-tooltip");
   const topicFieldset = document.getElementById("timeline-topic-filters");
   const firstAuthorOnly = document.getElementById("timeline-first-author-only");
+  const phdOnly = document.getElementById("timeline-phd-only");
   const rangeStart = document.getElementById("timeline-range-start");
   const rangeEnd = document.getElementById("timeline-range-end");
   const rangeReset = document.getElementById("timeline-range-reset");
@@ -390,7 +395,7 @@
     const startMs = rangeStart.value ? new Date(rangeStart.value + "-01").getTime() : minTime;
     const endMs = rangeEnd.value ? new Date(rangeEnd.value + "-01").getTime() : maxTime;
     const activeTopics = new Set(Array.from(topicFieldset.querySelectorAll("input[type=checkbox]:checked")).map((i) => i.dataset.topic));
-    return { startMs, endMs, activeTopics, firstAuthorOnly: firstAuthorOnly.checked };
+    return { startMs, endMs, activeTopics, firstAuthorOnly: firstAuthorOnly.checked, phdOnly: phdOnly.checked };
   }
 
   function renderCards(visible, packedById, posFn) {
@@ -419,6 +424,7 @@
         "aria-label",
         [
           paper.firstAuthor ? "First author." : null,
+          paper.phdRelevant ? "Included in PhD thesis." : null,
           paper.approx ? `Approximately ${dateText}.` : `${dateText}.`,
           `${paper.title}.`,
           `${paper.venue}.`,
@@ -440,6 +446,12 @@
           markerStar.className = "timeline-first-author-star";
           markerStar.textContent = "★ ";
           markerLabel.appendChild(markerStar);
+        }
+        if (paper.phdRelevant) {
+          const markerHat = document.createElement("span");
+          markerHat.className = "timeline-phd-hat";
+          markerHat.textContent = "🎓 ";
+          markerLabel.appendChild(markerHat);
         }
         markerLabel.appendChild(document.createTextNode(horizontalCardLabel(paper)));
         card.appendChild(markerLabel);
@@ -464,6 +476,14 @@
         star.setAttribute("aria-hidden", "true");
         star.textContent = "★ ";
         titleEl.appendChild(star);
+      }
+      if (paper.phdRelevant) {
+        const hat = document.createElement("span");
+        hat.className = "timeline-phd-hat";
+        hat.title = "Included in PhD thesis";
+        hat.setAttribute("aria-hidden", "true");
+        hat.textContent = "🎓 ";
+        titleEl.appendChild(hat);
       }
       titleEl.appendChild(document.createTextNode(paper.title));
       contentParent.appendChild(titleEl);
@@ -563,6 +583,7 @@
   [rangeStart, rangeEnd].forEach((el) => el.addEventListener("change", render));
   topicFieldset.addEventListener("change", render);
   firstAuthorOnly.addEventListener("change", render);
+  phdOnly.addEventListener("change", render);
   scaleModeInputs.forEach((input) => {
     input.addEventListener("change", () => {
       compactMode = document.querySelector('input[name="timeline-scale-mode"]:checked').value === "compact";
@@ -586,6 +607,7 @@
     rangeEnd.value = monthInput(maxTime);
     topicFieldset.querySelectorAll("input[type=checkbox]").forEach((i) => (i.checked = true));
     firstAuthorOnly.checked = false;
+    phdOnly.checked = false;
     render();
   });
 

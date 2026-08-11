@@ -24,6 +24,7 @@
     date: TimelineMockLogic.parseMonthYear(p.year, p.month),
     topics: p.topics,
     firstAuthor: p.first_author,
+    phdRelevant: p.phd_relevant,
   }));
 
   const topicLabel = (topicId) =>
@@ -39,6 +40,7 @@
   const rangeEnd = document.getElementById("timeline-range-end");
   const topicFieldset = document.getElementById("timeline-topic-filters");
   const firstAuthorOnly = document.getElementById("timeline-first-author-only");
+  const phdOnly = document.getElementById("timeline-phd-only");
   const rangeReset = document.getElementById("timeline-range-reset");
   const scaleModeInputs = document.querySelectorAll('input[name="timeline-scale-mode"]');
 
@@ -46,7 +48,7 @@
     const startMs = rangeStart.value ? new Date(rangeStart.value + "-01").getTime() : minPaperTime;
     const endMs = rangeEnd.value ? new Date(rangeEnd.value + "-01").getTime() : maxPaperTime;
     const activeTopics = new Set(Array.from(topicFieldset.querySelectorAll("input[type=checkbox]:checked")).map((i) => i.dataset.topic));
-    return { startMs, endMs, activeTopics, firstAuthorOnly: firstAuthorOnly.checked };
+    return { startMs, endMs, activeTopics, firstAuthorOnly: firstAuthorOnly.checked, phdOnly: phdOnly.checked };
   }
 
   // items: [{ key, label, value, strokeColor, swatchBackground, breakdown? }] drive the ring
@@ -447,6 +449,7 @@
   [rangeStart, rangeEnd].forEach((el) => el.addEventListener("change", render));
   topicFieldset.addEventListener("change", render);
   firstAuthorOnly.addEventListener("change", render);
+  phdOnly.addEventListener("change", render);
   scaleModeInputs.forEach((input) => input.addEventListener("change", render));
   if (rangeReset) rangeReset.addEventListener("click", render);
 

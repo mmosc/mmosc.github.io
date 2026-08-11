@@ -26,6 +26,11 @@ nav_order: 5
       <label><input type="checkbox" id="timeline-first-author-only" /> First author only</label>
       <span class="timeline-star-legend"><span class="timeline-first-author-star" aria-hidden="true">★</span> = first author</span>
     </fieldset>
+    <fieldset id="timeline-phd-filter">
+      <legend>PhD relevance</legend>
+      <label><input type="checkbox" id="timeline-phd-only" /> PhD thesis only</label>
+      <span class="timeline-star-legend"><span class="timeline-phd-hat" aria-hidden="true">🎓</span> = included in thesis</span>
+    </fieldset>
     <!-- Not real form controls (nothing to check/select), so plain spans
          rather than <label> -- a <label> with no associated input is a
          semantic misuse that some screen readers announce oddly. -->

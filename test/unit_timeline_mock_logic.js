@@ -399,6 +399,39 @@ assert.strictEqual(dateToPosition(1050, 0, 1000, 500), 500, "time after range cl
   );
 }
 
+// PhD-relevance-only filter: same shape as first-author-only, ANDed with the
+// other filters (including firstAuthorOnly itself).
+{
+  const papers = [
+    { id: "p1", date: 0, topics: ["a"], firstAuthor: true, phdRelevant: true },
+    { id: "p2", date: 50, topics: ["a", "b"], firstAuthor: false, phdRelevant: false },
+    { id: "p3", date: 100, topics: ["b"], firstAuthor: false, phdRelevant: true },
+    { id: "p4", date: 150, topics: ["c"], firstAuthor: true, phdRelevant: false },
+  ];
+  const allTopics = new Set(["a", "b", "c"]);
+
+  // phdOnly omitted (undefined): behaves exactly as before, no filtering by PhD relevance
+  assert.deepStrictEqual(
+    filterPapers(papers, { startMs: 0, endMs: 150, activeTopics: allTopics }).map((p) => p.id),
+    ["p1", "p2", "p3", "p4"],
+    "omitting phdOnly doesn't filter by PhD relevance (backward compatible)"
+  );
+
+  // phdOnly: true: only papers with phdRelevant: true pass
+  assert.deepStrictEqual(
+    filterPapers(papers, { startMs: 0, endMs: 150, activeTopics: allTopics, phdOnly: true }).map((p) => p.id),
+    ["p1", "p3"],
+    "phdOnly: true hides papers where phdRelevant is false"
+  );
+
+  // combines as AND with firstAuthorOnly (independent flags, not one replacing the other)
+  assert.deepStrictEqual(
+    filterPapers(papers, { startMs: 0, endMs: 150, activeTopics: allTopics, firstAuthorOnly: true, phdOnly: true }).map((p) => p.id),
+    ["p1"],
+    "p3 is PhD-relevant but not first-author, so it must be excluded when both filters are on (AND, not OR)"
+  );
+}
+
 // integration: filterPapers -> packCards must still produce non-overlapping placements
 {
   const papers = [
