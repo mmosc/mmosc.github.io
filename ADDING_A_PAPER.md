@@ -14,6 +14,7 @@ Open `_bibliography/papers.bib` and add a new entry, following the pattern of th
 - `topic` — one or more of: `recommender-systems`, `music-information-retrieval`, `multimodal-learning`, `particle-physics` (separate with commas if more than one applies)
 - `venue_short` — a short name for the venue, e.g. `ACM RecSys`
 - `first_author` — `true` if you are the first author, otherwise `false`
+- `phd_relevant` — `true` if this paper is included in your PhD thesis, otherwise `false`
 - `bibtex_show` — `true` so a "Bib" button appears on the website
 - `selected` — `true` if this paper should appear in your "selected papers" highlights, otherwise `false`
 
@@ -31,6 +32,7 @@ A blank example to copy:
     topic = {recommender-systems},
     venue_short = {Short venue name},
     first_author = {true},
+    phd_relevant = {false},
 }
 ```
 

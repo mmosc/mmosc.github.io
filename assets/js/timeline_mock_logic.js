@@ -67,13 +67,14 @@
     return { top, bottom };
   }
 
-  function filterPapers(papers, { startMs, endMs, activeTopics, firstAuthorOnly }) {
+  function filterPapers(papers, { startMs, endMs, activeTopics, firstAuthorOnly, phdOnly }) {
     return papers.filter(
       (paper) =>
         paper.date >= startMs &&
         paper.date <= endMs &&
         paper.topics.some((topic) => activeTopics.has(topic)) &&
-        (!firstAuthorOnly || paper.firstAuthor)
+        (!firstAuthorOnly || paper.firstAuthor) &&
+        (!phdOnly || paper.phdRelevant)
     );
   }
 

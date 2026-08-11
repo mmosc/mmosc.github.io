@@ -293,7 +293,7 @@ def check_topic_colors(entries, report, colors_path=None):
         report.add_blocking_issue(f"topic {topic!r} has no color defined in {display_path}")
 
 
-REQUIRED_FIELDS = ["bibtex_show", "selected", "month", "topic", "venue_short", "first_author"]
+REQUIRED_FIELDS = ["bibtex_show", "selected", "month", "topic", "venue_short", "first_author", "phd_relevant"]
 
 
 def check_required_fields(entries, report):

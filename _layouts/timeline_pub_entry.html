@@ -8,5 +8,6 @@
   "month_approximate": {{ entry.month_approximate | default: "false" }},
   "topics": {{ entry.topic | split: ", " | jsonify }},
   "first_author": {{ entry.first_author }},
+  "phd_relevant": {{ entry.phd_relevant }},
   "url": {{ entry.url | default: "" | jsonify }}
 }
