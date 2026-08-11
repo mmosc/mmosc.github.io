@@ -359,6 +359,7 @@ class CheckRequiredFieldsTest(unittest.TestCase):
         "topic": "recommender-systems",
         "venue_short": "ACM RecSys",
         "first_author": "false",
+        "phd_relevant": "false",
     }
 
     def test_complete_entry_validates_clean(self):
@@ -380,6 +381,14 @@ class CheckRequiredFieldsTest(unittest.TestCase):
         self.assertIn("month", issue)
         # fields that *are* present must not be listed as missing
         self.assertNotIn("venue_short", issue)
+
+    def test_missing_phd_relevant_is_flagged(self):
+        entry = dict(self.COMPLETE)
+        del entry["phd_relevant"]
+        report = sync_bib.SyncReport()
+        sync_bib.check_required_fields([entry], report)
+        self.assertFalse(report.ok)
+        self.assertIn("phd_relevant", report.blocking_issues[0])
 
     def test_real_repo_entries_all_validate_clean(self):
         # As of Task 5, Moscati2026SwapRec/AndrésFerraro2026MuRS/JustinHangoebl2026SPRIG
