@@ -30,11 +30,19 @@
 
 /* Horizontal mode: the bar already bleeds out to near the viewport edge (no gutter
    left to float a rail in), and the whole widget is short there (no tall track to stay
-   visible against while scrolling) -- so it always just stacks below, at every width. */
+   visible against while scrolling) -- so it always just sits below, at every width.
+   Side by side rather than stacked: horizontal mode is forced to vertical below 992px
+   (see timeline.js's ORIENTATION_BREAKPOINT_PX), so this never has to fit a row in
+   less than that, plenty of room for two ~430px cards. */
 #timeline-widget.timeline-horizontal .timeline-distributions {
   width: 100%;
   max-width: 900px;
   margin: 2rem auto 0;
+  flex-direction: row;
+}
+#timeline-widget.timeline-horizontal .timeline-distributions .timeline-distribution-chart {
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .timeline-distribution-chart {
