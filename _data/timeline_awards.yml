@@ -1,0 +1,7 @@
+# Awards/scholarships shown as markers on the /timeline/ page (assets/js/timeline.js),
+# toggled via the "Awards" checkbox. date is "YYYY-MM", same format as
+# _data/cv.yml's start_date/end_date.
+- name: "Iris Fischlmayr Scholarship"
+  date: "2024-01"
+- name: "SPS Grand Challenge 2027"
+  date: "2026-08"

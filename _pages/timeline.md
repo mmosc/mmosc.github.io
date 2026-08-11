@@ -31,6 +31,10 @@ nav_order: 5
       <label><input type="checkbox" id="timeline-phd-only" /> PhD thesis only</label>
       <span class="timeline-star-legend"><span class="timeline-phd-hat" aria-hidden="true">🎓</span> = included in thesis</span>
     </fieldset>
+    <fieldset id="timeline-award-filter">
+      <legend>Awards</legend>
+      <label><input type="checkbox" id="timeline-awards-toggle" /> Show awards</label>
+    </fieldset>
     <!-- Not real form controls (nothing to check/select), so plain spans
          rather than <label> -- a <label> with no associated input is a
          semantic misuse that some screen readers announce oddly. -->
@@ -151,6 +155,10 @@ nav_order: 5
 
 <script type="application/json" id="timeline-topic-colors-data">
 {{ site.data.timeline_colors | jsonify }}
+</script>
+
+<script type="application/json" id="timeline-awards-data">
+{{ site.data.timeline_awards | jsonify }}
 </script>
 
 <link rel="stylesheet" href="{{ '/assets/css/timeline.css' | relative_url }}" />

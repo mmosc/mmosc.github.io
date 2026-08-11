@@ -102,7 +102,7 @@
 
   const now = Date.now();
 
-  // --- Parse the three real-data islands ---------------------------------
+  // --- Parse the four real-data islands ---------------------------------
   function parsePapersIsland() {
     const el = document.getElementById("timeline-papers-data");
     return Array.from(el.querySelectorAll("li")).map((li) => JSON.parse(li.textContent));
@@ -112,6 +112,9 @@
   }
   function parseTopicColorsIsland() {
     return JSON.parse(document.getElementById("timeline-topic-colors-data").textContent);
+  }
+  function parseAwardsIsland() {
+    return JSON.parse(document.getElementById("timeline-awards-data").textContent);
   }
 
   const papers = parsePapersIsland().map((p) => ({
@@ -153,6 +156,13 @@
       end: TimelineMockLogic.parseJobDate(j.end_date, now),
     };
   });
+
+  // _data/timeline_awards.yml uses the same "YYYY-MM" format as cv.yml's
+  // start_date/end_date, so parseJobDate (despite the name) parses these too.
+  const awards = parseAwardsIsland().map((a) => ({
+    name: a.name,
+    date: TimelineMockLogic.parseJobDate(a.date, now),
+  }));
 
   // Topic colors ARE real per-topic data (_data/timeline_colors.yml) with
   // both light and dark values, already validated for both via the dataviz
@@ -249,6 +259,7 @@
   const topicFieldset = document.getElementById("timeline-topic-filters");
   const firstAuthorOnly = document.getElementById("timeline-first-author-only");
   const phdOnly = document.getElementById("timeline-phd-only");
+  const awardsToggle = document.getElementById("timeline-awards-toggle");
   const rangeStart = document.getElementById("timeline-range-start");
   const rangeEnd = document.getElementById("timeline-range-end");
   const rangeReset = document.getElementById("timeline-range-reset");
@@ -539,6 +550,37 @@
     });
   }
 
+  // Award markers (no packing/leader-line -- just a fixed vertical tick below
+  // the bar at the award's date, with its name below that). Horizontal-mode
+  // only: render() only ever passes a non-empty `visible` when orientation is
+  // "horizontal" (see its visibleAwards comment) -- the CSS for these classes
+  // is scoped to #timeline-widget.timeline-horizontal accordingly.
+  function renderAwards(visible, posFn) {
+    container.querySelectorAll(".timeline-award-marker").forEach((n) => n.remove());
+    if (!awardsToggle.checked) return;
+
+    visible.forEach((award) => {
+      const marker = document.createElement("div");
+      marker.className = "timeline-award-marker";
+      setMainPosition(marker, posFn(award.date) - cropOffset + "px");
+      marker.setAttribute("role", "group");
+      marker.setAttribute("aria-label", `Award: ${award.name}, ${formatDate(award.date)}.`);
+
+      const line = document.createElement("span");
+      line.className = "timeline-award-line";
+      line.setAttribute("aria-hidden", "true");
+      marker.appendChild(line);
+
+      const label = document.createElement("span");
+      label.className = "timeline-award-label";
+      label.setAttribute("aria-hidden", "true");
+      label.textContent = award.name;
+      marker.appendChild(label);
+
+      container.appendChild(marker);
+    });
+  }
+
   function render() {
     widget.classList.toggle("timeline-horizontal", orientation === "horizontal");
     setMainPosition(track, TOP_PADDING + "px");
@@ -546,6 +588,12 @@
 
     const filters = activeFilters();
     const visible = TimelineMockLogic.filterPapers(papers, filters);
+    // Award markers only render in horizontal mode (Marta's spec described the
+    // "vertical tick + label below" treatment for horizontal specifically) --
+    // vertical mode has no equivalent placement that doesn't collide with the
+    // card lanes already using that same side.
+    const visibleAwards =
+      awardsToggle.checked && orientation === "horizontal" ? awards.filter((a) => a.date >= filters.startMs && a.date <= filters.endMs) : [];
 
     let packedById;
     let posFn;
@@ -567,6 +615,10 @@
       const top = packedById[p.id].top;
       pairs.push([top, top + paperMainExtent(p)]);
     });
+    visibleAwards.forEach((a) => {
+      const p = posFn(a.date);
+      pairs.push([p, p]);
+    });
     const bounds = TimelineMockLogic.computeContentBounds(pairs);
     const contentTop = bounds ? bounds.top : TOP_PADDING;
     const contentBottom = bounds ? bounds.bottom : TOP_PADDING;
@@ -578,12 +630,14 @@
 
     renderTrack(segments, posFn);
     renderCards(visible, packedById, posFn);
+    renderAwards(visibleAwards, posFn);
   }
 
   [rangeStart, rangeEnd].forEach((el) => el.addEventListener("change", render));
   topicFieldset.addEventListener("change", render);
   firstAuthorOnly.addEventListener("change", render);
   phdOnly.addEventListener("change", render);
+  awardsToggle.addEventListener("change", render);
   scaleModeInputs.forEach((input) => {
     input.addEventListener("change", () => {
       compactMode = document.querySelector('input[name="timeline-scale-mode"]:checked').value === "compact";
@@ -608,6 +662,7 @@
     topicFieldset.querySelectorAll("input[type=checkbox]").forEach((i) => (i.checked = true));
     firstAuthorOnly.checked = false;
     phdOnly.checked = false;
+    awardsToggle.checked = false;
     render();
   });
 
