@@ -65,7 +65,10 @@
   function horizontalExtentsById() {
     if (!horizontalExtentCache) {
       horizontalExtentCache = new Map(
-        papers.map((p) => [p.id, Math.max(Math.ceil(measureLabelWidth(horizontalCardLabel(p))) + 14, HORIZONTAL_CARD_MIN)])
+        papers.map((p) => [
+          p.id,
+          Math.max(Math.ceil(measureLabelWidth((p.firstAuthor ? "★ " : "") + horizontalCardLabel(p))) + 14, HORIZONTAL_CARD_MIN),
+        ])
       );
     }
     return horizontalExtentCache;
@@ -432,7 +435,13 @@
         const markerLabel = document.createElement("span");
         markerLabel.className = "timeline-card-marker-label";
         markerLabel.setAttribute("aria-hidden", "true");
-        markerLabel.textContent = horizontalCardLabel(paper);
+        if (paper.firstAuthor) {
+          const markerStar = document.createElement("span");
+          markerStar.className = "timeline-first-author-star";
+          markerStar.textContent = "★ ";
+          markerLabel.appendChild(markerStar);
+        }
+        markerLabel.appendChild(document.createTextNode(horizontalCardLabel(paper)));
         card.appendChild(markerLabel);
 
         contentParent = document.createElement("div");
