@@ -46,16 +46,18 @@ Build `bin/sync_bib.py`: a manually-run Python script that treats `_bibliography
       **Estimated scope:** S
       **Notes:** Also added `test/unit_sync_bib.py` (stdlib `unittest`, no new devDependency) covering the pure `target_years`/`sync_years_front_matter_text` functions — real TDD RED→GREEN, not just the manual scratch check. Found and fixed a real bug during scratch testing: `load_entries`/`check_years_front_matter`'s path parameters defaulted to the module-level `BIB_PATH`/`PUBLICATIONS_PATH` *at definition time*, so reassigning those globals later (as tests need to) was silently ignored — switched to `None`-default + resolve-at-call-time.
 
-- [ ] **Task 2: Preview-image matching + auto-fill**
+- [x] **Task 2: Preview-image matching + auto-fill**
       **Description:** Implement the normalization/candidate-matching heuristic described above against `assets/img/publication_preview/`. Wire it into the same pass-1/pass-2 report structure from Task 1 (unambiguous matches become safe edits to `papers.bib`; ambiguous ones become blocking issues; zero-candidate entries are silently fine).
       **Acceptance criteria:**
-      - [ ] Against current repo state, the three unmatched images (`SwapRec.png`, `MuRS.jpg`, `SPRIG.png`) are each identified as a single unambiguous candidate for the correspondingly-named bib entry
-      - [ ] A synthetic two-candidate case (two filenames both matching one entry) is correctly reported as blocking, with no edit applied
-      - [ ] Entries that already have `preview` set are never reconsidered; entries with genuinely no candidate image are left alone, not reported as an error
+      - [x] Against current repo state, the three unmatched images (`SwapRec.png`, `MuRS.jpg`, `SPRIG.png`) are each identified as a single unambiguous candidate for the correspondingly-named bib entry
+      - [x] A synthetic two-candidate case (two filenames both matching one entry) is correctly reported as blocking, with no edit applied
+      - [x] Entries that already have `preview` set are never reconsidered; entries with genuinely no candidate image are left alone, not reported as an error
       **Verification:**
-      - [ ] Unit-style check (small script or REPL session) against the normalization/matching function with the real current filenames as fixtures
-      - [ ] Full run against current repo prints the 3 SwapRec/MuRS/SPRIG matches in its report (still won't apply yet — Task 4's required-field check will still block this run)
+      - [x] Unit-style check (small script or REPL session) against the normalization/matching function with the real current filenames as fixtures
+      - [x] Full run against current repo: applied 7 matches (not just the 3 originally scoped -- also picked up `FAME2026.png`, `bevfusion.png`, `2025_music4all.png`, `2025_TORS_SiBraR.png` for pre-existing entries that already had every other required field, just no `preview` yet). Did **not** apply immediately as the plan predicted ("Task 4's required-field check will still block this run") -- that prediction assumed the full pipeline already existed; run in isolation after only Task 1+2, nothing yet blocks it, so it correctly applied. Re-verified after Task 4 landed (see Checkpoint below).
       **Dependencies:** Task 1
+      **Notes:** The plain "any shared token" heuristic from the original design produced real false positives against actual data: `2025_music4all.png` weakly token-matched `AndrésFerraro2026MuRS`/`Moscati2026NetworkedTastes` via the generic word "music", and `2025_TORS_SiBraR.png` matched both `Ganhor2025SiBraR_TORS` and `Moscati2025SiBraR_workshop` via "sibrar". Fixed by adding `match_score()` (substring = 1000, else = count of shared tokens) and resolving both entry-side and filename-side ambiguity by "strongest score wins outright, ties still block" instead of "any match is equally valid" -- 4 new regression tests. Separately, found and fixed a second real bug while applying to the actual repo: `Moscati2026SwapRec`/`AndrésFerraro2026MuRS`/`JustinHangoebl2026SPRIG`'s last field had no trailing comma, so inserting a new field after it glued two fields onto one line and **bibtexparser silently dropped the whole entry** on reparse. `insert_preview_field_text` now adds the missing comma when needed; caught by a new test that round-trips the result back through `bibtexparser.loads()`, not just string-matching.
+      **Known gap, addressed in Task 5:** `2026_06_GMAP_UMAP.png` (→ `Moscati2026NetworkedTastes`) and `2026_SIGIR_A2G.png` (→ `Li2026DiffusionFairness`) were confirmed by Marta during planning but share no textual signal with their entries' key/title (venue/codename-based naming) -- the heuristic correctly finds zero candidates for both (fail-quiet, not a bug), so these two need a direct hand-edit rather than relying on auto-match.
       **Files likely touched:** `bin/sync_bib.py`
       **Estimated scope:** M
 
@@ -96,9 +98,12 @@ Build `bin/sync_bib.py`: a manually-run Python script that treats `_bibliography
       - `Moscati2026SwapRec`: `first_author = true`, `month = September`, `topic = recommender-systems`, `venue_short = DaQuaMRec @ ACM RecSys` (matches `Moscati2025SiBraR_workshop`'s convention), `bibtex_show = true`, `selected = false`
       - `AndrésFerraro2026MuRS`: `first_author = false` (Andrés Ferraro is listed first), `topic = music-information-retrieval, recommender-systems` (confirmed by Marta), `venue_short = MuRS @ ACM RecSys` (matches `moscati2025multimodal_music_retrieval`'s convention), `bibtex_show = true`, `selected = false` (`month` already present)
       - `JustinHangoebl2026SPRIG`: `first_author = false` (Justin Hangoebl is listed first), `topic = recommender-systems`, `venue_short = ACM CIKM` (matches `onion`'s convention), `bibtex_show = true`, `selected = false`, `month = November` (confirmed by Marta)
+
+      Also hand-wire the two known-but-unmatchable preview images found in Task 2 (venue/codename-based filenames sharing no textual signal with their entry, both confirmed with Marta during planning): add `preview = {2026_06_GMAP_UMAP.png}` to `Moscati2026NetworkedTastes` and `preview = {2026_SIGIR_A2G.png}` to `Li2026DiffusionFairness`. These two entries already have every other required field -- this is purely the `preview` line.
       **Acceptance criteria:**
-      - [ ] All three entries carry all six required fields
+      - [ ] All three new entries carry all six required fields
       - [ ] Values match sibling-entry conventions (spot-check against `Moscati2025SiBraR_workshop`, `moscati2025multimodal_music_retrieval`, `onion`)
+      - [ ] `Moscati2026NetworkedTastes` and `Li2026DiffusionFairness` each have their confirmed `preview` set
       **Verification:**
       - [ ] Manual diff review of `papers.bib`
       **Dependencies:** None (can happen in parallel with Phase 1/2, but needs Marta's confirmation on values above, especially the SPRIG month)

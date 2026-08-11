@@ -5,7 +5,7 @@ See `tasks/plan.md` for full descriptions, acceptance criteria, and verification
 ## Phase 1: Foundation
 
 - [x] Task 1: Script skeleton + `years:` front-matter sync
-- [ ] Task 2: Preview-image matching + auto-fill
+- [x] Task 2: Preview-image matching + auto-fill
 - [ ] **Checkpoint:** script runs end-to-end against real repo data, review with Marta
 
 ## Phase 2: Validation
@@ -16,7 +16,7 @@ See `tasks/plan.md` for full descriptions, acceptance criteria, and verification
 
 ## Phase 3: Close the real gap the script found
 
-- [ ] Task 5: Fill missing required fields on the 3 new 2026 entries (values confirmed with Marta, see plan)
+- [ ] Task 5: Fill missing required fields on the 3 new 2026 entries + 2 known-gap preview hand-wires (values confirmed with Marta, see plan)
 - [ ] Task 6: Clean run + rendered-page verification
 - [ ] **Checkpoint:** feature complete, both pages verified rendering correctly, review with Marta
 
