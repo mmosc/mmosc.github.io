@@ -1,0 +1,136 @@
+.timeline-distributions {
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Vertical mode only: .timeline-wrapper is a fixed 900px design and .container never
+   exceeds 930px at any viewport, so the panel can't sit beside it as a flex sibling
+   (900 + gap + 300 never fits). It's pinned in the page's outer gutter instead, which
+   only clears the container once the viewport is wide enough: 930 + 2*(300+32) = 1594px. */
+@media (min-width: 1594px) {
+  #timeline-widget:not(.timeline-horizontal) .timeline-distributions {
+    position: fixed;
+    /* #navbar is fixed-top at 57px tall (al_folio_core). */
+    top: calc(57px + 1rem);
+    right: 2rem;
+    max-height: calc(100vh - 57px - 2rem);
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 1593.98px) {
+  #timeline-widget:not(.timeline-horizontal) .timeline-distributions {
+    width: 100%;
+    max-width: 900px;
+    margin: 2rem auto 0;
+  }
+}
+
+/* Horizontal mode: the bar already bleeds out to near the viewport edge (no gutter
+   left to float a rail in), and the whole widget is short there (no tall track to stay
+   visible against while scrolling) -- so it always just stacks below, at every width. */
+#timeline-widget.timeline-horizontal .timeline-distributions {
+  width: 100%;
+  max-width: 900px;
+  margin: 2rem auto 0;
+}
+
+.timeline-distribution-chart {
+  background: var(--global-bg-color);
+  border: 1px solid var(--global-divider-color);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.timeline-distribution-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.35rem;
+  color: var(--global-text-color);
+}
+
+.timeline-distribution-ring-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 190px;
+  margin: 0 auto 0.75rem;
+}
+
+.timeline-distribution-ring {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.timeline-distribution-segment {
+  transition: filter 0.15s ease;
+  cursor: pointer;
+}
+.timeline-distribution-segment:hover {
+  filter: brightness(1.15);
+}
+.timeline-distribution-segment:focus-visible {
+  outline: 2px solid var(--global-theme-color);
+  outline-offset: 2px;
+}
+
+.timeline-distribution-legend {
+  list-style: none;
+  margin: 0 0 0.5rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.timeline-distribution-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--global-text-color);
+}
+.timeline-distribution-legend-label {
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.timeline-distribution-legend-count {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+  color: var(--global-text-color-light);
+}
+
+.timeline-distribution-table-toggle {
+  font-size: 0.75rem;
+}
+.timeline-distribution-table-toggle summary {
+  cursor: pointer;
+  color: var(--global-text-color-light);
+}
+.timeline-distribution-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+  font-size: 0.72rem;
+}
+.timeline-distribution-table caption {
+  caption-side: top;
+  text-align: left;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+  color: var(--global-text-color);
+}
+.timeline-distribution-table th,
+.timeline-distribution-table td {
+  border-top: 1px solid var(--global-divider-color);
+  padding: 0.25rem 0.35rem;
+  text-align: left;
+  color: var(--global-text-color);
+}
+.timeline-distribution-table td {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
