@@ -200,7 +200,15 @@
    name below that -- no packing, unlike cards, since there are only ever a
    couple of these. The marker div itself is a zero-size anchor positioned via
    JS (setMainPosition, same as .timeline-hover-indicator above); the line and
-   label are positioned relative to that anchor. */
+   label are positioned relative to that anchor.
+
+   Positioned below the card lanes entirely, not just below the bar: cards use
+   4 fixed horizontal lanes (packCards' laneCount()), 2 above/2 below the bar,
+   with the lowest ("below-far") sitting at `50% + 47px` and standing 26px
+   tall (.timeline-card.below-far / .timeline-card's own height below) -- so
+   50% + 73px is the lowest any card ever reaches. 85px (73 + a 12px gap)
+   clears that unconditionally, without needing to measure real card
+   positions. */
 #timeline-widget.timeline-horizontal .timeline-award-marker {
   position: absolute;
   top: 50%;
@@ -209,21 +217,34 @@
 #timeline-widget.timeline-horizontal .timeline-award-line {
   position: absolute;
   left: 0;
-  top: 7px;
+  top: 85px;
   width: 2px;
-  height: 24px;
+  height: 16px;
   background: var(--global-text-color-light);
   transform: translateX(-1px);
 }
 #timeline-widget.timeline-horizontal .timeline-award-label {
   position: absolute;
   left: 0;
-  top: calc(7px + 24px + 6px);
+  top: calc(85px + 16px + 6px);
   transform: translateX(-50%);
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--global-text-color);
   white-space: nowrap;
+}
+/* .timeline-container's own box stays a fixed 170px tall (min-height below)
+   regardless of this -- it's sized for the 4 card lanes, and doesn't grow for
+   absolutely-positioned content like the award row, which is 85% past center
+   -- so the award label (up to ~125px past center) overflows past the
+   container's own bottom edge (~85px past center, i.e. half of 170px) with
+   nothing clipping it, but also nothing reserving room for it in page flow.
+   This margin is that reserved room, so the label doesn't visually collide
+   with whatever follows .timeline-wrapper (the distributions panel in
+   stacked/narrow layouts). Scoped to when awards are actually showing so
+   toggling them off doesn't leave permanent empty space. */
+#timeline-widget.timeline-horizontal.timeline-awards-active .timeline-wrapper {
+  margin-bottom: 50px;
 }
 
 .timeline-card {
