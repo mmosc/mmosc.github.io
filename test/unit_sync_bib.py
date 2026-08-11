@@ -381,16 +381,17 @@ class CheckRequiredFieldsTest(unittest.TestCase):
         # fields that *are* present must not be listed as missing
         self.assertNotIn("venue_short", issue)
 
-    def test_real_repo_flags_exactly_the_three_incomplete_2026_entries(self):
+    def test_real_repo_entries_all_validate_clean(self):
+        # As of Task 5, Moscati2026SwapRec/AndrésFerraro2026MuRS/JustinHangoebl2026SPRIG
+        # (originally flagged missing several required fields when this check was
+        # first built in Task 4 -- see tasks/plan.md) have had those fields filled in
+        # by hand. This asserts the fixed, steady state; the transient "these three
+        # are incomplete" condition was a real point-in-time repo fact, not this
+        # function's contract.
         entries = sync_bib.load_entries()
         report = sync_bib.SyncReport()
         sync_bib.check_required_fields(entries, report)
-        flagged = set()
-        for issue in report.blocking_issues:
-            flagged.add(issue.split(":", 1)[0])
-        self.assertEqual(flagged, {"Moscati2026SwapRec", "AndrésFerraro2026MuRS", "JustinHangoebl2026SPRIG"})
-        murs_issue = next(i for i in report.blocking_issues if i.startswith("AndrésFerraro2026MuRS"))
-        self.assertNotIn("month", murs_issue)  # AndrésFerraro2026MuRS already has month
+        self.assertTrue(report.ok, report.blocking_issues)
 
 
 if __name__ == "__main__":

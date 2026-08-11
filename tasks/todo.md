@@ -16,9 +16,9 @@ See `tasks/plan.md` for full descriptions, acceptance criteria, and verification
 
 ## Phase 3: Close the real gap the script found
 
-- [ ] Task 5: Fill missing required fields on the 3 new 2026 entries + 2 known-gap preview hand-wires (values confirmed with Marta, see plan)
-- [ ] Task 6: Clean run + rendered-page verification
-- [ ] **Checkpoint:** feature complete, both pages verified rendering correctly, review with Marta
+- [x] Task 5: Fill missing required fields on the 3 new 2026 entries + 2 known-gap preview hand-wires (values confirmed with Marta, see plan)
+- [x] Task 6: Clean run + rendered-page verification
+- [x] **Checkpoint:** feature complete, both pages verified rendering correctly, review with Marta
 
 ## Phase 4: Docs
 
