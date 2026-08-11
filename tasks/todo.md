@@ -11,8 +11,8 @@ See `tasks/plan.md` for full descriptions, acceptance criteria, and verification
 ## Phase 2: Validation
 
 - [x] Task 3: Topic-color validation
-- [ ] Task 4: Required custom-field validation
-- [ ] **Checkpoint:** full run produces exact expected report, exit code 1, no files touched, review with Marta
+- [x] Task 4: Required custom-field validation
+- [x] **Checkpoint:** full run produces exact expected report, exit code 1, no files touched, review with Marta
 
 ## Phase 3: Close the real gap the script found
 

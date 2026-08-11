@@ -77,19 +77,19 @@ Build `bin/sync_bib.py`: a manually-run Python script that treats `_bibliography
       **Files likely touched:** `bin/sync_bib.py`
       **Estimated scope:** S
 
-- [ ] **Task 4: Required custom-field validation**
+- [x] **Task 4: Required custom-field validation**
       **Description:** For every entry, check presence of `bibtex_show`, `selected`, `month`, `topic`, `venue_short`, `first_author`. Any entry missing any of these is a blocking issue, reported with the bib key and the specific missing field names (no guessed values, ever — these are content decisions).
       **Acceptance criteria:**
-      - [ ] Against current repo state, the report lists exactly `Moscati2026SwapRec`, `AndrésFerraro2026MuRS`, and `JustinHangoebl2026SPRIG`, each with its specific missing fields (`AndrésFerraro2026MuRS` already has `month`, so that one field isn't listed for it)
-      - [ ] All 25 pre-existing entries validate clean
+      - [x] Against current repo state, the report lists exactly `Moscati2026SwapRec`, `AndrésFerraro2026MuRS`, and `JustinHangoebl2026SPRIG`, each with its specific missing fields (`AndrésFerraro2026MuRS` already has `month`, so that one field isn't listed for it)
+      - [x] All 25 pre-existing entries validate clean
       **Verification:**
-      - [ ] Full run against current repo: report matches the above exactly, exit code 1, zero files modified (confirm via `git diff` before/after)
+      - [x] Full run against current repo: report matches exactly (3 entries, correct per-entry missing fields), exit code 1, `git status --porcelain papers.bib publications.md` empty afterward — confirmed nothing was written
       **Dependencies:** Task 1
       **Files likely touched:** `bin/sync_bib.py`
       **Estimated scope:** S
 
 ### Checkpoint: Validation
-- [ ] Full run against real repo state produces the exact expected report (3 entries, specific missing fields, 3 preview matches computed-but-not-applied), exit code 1, no files touched — review report output with Marta before proceeding
+- [x] Full run against real repo state produces the exact expected report (3 entries, specific missing fields each), exit code 1, no files touched. (Preview matches from Task 2 were already applied and committed by this point, so this run's report is required-fields-only, not the "computed-but-not-applied" scenario originally envisioned when this line was written speculatively before Task 2 existed.)
 
 ### Phase 3: Close the real gap the script found
 

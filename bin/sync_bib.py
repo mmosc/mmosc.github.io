@@ -293,11 +293,29 @@ def check_topic_colors(entries, report, colors_path=None):
         report.add_blocking_issue(f"topic {topic!r} has no color defined in {display_path}")
 
 
+REQUIRED_FIELDS = ["bibtex_show", "selected", "month", "topic", "venue_short", "first_author"]
+
+
+def check_required_fields(entries, report):
+    """Every entry must carry all of REQUIRED_FIELDS -- derived from the fact
+    that all 25 pre-existing entries set every one of them with zero
+    exceptions (see tasks/plan.md). `preview` is deliberately not part of
+    this check -- absence of a preview image is often legitimate, handled
+    separately by check_preview_matches. Never guesses a value; only names
+    what's missing.
+    """
+    for e in sorted(entries, key=lambda e: e["ID"]):
+        missing = [f for f in REQUIRED_FIELDS if not e.get(f)]
+        if missing:
+            report.add_blocking_issue(f"{e['ID']}: missing required field(s): {', '.join(missing)}")
+
+
 def build_report(entries):
     report = SyncReport()
     check_years_front_matter(entries, report)
     check_preview_matches(entries, report)
     check_topic_colors(entries, report)
+    check_required_fields(entries, report)
     return report
 
 

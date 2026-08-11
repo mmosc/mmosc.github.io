@@ -350,5 +350,48 @@ class CheckTopicColorsTest(unittest.TestCase):
         self.assertTrue(report.ok, report.blocking_issues)
 
 
+class CheckRequiredFieldsTest(unittest.TestCase):
+    COMPLETE = {
+        "ID": "Complete2026Entry",
+        "bibtex_show": "true",
+        "selected": "false",  # a present-but-falsy-looking string must still count as present
+        "month": "May",
+        "topic": "recommender-systems",
+        "venue_short": "ACM RecSys",
+        "first_author": "false",
+    }
+
+    def test_complete_entry_validates_clean(self):
+        report = sync_bib.SyncReport()
+        sync_bib.check_required_fields([dict(self.COMPLETE)], report)
+        self.assertTrue(report.ok)
+
+    def test_missing_fields_are_named_individually(self):
+        entry = dict(self.COMPLETE)
+        del entry["first_author"]
+        del entry["month"]
+        report = sync_bib.SyncReport()
+        sync_bib.check_required_fields([entry], report)
+        self.assertFalse(report.ok)
+        self.assertEqual(len(report.blocking_issues), 1)
+        issue = report.blocking_issues[0]
+        self.assertIn("Complete2026Entry", issue)
+        self.assertIn("first_author", issue)
+        self.assertIn("month", issue)
+        # fields that *are* present must not be listed as missing
+        self.assertNotIn("venue_short", issue)
+
+    def test_real_repo_flags_exactly_the_three_incomplete_2026_entries(self):
+        entries = sync_bib.load_entries()
+        report = sync_bib.SyncReport()
+        sync_bib.check_required_fields(entries, report)
+        flagged = set()
+        for issue in report.blocking_issues:
+            flagged.add(issue.split(":", 1)[0])
+        self.assertEqual(flagged, {"Moscati2026SwapRec", "AndrésFerraro2026MuRS", "JustinHangoebl2026SPRIG"})
+        murs_issue = next(i for i in report.blocking_issues if i.startswith("AndrésFerraro2026MuRS"))
+        self.assertNotIn("month", murs_issue)  # AndrésFerraro2026MuRS already has month
+
+
 if __name__ == "__main__":
     unittest.main()
