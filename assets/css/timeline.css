@@ -193,6 +193,38 @@
   top: calc(50% + 22px);
   transform: translateX(-50%);
 }
+/* Award markers (horizontal mode only -- assets/js/timeline.js only creates
+   these when orientation === "horizontal", since vertical has no equivalent
+   placement that doesn't collide with the card lanes already using that same
+   side): a fixed vertical tick below the bar at the award's date, with its
+   name below that -- no packing, unlike cards, since there are only ever a
+   couple of these. The marker div itself is a zero-size anchor positioned via
+   JS (setMainPosition, same as .timeline-hover-indicator above); the line and
+   label are positioned relative to that anchor. */
+#timeline-widget.timeline-horizontal .timeline-award-marker {
+  position: absolute;
+  top: 50%;
+  z-index: 5;
+}
+#timeline-widget.timeline-horizontal .timeline-award-line {
+  position: absolute;
+  left: 0;
+  top: 7px;
+  width: 2px;
+  height: 24px;
+  background: var(--global-text-color-light);
+  transform: translateX(-1px);
+}
+#timeline-widget.timeline-horizontal .timeline-award-label {
+  position: absolute;
+  left: 0;
+  top: calc(7px + 24px + 6px);
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--global-text-color);
+  white-space: nowrap;
+}
 
 .timeline-card {
   position: absolute;
