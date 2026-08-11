@@ -22,5 +22,5 @@ See `tasks/plan.md` for full descriptions, acceptance criteria, and verification
 
 ## Phase 4: Docs
 
-- [ ] Task 7: Document the script in CLAUDE.md
-- [ ] **Checkpoint:** complete, ready for review — do not merge without asking Marta first
+- [x] Task 7: Document the script in CLAUDE.md
+- [x] **Checkpoint:** complete, ready for review — do not merge without asking Marta first

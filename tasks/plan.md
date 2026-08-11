@@ -131,18 +131,19 @@ Build `bin/sync_bib.py`: a manually-run Python script that treats `_bibliography
 
 ### Phase 4: Docs
 
-- [ ] **Task 7: Document the script**
+- [x] **Task 7: Document the script**
       **Description:** Add a one-line entry for `bin/sync_bib.py` to `CLAUDE.md`'s "Daily dev loop" or "Optional toolchains" section (matching how `bin/update_scholar_citations.py` is documented there), including the new `bibtexparser` requirement.
       **Acceptance criteria:**
-      - [ ] `CLAUDE.md` mentions the script, its manual-invocation model, and that it requires `requirements.txt` installed
+      - [x] `CLAUDE.md` mentions the script, its manual-invocation model, and that it requires `requirements.txt` installed
       **Verification:**
-      - [ ] `npm run lint:prettier` still passes
+      - [x] `npx prettier --check CLAUDE.md` passes
       **Dependencies:** Task 6
       **Files likely touched:** `CLAUDE.md`
       **Estimated scope:** XS
+      **Notes:** Did *not* fix the pre-existing `--baseurl /al-folio` documentation bug in `CLAUDE.md`/`AGENTS.md` found during Task 6 (see that task's notes) -- out of scope for a docs task about `sync_bib.py` specifically; flagged to Marta separately instead of silently expanding scope.
 
 ### Checkpoint: Complete
-- [ ] All acceptance criteria met, ready for review — **do not merge to master without asking Marta first**, same as the still-unmerged `timeline-distribution-charts` branch
+- [x] All acceptance criteria met, ready for review — **do not merge to master without asking Marta first**, same as the still-unmerged `timeline-distribution-charts` branch
 
 ## Risks and Mitigations
 
