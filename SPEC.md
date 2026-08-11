@@ -25,6 +25,7 @@ npm run lint:prettier                             # formatting (printWidth 150, 
 ```
 
 Manual verification (no automated coverage for this widget, matching existing precedent):
+
 - Load `/timeline/` in a real or emulated browser at 375px, ~992px (from both sides), and 1440px.
 - Toggle Orientation and Bar-scale in combination; toggle every filter (date range, topics, first-author-only) in both orientations.
 
@@ -54,7 +55,7 @@ _config.yml                           # except for the one-line SPEC.md exclude 
 
 - Match `assets/js/timeline.js`'s existing style exactly: a single IIFE module, no framework/library introduced (the existing file already confirmed `al_charts`'s d3/Chart.js/Plotly/Vega weren't needed for this widget — that finding still holds).
 - Match `assets/css/timeline.css`'s existing style: colors via `var(--global-*)` theme tokens and `var(--topic-*)`/`var(--topic-*-text)` custom properties — never a new hardcoded hex value, so dark-mode reactivity and WCAG AA contrast keep working automatically in horizontal mode too.
-- Comments: this codebase's existing comments are unusually dense but all earn their place — each one records a non-obvious *why* (a bug found, a rejected approach, an empirical tuning number). New comments in this feature should follow that same bar: skip anything a reader could infer from the code itself, keep anything that explains a real constraint or a decision that would otherwise look arbitrary (e.g., "why 992px," "why this baseline length").
+- Comments: this codebase's existing comments are unusually dense but all earn their place — each one records a non-obvious _why_ (a bug found, a rejected approach, an empirical tuning number). New comments in this feature should follow that same bar: skip anything a reader could infer from the code itself, keep anything that explains a real constraint or a decision that would otherwise look arbitrary (e.g., "why 992px," "why this baseline length").
 - Formatting: Prettier, `printWidth: 150`, `@shopify/prettier-plugin-liquid` for `_pages/timeline.md`.
 
 ## 5. Testing strategy
@@ -67,18 +68,21 @@ _config.yml                           # except for the one-line SPEC.md exclude 
 ## 6. Boundaries
 
 **Always do:**
+
 - Run `node test/unit_timeline_mock_logic.js`, `npm run lint:style-contract`, and `bundle exec jekyll build --baseurl /al-folio` before each commit.
 - Keep every change within `_pages/`, `assets/css/`, `assets/js/` — never create `_layouts/`, `_includes/`, `_sass/`, `assets/tailwind/`, `tailwind.config.js`, or `assets/webfonts/` (AGENTS.md's stop-sign list; `lint:style-contract` enforces this in CI).
 - Keep `tasks/plan.md`, `tasks/todo.md`, and this `SPEC.md` on the `timeline-horizontal` branch only — do not let them reach `master`. (`_config.yml`'s `exclude:` list already has `tasks/`; this spec adds `SPEC.md` to that same list as a build-time safety net, mirroring how `timeline.md` was excluded during the original build.)
 - Preserve every existing vertical-mode behavior and every existing filter/control exactly as-is.
 
 **Ask first:**
+
 - Before merging `timeline-horizontal` into `master`.
 - Before changing the ~992px "force vertical" breakpoint to something materially different from what Task 7 converges on.
 - Before adding any new npm/gem dependency, or any charting library, to render horizontal mode.
 - Before adding automated Playwright/visual-regression coverage for this widget (currently out of scope by design, not oversight).
 
 **Never do:**
+
 - Touch gem-owned paths (layouts/includes/sass/tailwind) to implement this feature.
 - Change `_data/cv.yml`, `_data/timeline_colors.yml`, `_bibliography/papers.bib`, or `_layouts/timeline_pub_entry.html` — this feature is presentation-only.
 - Commit directly to `master`, or skip/bypass a failing `lint:style-contract`/unit-test/build check to force a commit through.
