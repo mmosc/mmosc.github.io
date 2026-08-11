@@ -306,5 +306,49 @@ class ScoreBasedResolutionTest(unittest.TestCase):
             self.assertEqual(report.safe_edits, [])
 
 
+class EntryTopicsTest(unittest.TestCase):
+    def test_splits_and_dedupes_comma_separated_topics(self):
+        entries = [
+            {"topic": "recommender-systems, music-information-retrieval"},
+            {"topic": "recommender-systems"},
+            {"topic": ""},
+        ]
+        self.assertEqual(sync_bib.entry_topics(entries), {"recommender-systems", "music-information-retrieval"})
+
+
+class CheckTopicColorsTest(unittest.TestCase):
+    def _write_colors(self, tmp_dir, mapping):
+        path = tmp_dir / "timeline_colors.yml"
+        path.write_text("\n".join(f'{k}:\n  light: "#000000"\n  dark: "#ffffff"' for k in mapping))
+        return path
+
+    def test_known_topics_validate_clean(self):
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as d:
+            colors_path = self._write_colors(Path(d), ["recommender-systems", "music-information-retrieval"])
+            entries = [{"topic": "recommender-systems, music-information-retrieval"}]
+            report = sync_bib.SyncReport()
+            sync_bib.check_topic_colors(entries, report, colors_path)
+            self.assertTrue(report.ok)
+
+    def test_undefined_topic_is_blocking(self):
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as d:
+            colors_path = self._write_colors(Path(d), ["recommender-systems"])
+            entries = [{"topic": "recommender-systems, some-new-topic"}]
+            report = sync_bib.SyncReport()
+            sync_bib.check_topic_colors(entries, report, colors_path)
+            self.assertFalse(report.ok)
+            self.assertTrue(any("some-new-topic" in issue for issue in report.blocking_issues))
+
+    def test_real_repo_topics_all_validate_clean(self):
+        entries = sync_bib.load_entries()
+        report = sync_bib.SyncReport()
+        sync_bib.check_topic_colors(entries, report)
+        self.assertTrue(report.ok, report.blocking_issues)
+
+
 if __name__ == "__main__":
     unittest.main()

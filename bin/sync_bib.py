@@ -15,11 +15,13 @@ import sys
 from pathlib import Path
 
 import bibtexparser
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 BIB_PATH = REPO_ROOT / "_bibliography" / "papers.bib"
 PUBLICATIONS_PATH = REPO_ROOT / "_pages" / "publications.md"
 PREVIEW_DIR = REPO_ROOT / "assets" / "img" / "publication_preview"
+TIMELINE_COLORS_PATH = REPO_ROOT / "_data" / "timeline_colors.yml"
 
 FRONT_MATTER_RE = re.compile(r"\A---\n(.*?\n)---\n", re.DOTALL)
 YEARS_LINE_RE = re.compile(r"^years:\s*\[.*\]\s*$", re.MULTILINE)
@@ -259,10 +261,43 @@ def check_preview_matches(entries, report, preview_dir=None, bib_path=None):
         report.add_safe_edit(f"{key}: preview -> {fname}", apply)
 
 
+def entry_topics(entries):
+    """All distinct topic values across entries, comma-split -- matches
+    `timeline_pub_entry.html`'s own `entry.topic | split: ", "`.
+    """
+    topics = set()
+    for e in entries:
+        for t in (e.get("topic") or "").split(","):
+            t = t.strip()
+            if t:
+                topics.add(t)
+    return topics
+
+
+def check_topic_colors(entries, report, colors_path=None):
+    """A topic with no color defined in timeline_colors.yml always blocks --
+    never auto-added. That palette was chosen deliberately for CVD/contrast
+    safety (see the file's own header comment); picking a color blindly here
+    would undo that care.
+    """
+    if colors_path is None:
+        colors_path = TIMELINE_COLORS_PATH
+    with open(colors_path, encoding="utf-8") as f:
+        colors = yaml.safe_load(f) or {}
+    missing = sorted(entry_topics(entries) - set(colors.keys()))
+    try:
+        display_path = colors_path.relative_to(REPO_ROOT)
+    except ValueError:
+        display_path = colors_path
+    for topic in missing:
+        report.add_blocking_issue(f"topic {topic!r} has no color defined in {display_path}")
+
+
 def build_report(entries):
     report = SyncReport()
     check_years_front_matter(entries, report)
     check_preview_matches(entries, report)
+    check_topic_colors(entries, report)
     return report
 
 

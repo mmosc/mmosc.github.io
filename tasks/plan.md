@@ -66,13 +66,13 @@ Build `bin/sync_bib.py`: a manually-run Python script that treats `_bibliography
 
 ### Phase 2: Validation
 
-- [ ] **Task 3: Topic-color validation**
+- [x] **Task 3: Topic-color validation**
       **Description:** Collect every distinct `topic` value across all `papers.bib` entries (comma-split, matching `timeline_pub_entry.html`'s own `entry.topic | split: ", "`) and compare against the keys of `_data/timeline_colors.yml`. Any topic with no matching key is a blocking issue (never auto-added).
       **Acceptance criteria:**
-      - [ ] Against current repo state, all four existing topics (`particle-physics`, `multimodal-learning`, `recommender-systems`, `music-information-retrieval`) validate clean
-      - [ ] A synthetic new topic value is correctly reported as a blocking issue naming the missing topic
+      - [x] Against current repo state, all four existing topics (`particle-physics`, `multimodal-learning`, `recommender-systems`, `music-information-retrieval`) validate clean
+      - [x] A synthetic new topic value is correctly reported as a blocking issue naming the missing topic
       **Verification:**
-      - [ ] Full run against current repo includes this check with no false positive
+      - [x] Full run against current repo includes this check with no false positive -- exits 0, "Already in sync" (Task 2's preview edits are already committed, years already in sync)
       **Dependencies:** Task 1
       **Files likely touched:** `bin/sync_bib.py`
       **Estimated scope:** S

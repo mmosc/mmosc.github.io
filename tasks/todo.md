@@ -10,7 +10,7 @@ See `tasks/plan.md` for full descriptions, acceptance criteria, and verification
 
 ## Phase 2: Validation
 
-- [ ] Task 3: Topic-color validation
+- [x] Task 3: Topic-color validation
 - [ ] Task 4: Required custom-field validation
 - [ ] **Checkpoint:** full run produces exact expected report, exit code 1, no files touched, review with Marta
 
