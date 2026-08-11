@@ -305,6 +305,16 @@
   top: calc(50% + 15px);
   text-align: center;
 }
+#timeline-widget.timeline-horizontal .timeline-card.above-far {
+  top: auto;
+  bottom: calc(50% + 47px);
+  right: auto;
+  text-align: center;
+}
+#timeline-widget.timeline-horizontal .timeline-card.below-far {
+  top: calc(50% + 47px);
+  text-align: center;
+}
 #timeline-widget.timeline-horizontal .timeline-card-marker-label {
   font-size: 0.65rem;
   font-weight: 600;
