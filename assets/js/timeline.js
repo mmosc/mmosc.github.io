@@ -594,6 +594,10 @@
     // card lanes already using that same side.
     const visibleAwards =
       awardsToggle.checked && orientation === "horizontal" ? awards.filter((a) => a.date >= filters.startMs && a.date <= filters.endMs) : [];
+    // Drives .timeline-wrapper's reserved bottom margin (assets/css/timeline.css)
+    // so the award row -- rendered below the card lanes -- doesn't collide with
+    // whatever follows the widget in page flow.
+    widget.classList.toggle("timeline-awards-active", visibleAwards.length > 0);
 
     let packedById;
     let posFn;
