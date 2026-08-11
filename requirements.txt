@@ -1,3 +1,4 @@
+bibtexparser
 nbconvert
 pyyaml
 rendercv[full]
