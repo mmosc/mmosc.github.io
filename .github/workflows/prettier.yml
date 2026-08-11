@@ -19,8 +19,17 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Node.js ⚙️
         uses: actions/setup-node@v4
-      - name: Install Prettier 💾
-        run: npm install --save-dev --save-exact prettier @shopify/prettier-plugin-liquid
+        with:
+          node-version: "20"
+          cache: "npm"
+      - name: Install dependencies 💾
+        # `npm ci` installs the exact prettier + @shopify/prettier-plugin-liquid
+        # versions pinned in package-lock.json (see update-tocs.yml's own
+        # comment on this) -- the previous ad hoc `npm install --save-dev
+        # --save-exact prettier @shopify/prettier-plugin-liquid` always grabbed
+        # whatever was newest on npm at run time, so this check silently drifted
+        # out of sync with what `npm run lint:prettier` reports locally.
+        run: npm ci
       - name: Prettier Check 🔎
         id: prettier
         run: npx prettier . --check

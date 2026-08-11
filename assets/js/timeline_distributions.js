@@ -348,10 +348,11 @@
     const darkLines = ['html[data-theme="dark"] {'];
     coloredFamilies.forEach((fam, familyIndex) => {
       const hues = VENUE_BASE_HUES[familyIndex];
-      const stepsInFamily = familyRawOrder[fam].length;
-      familyRawOrder[fam].forEach((rawVenue, step) => {
-        const lightHex = shadeHex(hues.light, step, stepsInFamily);
-        const darkHex = shadeHex(hues.dark, step, stepsInFamily);
+      // Slot 0 is the main conference; slot 1 is one shared lighter shade for
+      // every workshop under that conference, regardless of which workshop or year.
+      [0, 1].forEach((step) => {
+        const lightHex = shadeHex(hues.light, step, 2);
+        const darkHex = shadeHex(hues.dark, step, 2);
         const varName = `--venue-slot-${familyIndex}-${step}`;
         lightLines.push(`  ${varName}: ${lightHex};`, `  ${varName}-text: ${TimelineMockLogic.pickContrastingTextColor(lightHex)};`);
         darkLines.push(`  ${varName}: ${darkHex};`, `  ${varName}-text: ${TimelineMockLogic.pickContrastingTextColor(darkHex)};`);
@@ -376,7 +377,8 @@
   const familyBaseColorVar = {};
   coloredFamilies.forEach((fam, familyIndex) => {
     familyBaseColorVar[fam] = `var(--venue-slot-${familyIndex}-0)`;
-    familyRawOrder[fam].forEach((rawVenue, step) => {
+    familyRawOrder[fam].forEach((rawVenue) => {
+      const step = rawVenue === fam ? 0 : 1;
       rawVenueColorInfo[rawVenue] = { colorVar: `var(--venue-slot-${familyIndex}-${step})`, family: fam };
     });
   });
