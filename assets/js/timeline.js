@@ -65,7 +65,10 @@
   function horizontalExtentsById() {
     if (!horizontalExtentCache) {
       horizontalExtentCache = new Map(
-        papers.map((p) => [p.id, Math.max(Math.ceil(measureLabelWidth(horizontalCardLabel(p))) + 14, HORIZONTAL_CARD_MIN)])
+        papers.map((p) => [
+          p.id,
+          Math.max(Math.ceil(measureLabelWidth((p.firstAuthor ? "★ " : "") + horizontalCardLabel(p))) + 14, HORIZONTAL_CARD_MIN),
+        ])
       );
     }
     return horizontalExtentCache;
@@ -291,10 +294,14 @@
   // packCards's "left"/"right" lane labels (an alternation, not literally
   // "left of the page") are orientation-neutral -- this is the one place
   // they get translated into this orientation's CSS class name.
+  // Written as literal strings rather than `base + "-far"`: purgecss.config.js
+  // scans this file as plain text, so a concatenated "above-far" is invisible
+  // to it and .timeline-card.above-far/.below-far get purged in production,
+  // collapsing the far row onto the near row.
   function laneClass(side, row) {
     if (orientation !== "horizontal") return side;
-    const base = side === "left" ? "above" : "below";
-    return row ? base + "-far" : base;
+    if (side === "left") return row ? "above-far" : "above";
+    return row ? "below-far" : "below";
   }
   // Maps (position along the time axis, position along the perpendicular
   // axis) to screen (x, y). Vertical puts time on y and the perpendicular
@@ -432,7 +439,13 @@
         const markerLabel = document.createElement("span");
         markerLabel.className = "timeline-card-marker-label";
         markerLabel.setAttribute("aria-hidden", "true");
-        markerLabel.textContent = horizontalCardLabel(paper);
+        if (paper.firstAuthor) {
+          const markerStar = document.createElement("span");
+          markerStar.className = "timeline-first-author-star";
+          markerStar.textContent = "★ ";
+          markerLabel.appendChild(markerStar);
+        }
+        markerLabel.appendChild(document.createTextNode(horizontalCardLabel(paper)));
         card.appendChild(markerLabel);
 
         contentParent = document.createElement("div");
