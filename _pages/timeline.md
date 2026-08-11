@@ -44,15 +44,73 @@ nav_order: 5
     </fieldset>
   </div>
 
-  <div class="timeline-wrapper">
-    <div class="timeline-container" id="timeline-container">
-      <div class="timeline-track" id="timeline-track"></div>
-      <svg class="timeline-leader-lines" id="timeline-leader-lines"></svg>
-      <div class="timeline-track-hover-zone" id="timeline-track-hover-zone"></div>
-      <div class="timeline-hover-indicator" id="timeline-hover-indicator"></div>
-      <div class="timeline-hover-tooltip" id="timeline-hover-tooltip"></div>
-      <!-- cards injected here by assets/js/timeline.js -->
+  <div class="timeline-layout">
+    <div class="timeline-wrapper">
+      <div class="timeline-container" id="timeline-container">
+        <div class="timeline-track" id="timeline-track"></div>
+        <svg class="timeline-leader-lines" id="timeline-leader-lines"></svg>
+        <div class="timeline-track-hover-zone" id="timeline-track-hover-zone"></div>
+        <div class="timeline-hover-indicator" id="timeline-hover-indicator"></div>
+        <div class="timeline-hover-tooltip" id="timeline-hover-tooltip"></div>
+        <!-- cards injected here by assets/js/timeline.js -->
+      </div>
     </div>
+
+    <!-- populated by assets/js/timeline_distributions.js -->
+    <aside class="timeline-distributions" id="timeline-distributions" aria-label="Paper distribution by venue and topic">
+      <div class="timeline-distribution-chart" id="timeline-distribution-venue">
+        <h2 class="timeline-distribution-title">Papers by venue</h2>
+        <div class="timeline-distribution-ring-wrap">
+          <svg
+            class="timeline-distribution-ring"
+            id="timeline-distribution-venue-ring"
+            role="group"
+            aria-label="Donut chart of papers by venue"
+          ></svg>
+        </div>
+        <ul class="timeline-distribution-legend" id="timeline-distribution-venue-legend"></ul>
+        <details class="timeline-distribution-table-toggle">
+          <summary>View as table</summary>
+          <table class="timeline-distribution-table" id="timeline-distribution-venue-table">
+            <caption>Papers by venue</caption>
+            <thead>
+              <tr>
+                <th scope="col">Venue</th>
+                <th scope="col">Papers</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </details>
+      </div>
+
+      <div class="timeline-distribution-chart" id="timeline-distribution-topic">
+        <h2 class="timeline-distribution-title">Papers by topic</h2>
+        <div class="timeline-distribution-ring-wrap">
+          <svg
+            class="timeline-distribution-ring"
+            id="timeline-distribution-topic-ring"
+            role="group"
+            aria-label="Donut chart of papers by topic"
+          ></svg>
+        </div>
+        <ul class="timeline-distribution-legend" id="timeline-distribution-topic-legend"></ul>
+        <details class="timeline-distribution-table-toggle">
+          <summary>View as table</summary>
+          <table class="timeline-distribution-table" id="timeline-distribution-topic-table">
+            <caption>Papers by topic</caption>
+            <thead>
+              <tr>
+                <th scope="col">Topic</th>
+                <th scope="col">Papers</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </details>
+      </div>
+    </aside>
+
   </div>
 </div>
 
@@ -91,5 +149,7 @@ nav_order: 5
 </script>
 
 <link rel="stylesheet" href="{{ '/assets/css/timeline.css' | relative_url }}" />
+<link rel="stylesheet" href="{{ '/assets/css/timeline_distributions.css' | relative_url }}" />
 <script src="{{ '/assets/js/timeline_mock_logic.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/timeline.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/timeline_distributions.js' | relative_url }}"></script>

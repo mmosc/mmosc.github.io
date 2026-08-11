@@ -294,14 +294,10 @@
   // packCards's "left"/"right" lane labels (an alternation, not literally
   // "left of the page") are orientation-neutral -- this is the one place
   // they get translated into this orientation's CSS class name.
-  // Written as literal strings rather than `base + "-far"`: purgecss.config.js
-  // scans this file as plain text, so a concatenated "above-far" is invisible
-  // to it and .timeline-card.above-far/.below-far get purged in production,
-  // collapsing the far row onto the near row.
   function laneClass(side, row) {
     if (orientation !== "horizontal") return side;
-    if (side === "left") return row ? "above-far" : "above";
-    return row ? "below-far" : "below";
+    const base = side === "left" ? "above" : "below";
+    return row ? base + "-far" : base;
   }
   // Maps (position along the time axis, position along the perpendicular
   // axis) to screen (x, y). Vertical puts time on y and the perpendicular
