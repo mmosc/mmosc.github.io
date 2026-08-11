@@ -120,9 +120,9 @@ cv:
         date: 2022
 
     research_interests:
-      - bullet: '**Multimodal Learning**: cross-modal representation learning, audio-visual learning (face-voice association), handling missing modalities in multimodal systems'
-      - bullet: '**Recommender Systems**: cold-start recommendation, music recommendation, sequential recommendation'
-      - bullet: '**Music Information Retrieval**: music emotion recognition, multi-modal music retrieval (audio, lyrics, video), music discovery patterns and user behavior'
+      - bullet: "**Multimodal Learning**: cross-modal representation learning, audio-visual learning (face-voice association), handling missing modalities in multimodal systems"
+      - bullet: "**Recommender Systems**: cold-start recommendation, music recommendation, sequential recommendation"
+      - bullet: "**Music Information Retrieval**: music emotion recognition, multi-modal music retrieval (audio, lyrics, video), music discovery patterns and user behavior"
 
     skills:
       - label: Programming Languages

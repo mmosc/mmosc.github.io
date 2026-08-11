@@ -27,7 +27,7 @@ latest_posts:
 
 I am a physicist turned computer scientist, currently a PhD student at the
 [Multimedia Mining and Search Group](https://www.hcai.at) of
-the [Johannes Kepler University Linz](https://www.jku.at/en), Austria. I am also 
+the [Johannes Kepler University Linz](https://www.jku.at/en), Austria. I am also
 Applied Scientist (L5) at [Albatross AI](https://usealbatross.ai).
 
 My (current) fields of research are **multimodal learning** and **recommender systems**. I have a PhD in
