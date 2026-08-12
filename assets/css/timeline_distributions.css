@@ -99,6 +99,9 @@
   font-size: 0.75rem;
   color: var(--global-text-color);
 }
+.timeline-distribution-legend-item-empty {
+  opacity: 0.45;
+}
 .timeline-distribution-legend-label {
   flex: 1 1 auto;
   overflow: hidden;

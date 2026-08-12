@@ -58,7 +58,10 @@
   function renderDonut({ ringEl, legendEl, tableBodyEl, items, legendItems, showLegendCount = true }) {
     const total = items.reduce((sum, item) => sum + item.value, 0);
     const visibleItems = items.filter((item) => item.value > 0);
-    const visibleLegendItems = (legendItems || items).filter((item) => item.value > 0);
+    // Individual-color legend items (alwaysInLegend) stay put even at zero so the
+    // color key doesn't shift as filters change; composite entries (combo stripes,
+    // "Other") still hide when empty since they don't carry one fixed color meaning.
+    const visibleLegendItems = (legendItems || items).filter((item) => item.value > 0 || item.alwaysInLegend);
 
     ringEl.innerHTML = "";
     ringEl.setAttribute("viewBox", `0 0 ${RING_SIZE} ${RING_SIZE}`);
@@ -93,6 +96,7 @@
     visibleLegendItems.forEach((item) => {
       const li = document.createElement("li");
       li.className = "timeline-distribution-legend-item";
+      if (item.value === 0) li.classList.add("timeline-distribution-legend-item-empty");
       const swatch = document.createElement("span");
       swatch.className = "timeline-legend-swatch";
       swatch.style.background = item.swatchBackground;
@@ -223,7 +227,9 @@
     // Legend explains what each color means (the single topics); a striped
     // wedge is self-explanatory as "both" once those colors are known, so
     // combinations don't get their own legend row (still in the ring and table).
-    const legendItems = items.filter((item) => comboTopicsByKey[item.key].length === 1);
+    const legendItems = items
+      .filter((item) => comboTopicsByKey[item.key].length === 1)
+      .map((item) => ({ ...item, alwaysInLegend: true }));
     renderDonut({ ringEl: topicRingEl, legendEl: topicLegendEl, tableBodyEl: topicTableBodyEl, items, legendItems, showLegendCount: false });
   }
 
@@ -435,6 +441,7 @@
         value: familyRawOrder[fam].reduce((sum, rawVenue) => sum + (counts[rawVenue] || 0), 0),
         strokeColor: familyBaseColorVar[fam],
         swatchBackground: familyBaseColorVar[fam],
+        alwaysInLegend: true,
       }))
       .concat([otherItem]);
 
