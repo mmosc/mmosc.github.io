@@ -150,7 +150,7 @@ nav_order: 5
   real, directly parseable JSON: `JSON.parse(el.textContent)`.
 -->
 <script type="application/json" id="timeline-jobs-data">
-{{ site.data.cv.cv.sections.experience | jsonify }}
+{{ site.data.cv.cv.sections.Experience | jsonify }}
 </script>
 
 <script type="application/json" id="timeline-topic-colors-data">
