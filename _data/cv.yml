@@ -14,7 +14,7 @@ cv:
       username: mmosc
 
   sections:
-    education:
+    Education:
       - institution: Johannes Kepler University Linz, Austria
         area: Computer Science
         degree: PhD
@@ -33,7 +33,7 @@ cv:
         highlights:
           - Research on new physics models and lepton flavor universality violation
 
-    experience:
+    Experience:
       - company: Albatross AI
         position: Applied Scientist (L5)
         start_date: 2025-11
@@ -69,55 +69,128 @@ cv:
           - Research in theoretical particle physics
           - Focus on lepton flavor universality and beyond Standard Model physics
 
-    selected_publications:
-      - title: Face-Voice Association with Inductive Bias for Maximum Class Separation
-        authors:
-          - M. Moscati
-          - O. Kats
-          - M. Noman
-          - M. Z. Zaheer
-          - Y. Hou
-          - M. Schedl
-          - S. Nawaz
-        journal: IEEE ICASSP 2026
-        date: 2026
-      - title: Parameter-Efficient Single Collaborative Branch for Recommendation
-        authors:
-          - M. Moscati
-          - S. Nawaz
-          - M. Schedl
-        journal: ACM RecSys 2025
-        date: 2025
-        url: https://doi.org/10.1145/3705328.3759302
-      - title: A Multimodal Single-Branch Embedding Network for Recommendation in Cold-Start and Missing Modality Scenarios
-        authors:
-          - C. Ganhör*
-          - M. Moscati*
-          - A. Hausberger
-          - S. Nawaz
-          - M. Schedl
-        journal: ACM RecSys 2024 (*Equal contributions)
-        date: 2024
-        url: https://doi.org/10.1145/3640457.3688138
-      - title: Integrating the ACT-R Framework with Collaborative Filtering for Explainable Sequential Music Recommendation
-        authors:
-          - M. Moscati
-          - C. Wallmann
-          - M. Reiter-Haas
-          - D. Kowald
-          - E. Lex
-          - M. Schedl
-        journal: ACM RecSys 2023
-        date: 2023
-      - title: Music4All-Onion -- A Large-Scale Multi-Faceted Content-Centric Music Recommendation Dataset
-        authors:
-          - M. Moscati
-          - E. Parada-Cabaleiro
-          - Y. Deldjoo
-          - E. Zangerle
-          - M. Schedl
-        journal: ACM CIKM 2022
-        date: 2022
+    # selected_publications:
+    #   - title: "SPRIG: Semantic-ID-enhanced Paths for Knowledge Graph-based Generative Recommendation"
+    #     authors:
+    #       - J. Hangoebl
+    #       - M. Moscati
+    #       - A. B. Melchiorre
+    #       - S. Nawaz
+    #       - M. Schedl
+    #     journal: ACM CIKM 2026
+    #     date: 2026
+    #   - title: Calibrating Recommendations on Ordinal Attributes
+    #     authors:
+    #       - M. Moscati
+    #       - V. Toloknova
+    #       - O. Lesota
+    #       - M. Schedl
+    #     journal: ACM RecSys 2026
+    #     date: 2026
+    #   - title: "SwapRec: Warming Up Cold Items Through Training-Time Similar-Content Swaps"
+    #     authors:
+    #       - M. Moscati
+    #       - J. M. Lichtenberg
+    #       - D. Abbattista
+    #       - A. De Candia
+    #       - L. Boggia
+    #       - M. Ruffini
+    #     journal: DaQuaMRec @ ACM RecSys 2026
+    #     date: 2026
+    #   - title: Emotion-calibrated Music Recommendation
+    #     authors:
+    #       - M. Moscati
+    #       - E. Gurung
+    #       - S. Nawaz
+    #       - M. Swain
+    #       - M. Schedl
+    #     journal: MuRS @ ACM RecSys 2026
+    #     date: 2026
+    #   - title: "Networked Tastes: Homophily for Music Recommendation"
+    #     authors:
+    #       - M. Moscati
+    #       - X. Xu
+    #       - M. Schedl
+    #     journal: ACM UMAP Workshops 2026
+    #     date: 2026
+    #   - title: Face-Voice Association with Inductive Bias for Maximum Class Separation
+    #     authors:
+    #       - M. Moscati
+    #       - O. Kats
+    #       - M. Noman
+    #       - M. Z. Zaheer
+    #       - Y. Hou
+    #       - M. Schedl
+    #       - S. Nawaz
+    #     journal: IEEE ICASSP 2026
+    #     date: 2026
+    #   - title: Parameter-Efficient Single Collaborative Branch for Recommendation
+    #     authors:
+    #       - M. Moscati
+    #       - S. Nawaz
+    #       - M. Schedl
+    #     journal: ACM RecSys 2025
+    #     date: 2025
+    #     url: https://doi.org/10.1145/3705328.3759302
+    #   - title: "Audio, Lyrics, Videoclips, Interactions? An Analysis of Uni- and Multi-Modal Music Retrieval Systems in Terms of Accuracy and Beyond-Accuracy Aspects"
+    #     authors:
+    #       - M. Moscati
+    #       - G. Escobedo
+    #       - E. Hernandez
+    #       - J. Peché
+    #       - M. Schedl
+    #     journal: MuRS @ ACM RecSys 2025
+    #     date: 2025
+    #     url: https://ceur-ws.org/Vol-4045/
+    #   - title: "Familiarizing with Music: Discovery Patterns for Different Music Discovery Needs"
+    #     authors:
+    #       - M. Moscati
+    #       - D. Afchar
+    #       - M. Schedl
+    #       - B. Sguerra
+    #     journal: ACM UMAP 2025
+    #     date: 2025
+    #     url: https://dl.acm.org/doi/proceedings/10.1145/3699682
+    #   - title: A Multimodal Single-Branch Embedding Network for Recommendation in Cold-Start and Missing Modality Scenarios
+    #     authors:
+    #       - C. Ganhör*
+    #       - M. Moscati*
+    #       - A. Hausberger
+    #       - S. Nawaz
+    #       - M. Schedl
+    #     journal: ACM RecSys 2024 (*Equal contributions)
+    #     date: 2024
+    #     url: https://doi.org/10.1145/3640457.3688138
+    #   - title: Emotion-Based Music Recommendation from Quality Annotations and Large-Scale User-Generated Tags
+    #     authors:
+    #       - M. Moscati
+    #       - H. Strauß
+    #       - P.-O. Jacobsen
+    #       - A. Peintner
+    #       - E. Zangerle
+    #       - M. Zentner
+    #       - M. Schedl
+    #     journal: ACM UMAP 2024
+    #     date: 2024
+    #   - title: Integrating the ACT-R Framework with Collaborative Filtering for Explainable Sequential Music Recommendation
+    #     authors:
+    #       - M. Moscati
+    #       - C. Wallmann
+    #       - M. Reiter-Haas
+    #       - D. Kowald
+    #       - E. Lex
+    #       - M. Schedl
+    #     journal: ACM RecSys 2023
+    #     date: 2023
+    #   - title: Music4All-Onion -- A Large-Scale Multi-Faceted Content-Centric Music Recommendation Dataset
+    #     authors:
+    #       - M. Moscati
+    #       - E. Parada-Cabaleiro
+    #       - Y. Deldjoo
+    #       - E. Zangerle
+    #       - M. Schedl
+    #     journal: ACM CIKM 2022
+    #     date: 2022
 
     research_interests:
       - bullet: "**Multimodal Learning**: cross-modal representation learning, audio-visual learning (face-voice association), handling missing modalities in multimodal systems"
